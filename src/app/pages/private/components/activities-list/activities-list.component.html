@@ -1,0 +1,18 @@
+<div class="ui cards">
+    @for (activity of (activities | async); track $index) {
+        <div class="card" (click)="goToActivityDetail(activity.id)">
+            <div class="content">
+                <div class="header">{{ activity.title }}</div>
+                <div class="meta">UPV</div>
+                <div class="description">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- quitar -->
+<br>
+
+<button (click)="goCreateActivity()">Create activity</button>

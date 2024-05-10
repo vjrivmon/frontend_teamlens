@@ -1,0 +1,30 @@
+<div class="ui secondary menu">
+    <div class="item" routerLink="/home">
+        <h1>teamlens</h1>
+    </div>
+    @if (loggedUser) {
+        <a class="ui item" routerLink="/dashboard">
+            Dashboard
+        </a>
+    }    
+    <div class="right menu">
+        @if (loggedUser) {        
+            <div class="item" style="display: flex; flex-direction: column; align-items: start;">
+                <span>{{ loggedUser.name }}</span>
+                <i>{{ loggedUser.email }}</i>
+            </div>           
+            <div class="item">
+                <a class="ui button primary basic" (click)="logoutButton()">
+                    Logout
+                </a>
+            </div>
+        }
+        @else {
+            <div class="item">
+                <a class="ui primary button" routerLink="/login">
+                    Login
+                </a>
+            </div>
+        }
+    </div>
+</div>
