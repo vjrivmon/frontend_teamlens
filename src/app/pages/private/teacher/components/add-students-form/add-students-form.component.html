@@ -1,0 +1,12 @@
+<div class="card p-fluid">
+    <p>Add students by email. i.e. johndoe&#64;mail.com</p>
+    <p-chips [(ngModel)]="emailList" separator=",">
+        <ng-template let-item pTemplate="item">
+            <i class="pi pi-user mr-2"></i>{{ item }}
+         </ng-template>
+    </p-chips>
+    <div class="flex justify-content-end gap-2 mt-4">
+        <p-button label="Cancel" severity="secondary" (click)="addStudentsEvent([])" />
+        <p-button label="Add students"  (click)="addStudentsEvent(emailList)"/>
+    </div>
+</div>

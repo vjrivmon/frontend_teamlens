@@ -1,0 +1,146 @@
+<div class="container">
+    <div id="profile">
+        <h1 class="text-5xl">{{loggedUser?.name}}</h1>
+        <p-chip label="{{loggedUser?.role}}" class="role-chip"
+            [styleClass]="loggedUser?.role == 'teacher' ? 'bg-primary' : ''" />
+    </div>
+
+    <p-divider />
+
+    <div id="activities">
+        <h1>Activities</h1>
+        <p>These are the group activities that you are managing.</p>
+        @if(activities.length == 0) {
+        <p>No activities yet.</p>
+        }
+        <div class="activities-list">
+            @for (activity of (activities); track $index) {
+            <div (click)="goToActivityDetail(activity._id)" class="app-card flex flex-column gap-2">
+                <span class="title">
+                    {{ activity.title }}
+                </span>
+                <span class="subtitle">
+                    <!-- organitzation -->
+                    UPV
+                </span>
+                <p>
+                    {{ activity.description }}
+                </p>
+            </div>
+            }
+            <div teacherOnly>
+                <div class="app-card-new flex flex-column gap-2" (click)="onCreateActivityButton()">
+                    <i class="pi pi-plus text-500"></i>
+                    Create activity
+                </div>
+            </div>
+        </div>
+
+        <p-dialog header="Create an activity" [modal]="true" [(visible)]="createActivityDialogVisible"
+            [style]="{ width: '35rem' }">
+            <app-create-activity (onActivityCreated)="onActivityCreated($event)"></app-create-activity>
+        </p-dialog>
+
+    </div>
+
+    <div studentOnly>
+
+        <p-divider />
+
+        <h3>Questionnaires</h3>
+        @if(questionnaires.length == 0) {
+        <p>No questionnaires yet.</p>
+        }
+        <div class="flex gap-3 flex-wrap">
+            @for (questionnaire of questionnaires; track $index) {
+                @if (questionnaire.enabled) {
+                    <div class="flex gap-2 questionnaire-card">
+                        <div class="ui card p-4 m-0">
+                            <h3>{{ questionnaire.title }}</h3>
+                            <p>{{ questionnaire.description | slice:0:60 }}
+                                @if(questionnaire.description.length > 50) {
+                                ...
+                                }
+                            </p>
+                            <p>{{ questionnaire.questions.length }} questions.</p>
+                            <div class="flex gap-2">
+                                @if(hasAskedQuestionnaire(questionnaire._id) != undefined) {
+                                <button disabled class="ui button">Already asked</button>
+                                <button class="ui button primary basic" (click)="onAskQuestionnaireButton(questionnaire)">Reask</button>
+                                }@else {
+                                <button class="ui button primary" (click)="onAskQuestionnaireButton(questionnaire)">Ask</button>
+                                }
+                            </div>
+                        </div>
+                        @if(questionnaire.questionnaireType == 'BELBIN' && hasAskedQuestionnaire(questionnaire._id) != undefined) {
+                        <div class="role-result-panel">
+                            @switch (hasAskedQuestionnaire(questionnaire._id)?.result) {
+                                @case ("CO") {
+                                    <img class="role-img"
+                                        src="https://www.belbin.com/media/3284/co-icon.png?width=83&height=106&mode=crop&format=webp&quality=80"
+                                        alt="Co-ordinator">
+                                    <p>Coordinator</p>
+                                }
+                                @case ("SH") {
+                                    <img class="role-img"
+                                        src="https://www.belbin.com/media/3289/sh-icon.png?width=83&height=106&mode=crop&format=webp&quality=80"
+                                        alt="Shaper">
+                                    <p>Shaper</p>
+                                }
+                                @case("RI"){
+                                    <img class="role-img"
+                                        src="https://www.belbin.com/media/3288/ri-icon.png?width=83&height=106&mode=crop&format=webp&quality=80"
+                                        alt="Resource Investigator">
+                                    <p>Resource Investigator</p>
+                                }
+                                @case ("PL") {
+                                    <img class="role-img"
+                                        src="https://www.belbin.com/media/3287/pl-icon.png?width=83&height=106&mode=crop&format=webp&quality=80"
+                                        alt="Plant">
+                                    <p>Plant</p>
+                                }
+                                @case ("TW") {
+                                    <img class="role-img"
+                                        src="https://www.belbin.com/media/3291/tw-icon.png?width=83&height=106&mode=crop&format=webp&quality=80"
+                                        alt="Team Worker">
+                                    <p>Team Worker</p>
+                                }
+                                @case ("IM") {
+                                    <img class="role-img"
+                                        src="https://www.belbin.com/media/3285/imp-icon.png?width=83&height=106&mode=crop&format=webp&quality=80"
+                                        alt="Implementer">
+                                    <p>Implementer</p>
+                                }
+                                @case ("CF") {
+                                    <img class="role-img"
+                                        src="https://www.belbin.com/media/3283/cf-icon.png?width=83&height=106&mode=crop&format=webp&quality=80"
+                                        alt="Completer Finisher">
+                                    <p>Completer Finisher</p>
+                                }
+                                @case ("ME") {
+                                    <img class="role-img"
+                                        src="https://www.belbin.com/media/3286/me-icon.png?width=83&height=106&mode=crop&format=webp&quality=80"
+                                        alt="Monitor Evaluator">
+                                    <p>Monitor Evaluator</p>
+                                }
+                                @case ("SP") {
+                                    <img class="role-img"
+                                        src="https://www.belbin.com/media/3290/sp-icon.png?width=83&height=106&mode=crop&format=webp&quality=80"
+                                        alt="Specialist">
+                                    <p>Specialist</p>
+                                }
+                            }
+                            <a href="https://www.belbin.com/about/belbin-team-roles">More info...</a>
+                        </div>
+                        }
+                    </div>
+
+                }
+            
+
+            }
+
+        </div>
+    </div>
+
+</div>

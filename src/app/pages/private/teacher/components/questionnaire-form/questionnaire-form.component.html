@@ -1,0 +1,116 @@
+<div class="layout">
+
+    <header class="container">
+        <h1 class="text-5xl">{{ questionnaire?.title }}</h1>
+        <p style="white-space: pre; overflow: hidden; text-wrap: pretty; ">{{ questionnaire?.description }}</p>
+    </header>
+
+    <form class="container flex-column gap-3" [formGroup]="questionnaireFormGroup">
+
+        @for (question of questionnaire?.questions; let questionIndex = $index; track questionIndex) {
+            
+            <p class="text-xl font-bold">{{ question.question }}</p>
+        
+            @switch (question.type) {
+
+            @case ('OpenText') {
+                <textarea id="{{ questionIndex }}" rows="4" class="w-full"
+                    formControlName="{{questionIndex.toString()}}"></textarea>
+                @if ( submitted && this.questionnaireFormGroup.get(questionIndex.toString())?.errors) {
+                    <div class="invalid-feedback">
+                        @if (this.questionnaireFormGroup.get(questionIndex.toString())?.errors!['required']) {
+                            <div>Required.</div>
+                        }
+                    </div>
+                }
+            }
+
+            @case ('MultipleChoice') {
+            <div class="w-full">
+                <div class="flex flex-column gap-3">
+                    @for (option of question.options; let optionIndex = $index; track optionIndex) {
+                    <label [for]="questionIndex.toString() + optionIndex.toString()" class="option">
+                        <p-radioButton [inputId]="questionIndex.toString() + optionIndex.toString()" [value]="optionIndex + 1"
+                            formControlName="{{questionIndex.toString()}}" />
+                        {{ option }}
+                    </label>
+                    }
+                </div>                
+            </div>
+            @if ( submitted && this.questionnaireFormGroup.get(questionIndex.toString())?.errors) {
+                <div class="invalid-feedback">
+                    @if (this.questionnaireFormGroup.get(questionIndex.toString())?.errors!['required']) {
+                        <div>Required.</div>
+                    }
+                </div>
+            }
+            }
+
+            @case ('Rating') {
+            <div class="field-checkbox flex gap-6 pl-2">
+                @for (option of [].constructor(5); let ratingIndex = $index; track ratingIndex) {
+                <div class="flex flex-column gap-3 text-center">
+                    <p-radioButton [style]="{ 'width': '1.5em', 'scale': '1.8' }" [inputId]="ratingIndex.toString()"
+                        [value]="ratingIndex + 1" formControlName="{{questionIndex.toString()}}" />
+                    <label [for]="ratingIndex.toString()">
+                        {{ ratingIndex + 1 }}
+                    </label>
+                </div>
+                }                
+            </div>
+            @if ( submitted && this.questionnaireFormGroup.get(questionIndex.toString())?.errors) {
+                <div class="invalid-feedback">
+                    @if (this.questionnaireFormGroup.get(questionIndex.toString())?.errors!['required']) {
+                        <div>Required.</div>
+                    }
+                </div>
+            }
+            }
+
+            @case ('Distribution') {
+                <div class="w-full">
+                    <div class="flex flex-column gap-0" [formGroupName]="questionIndex.toString()">
+                        @for (option of question.options; let distIndex = $index; track distIndex) {
+                        <div class="distribution-option" [style]="{ backgroundColor: pickHex([248,249,250], [225, 255, 224], questionnaireFormGroup.get(questionIndex.toString())?.get(distIndex.toString())?.value) }">
+                            <label [for]="questionIndex.toString() + distIndex.toString()">
+                                {{ option }}
+                            </label>
+                            <p-inputNumber
+                                [inputId]="questionIndex.toString() + distIndex.toString()"
+                                formControlName="{{distIndex.toString()}}"
+                                mode="decimal" [min]="0" [max]="10" 
+                                [showButtons]="true" 
+                                buttonLayout="horizontal" 
+                                inputId="horizontal" 
+                                spinnerMode="horizontal" 
+                                [step]="1"
+                                decrementButtonClass="p-button-secondary"
+                                incrementButtonClass="p-button-secondary"
+                                incrementButtonIcon="pi pi-plus"
+                                decrementButtonIcon="pi pi-minus" />
+                            </div>
+                            
+                        }
+                    </div>
+                    @if ( submitted && this.questionnaireFormGroup.get(questionIndex.toString())?.errors) {
+                        <div class="invalid-feedback">
+                            @if (this.questionnaireFormGroup.get(questionIndex.toString())?.errors!['required']) {
+                                <div>Invalid input</div>
+                            }
+                            @if (this.questionnaireFormGroup.get(questionIndex.toString())?.errors!['sumaExacta']) {
+                                <div>Total sum of the fields is not 10.</div>
+                            }
+                        </div>
+                    }
+                </div>
+                }
+            }
+
+            <p-divider />
+
+        }
+
+        <button type="submit" class="ui button primary" (click)="onSubmitQuiestionnaire()">Submit questionnaire</button>
+
+    </form>
+</div>

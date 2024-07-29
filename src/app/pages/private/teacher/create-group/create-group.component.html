@@ -1,0 +1,34 @@
+@if (freeStudents.length === 0 && selectedStudents.length === 0) {
+    <p>There are not students out.</p>
+}
+@else {
+    
+    <h3>Students</h3>
+    
+    @if (freeStudents.length > 0) {
+        @for (student of freeStudents; track $index) {
+            <p-card class="m-2" (click)="selectUser(student)">{{student._id}} <i>{{student.email}}</i></p-card>
+        }
+    } @else {
+        <p>There are no more students who do not belong to a group.</p>
+    }
+
+    <form [formGroup]="groupForm" (ngSubmit)="onSubmit()">
+        <div class="flex flex-column gap-2">
+            <label for="name">Name</label>
+            <input pInputText type="text" id="name" formControlName="name">
+        </div>
+        <div class="flex flex-column gap-2">
+            <label for="title">Members</label>
+            <div>
+                @for (student of selectedStudents; track $index) {
+                    <p-card (click)="removeSelectedUser(student)">{{student._id}} <i>{{student.email}}</i></p-card>
+                }
+            </div>
+        </div>
+        
+        <p-button type="submit" [disabled]="!groupForm.valid">Create</p-button>
+
+    </form>
+
+}

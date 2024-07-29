@@ -1,0 +1,54 @@
+.layout {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+header {
+    background: linear-gradient( white 90%, transparent 100%);
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+form {
+    width: 100%;
+}
+
+.option {
+    display: flex;
+    gap: 0.6rem;
+    padding: 8px;
+    background: white;
+    border: 1px solid lightgray;
+    border-radius: 4px;
+    
+    &:hover {
+        cursor: pointer;
+        border: 1px solid #007bff;
+    }    
+    
+}
+
+.distribution-option {
+    display: grid;
+    grid-template-columns: 11fr 1fr;
+    align-items: center;
+    padding: 0.5rem;
+}
+
+textarea {
+    outline: none !important;
+    width: 100%;
+    padding: 8px;
+    border: 1px solid lightgray;
+    border-radius: 4px;
+    
+    &:focus {
+        border: 1px solid #007bff;
+    }
+}
+
+.invalid-feedback {
+    margin-top: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: rgb(255, 232, 232);
+    color: red;
+}

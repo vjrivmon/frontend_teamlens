@@ -1,0 +1,65 @@
+<div class="container">
+
+    <h2>{{ group?.name }}</h2>
+    <p class="pl-1">{{ group?.students?.length }} members.</p>
+
+    <div class="flex flex-wrap gap-3">
+        @for (member of group?.students; track $index) {
+        <div class="ui card p-4 m-0"  [ngClass]="{'card-me': member._id == loggedUser?._id}" (click)="selectMember(member)">
+            <!-- <p>{{ member._id }}</p> -->
+            <i>{{ member.name }}</i>
+            <i>{{ member.email }}</i>
+            <p-button teacherOnly severity="danger" [outlined]="true" (click)="deleteMember(member)" class="ml-auto">
+                <i class="pi pi-trash"></i>
+            </p-button>
+        </div>
+        }
+        <div teacherOnly>
+            <button class="card-new flex flex-column gap-2 h-full" (click)="addMembersDialogVisible = true">
+                <i class="pi pi-plus text-500"></i>
+                Add members
+            </button>
+        </div>
+    </div>
+
+    <!-- <h3>Teamates comments of {{ selectedMember?.name }}</h3> -->
+    <!-- @for (comment of selectedMember?.comments; track $index) {
+        <div>
+            <p>{{ comment.title }}</p>
+            <p>{{ comment.text }}</p>
+        </div>
+    } -->
+
+</div>
+
+<p-dialog header="Add members" [modal]="true" [(visible)]="addMembersDialogVisible" [style]="{ width: '35rem' }">
+
+    @if (freeStudents.length === 0 && selectedStudents.length === 0) {
+    <p>There are not students out.</p>
+    }
+    @else {
+
+    <h3>Students</h3>
+
+    @if (freeStudents.length > 0) {
+    @for (student of freeStudents; track $index) {
+    <p-card class="m-2" (click)="selectUser(student)">{{student._id}} <i>{{student.email}}</i></p-card>
+    }
+    } @else {
+    <p>There are no more students who do not belong to a group.</p>
+    }
+
+    <div class="flex flex-column gap-2">
+        <label for="title">Members</label>
+        <div>
+            @for (student of selectedStudents; track $index) {
+            <p-card (click)="removeSelectedUser(student)">{{student._id}} <i>{{student.email}}</i></p-card>
+            }
+        </div>
+    </div>
+
+    <p-button (click)="addMembers(selectedStudents)">Add</p-button>
+
+
+    }
+</p-dialog>

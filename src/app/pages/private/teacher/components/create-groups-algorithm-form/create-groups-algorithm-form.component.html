@@ -1,0 +1,289 @@
+<div class="p-4">
+    <p-stepper [(activeStep)]="active">
+        <p-stepperPanel>
+            <ng-template pTemplate="header" let-index="index">
+                <button class="bg-transparent border-none inline-flex flex-column gap-2">
+                    <span
+                        class="border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center"
+                        [ngClass]="{
+                            'bg-primary border-primary': index <= active,
+                            'surface-border': index > active
+                        }">
+                        <i class="pi pi-book"></i>
+                    </span>
+                </button>
+            </ng-template>
+            <ng-template pTemplate="content" let-nextCallback="nextCallback" let-index="index">
+                <div class="flex flex-column gap-2 mt-4" style="min-height: 55vh; min-width: 70vw">
+                    <h2>Basic setup</h2>
+                    <p>Select the pairing algorithm, team size and other options.</p>
+                    <form [formGroup]="teamBuilderForm" class="flex gap-4">
+                        <div class="flex flex-column gap-2">
+                            <h5>Algorithm</h5>
+                            <div class="flex flex-column gap-2">
+                                <label for="name">Pairing Algorithm</label>
+                                <p-dropdown formControlName="algorithm" [options]="questionnaires" optionLabel="title"
+                                    placeholder="Select an Algorithm" />
+                            </div>
+                        </div>
+                        <div class="flex flex-column gap-2">
+                            <h5>Groups</h5>
+                            <div class="flex gap-3">
+                                <div class="flex flex-column gap-2">
+                                    <label for="name">Min.</label>
+                                    <p-inputNumber inputId="integeronly" formControlName="minGroups" />
+                                    <small for="name">min. number of groups</small>
+                                </div>
+                                <div class="flex flex-column gap-2">
+                                    <label for="name">Max.</label>
+                                    <p-inputNumber inputId="integeronly" formControlName="maxGroups" />
+                                    <small for="name">max. number of groups</small>
+                                </div>
+                                <div class="flex flex-column gap-2">
+                                    <label for="name">Member size</label>
+                                    <p-inputNumber inputId="integeronly" formControlName="groupSize" />
+                                    <small for="name">Desired size for the groups</small>
+                                </div>
+                            </div>
+                        </div>                       
+                    </form>
+                    <h2>Students</h2>
+                    <p>Select the students who want to group.</p>
+                    <p-table #dt1 [value]="students" [(selection)]="selectedStudents" dataKey="_id"
+                        [globalFilterFields]="['_id', 'name', 'email']">
+                        <ng-template pTemplate="caption">
+                            <div class="flex">
+                                <span class="p-input-icon-left">
+                                    <i class="pi pi-search"></i>
+                                    <input pInputText type="text" [(ngModel)]="searchValue"
+                                        (input)="dt1.filterGlobal(searchValue, 'contains')"
+                                        placeholder="Search keyword" />
+                                </span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 4rem"><p-tableHeaderCheckbox /></th>
+                                <!-- <th>ID</th> -->
+                                <th>Name</th>
+                                <th>Email</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-student>
+                            <tr>
+                                <td>
+                                    <p-tableCheckbox [value]="student" />
+                                </td>
+                                <!-- <td>{{student._id}}</td> -->
+                                <td>{{student.name}}</td>
+                                <td>{{student.email}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="7">No student matches that search!</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+                <div class="flex pt-4 justify-content-end">
+                    <p-button [disabled]="selectedStudents.length == 0" label="Next" icon="pi pi-arrow-right"
+                        iconPos="right" (onClick)="nextCallback.emit()" />
+                </div>
+            </ng-template>
+        </p-stepperPanel>
+        <p-stepperPanel>
+            <ng-template pTemplate="header" let-index="index">
+                <button class="bg-transparent border-none inline-flex flex-column gap-2">
+                    <span
+                        class="border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center"
+                        [ngClass]="{
+                            'bg-primary border-primary': index <= active,
+                            'surface-border': index > active
+                        }">
+                        <i class="pi pi-users"></i>
+                    </span>
+                </button>
+            </ng-template>
+            <ng-template pTemplate="content" let-prevCallback="prevCallback" let-nextCallback="nextCallback"
+                let-index="index">
+                <div class="flex flex-column gap-2 mt-4" style="min-height: 55vh; min-width: 70vw">
+                    <h2>Create restrictions</h2>
+                    <p>Select students to create a restriction.</p>
+                    <p-table #dt2 [value]="selectedStudents" [(selection)]="selectedRestrictionStudents" dataKey="_id"
+                        [globalFilterFields]="['_id', 'name', 'email']" [tableStyle]="{'max-height': '10rem'}">
+                        <ng-template pTemplate="caption">
+                            <div class="flex">
+                                <span class="p-input-icon-left">
+                                    <i class="pi pi-search"></i>
+                                    <input pInputText type="text" [(ngModel)]="searchValueRestricctions"
+                                        (input)="dt2.filterGlobal(searchValueRestricctions, 'contains')"
+                                        placeholder="Search keyword" />
+                                </span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 4rem"><p-tableHeaderCheckbox /></th>
+                                <!-- <th>ID</th> -->
+                                <th>Name</th>
+                                <th>Email</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-student>
+                            <tr>
+                                <td>
+                                    <p-tableCheckbox [value]="student" />
+                                </td>
+                                <!-- <td>{{student._id}}</td> -->
+                                <td>{{student.name}}</td>
+                                <td>{{student.email}}</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="7">No student matches that search!</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                    <div class="mt-4 restrictions-panel">
+                        <div>
+                            <h4>Must be together</h4>
+                            <div class="flex flex-column gap-3">
+                                @for (restriction of restrictions.mustBeTogether; track $index) {
+                                <div class="restriction-item item-green">
+                                    <div class="flex flex-column flex-grow-1">
+                                        @for (student of restriction; track $index) {
+                                        <p>{{ student.email }}</p>
+                                        }
+                                    </div>
+                                    <p-button teacherOnly severity="danger" [outlined]="true"
+                                        (click)="removeRestriction('mustBeTogether', $index)">
+                                        <i class="pi pi-times"></i>
+                                    </p-button>
+                                </div>
+                                }
+                                <button [disabled]="selectedRestrictionStudents.length == 0" class="create-button"
+                                    (click)="createRestriction('mustBeTogether')">
+                                    <i class="pi pi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <h4>Must NOT be together</h4>
+                            <div class="flex flex-column gap-3">
+                                @for (restriction of restrictions.mustNotBeTogether; track $index) {
+                                <div class="restriction-item item-red">
+                                    <div class="flex flex-column">
+                                        @for (student of restriction; track $index) {
+                                        <p>{{ student.email }}</p>
+                                        }
+                                    </div>
+                                    <p-button teacherOnly severity="danger" [outlined]="true"
+                                        (click)="removeRestriction('mustNotBeTogether', $index)">
+                                        <i class="pi pi-times"></i>
+                                    </p-button>
+                                </div>
+                                }
+                                <button [disabled]="selectedRestrictionStudents.length == 0" class="create-button"
+                                    (click)="createRestriction('mustNotBeTogether')">
+                                    <i class="pi pi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- <div>
+                            <h4>Must be a group</h4>
+                            <div class="flex flex-column gap-3">
+                                @for (restriction of restrictions.mustBeAGroup; track $index) {
+                                <div class="restriction-item item-blue">
+                                    <div class="flex flex-column">
+                                        @for (student of restriction; track $index) {
+                                        <p>{{ student.email }}</p>
+                                        }
+                                    </div>
+                                    <p-button teacherOnly severity="danger" [outlined]="true"
+                                        (click)="removeRestriction('mustBeAGroup', $index)">
+                                        <i class="pi pi-times"></i>
+                                    </p-button>
+                                </div>
+                                }
+                                <button [disabled]="selectedRestrictionStudents.length == 0" class="create-button"
+                                    (click)="createRestriction('mustBeAGroup')">
+                                    <i class="pi pi-plus"></i>
+                                </button>
+                            </div>
+                        </div> -->
+                    </div>
+                </div>
+                <div class="flex pt-4 justify-content-between">
+                    <p-button label="Back" icon="pi pi-arrow-left" (onClick)="prevCallback.emit()" />
+                    <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextCallback.emit()" />
+                </div>
+            </ng-template>
+        </p-stepperPanel>
+        <p-stepperPanel>
+            <ng-template pTemplate="header" let-index="index">
+                <button class="bg-transparent border-none inline-flex flex-column gap-2">
+                    <span
+                        class="border-round border-2 w-3rem h-3rem inline-flex align-items-center justify-content-center"
+                        [ngClass]="{
+                            'bg-primary border-primary': index <= active,
+                            'surface-border': index > active
+                        }">
+                        <i class="pi pi-check"></i>
+                    </span>
+                </button>
+            </ng-template>
+            <ng-template pTemplate="content" let-prevCallback="prevCallback" let-index="index">
+                <div class="flex flex-column gap-2 mt-4" style="min-height: 55vh; min-width: 70vw">
+                    <h2>Confirm</h2>
+                    <div>
+                        <h4>Algorithm</h4>
+                        <p>{{ teamBuilderForm.value.algorithm?.title }}</p>
+                        <h4>Group settings</h4>
+                        <p>Min. groups: {{ teamBuilderForm.value.minGroups }}</p>
+                        <p>Max. groups: {{ teamBuilderForm.value.maxGroups }}</p>
+                        <p>Group size: {{ teamBuilderForm.value.groupSize }}</p>
+                    </div>
+                    @if (restrictions.mustBeTogether.length > 0) {
+                        <div>
+                            <h4>Must be together</h4>
+                            <div class="flex flex-column gap-3">
+                                @for (restriction of restrictions.mustBeTogether; track $index) {
+                                <div class="restriction-item item-green">
+                                    <div class="flex flex-column flex-grow-1">
+                                        @for (student of restriction; track $index) {
+                                        <p>{{ student.email }}</p>
+                                        }
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    @if (restrictions.mustNotBeTogether.length > 0) {
+                        <div>
+                            <h4>Must NOT be together</h4>
+                            <div class="flex flex-column gap-3">
+                                @for (restriction of restrictions.mustNotBeTogether; track $index) {
+                                <div class="restriction-item item-red">
+                                    <div class="flex flex-column">
+                                        @for (student of restriction; track $index) {
+                                        <p>{{ student.email }}</p>
+                                        }
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    }                                      
+                </div>
+                <div class="flex pt-4 justify-content-between">
+                    <p-button label="Back" icon="pi pi-arrow-left" (onClick)="prevCallback.emit()" />
+                    <p-button label="Create groups" (onClick)="onCreateGroups()" severity="success"> <i class="pi pi-sparkles mr-2"></i></p-button>
+                </div>
+            </ng-template>
+        </p-stepperPanel>
+    </p-stepper>
+
+</div>

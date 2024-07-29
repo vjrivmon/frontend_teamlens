@@ -1,0 +1,92 @@
+.activity-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    /* background: linear-gradient(rgb(255, 255, 255) 60%, transparent 100%); */
+}
+
+.groups-list {
+    display: flex;
+    justify-content: left;
+    flex-wrap: wrap;
+    margin: 18px auto;
+    gap: 20px;
+}
+
+.questionnaires-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+.main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.content-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+header {
+    /* background: linear-gradient( white 90%, transparent 100%); */
+    background: white;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.member-count {
+    display: inline-block;
+    border-radius: 4px 4px 0px 0px;
+
+    span {
+        margin-left: 4px;
+        font-weight: bold;
+    }
+}
+
+[hidden] {
+    position: relative;
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+[hidden]:last-child::after {
+    /* loader */
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    border: 5px solid #c0c0c0;
+    border-top: 10px solid #0a50ac;
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+}
+[hidden]:last-child::before {
+    /* loader */
+    content: "Algorithm is running...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 200%);
+}
+
+@keyframes spin {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}

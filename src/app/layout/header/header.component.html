@@ -1,19 +1,43 @@
-<div class="ui secondary menu">
-    <div class="item" routerLink="/home">
-        <h1>teamlens</h1>
+<header class="flex align-items-center gap-6">
+    <div class="cursor-pointer" routerLink="/home">
+        <h1 class="text-5xl">team<span class="text-gradient">lens</span></h1>
     </div>
     @if (loggedUser) {
-        <a class="ui item" routerLink="/dashboard">
+        <a class="ui basic button" routerLink="/dashboard">
             Dashboard
         </a>
     }    
-    <div class="right menu">
-        @if (loggedUser) {        
-            <div class="item" style="display: flex; flex-direction: column; align-items: start;">
-                <span>{{ loggedUser.name }}</span>
+    <div class="flex gap-2 ml-auto" style="align-items: center;">
+        @if (loggedUser) {     
+            <i class="large bell icon outline h-100" [ngClass]="{ notification: loggedUser.notifications && loggedUser.notifications.length > 0}" (click)="toggleNotificationPanel()">
+                @if(notificationPanelOpen) {
+                    <div class="notifications-panel" (click)="$event.stopPropagation()">
+                        @if ((loggedUser.notifications?.length ?? 0) > 0) {
+                            <div class="notification-item text-300 text-sm flex-row" (click)="clearNotifications(); $event.stopPropagation()">
+                                <i class="trash alternate outline icon"></i>
+                                <span>Clear notifications</span>
+                            </div>
+                        }
+                        @for(notification of loggedUser.notifications; track $index) {
+                            <a class="notification-item" (click)="routerLinkSameUrl(notification.link)">
+                                <b>{{ notification.title }}</b>
+                                <p>{{ notification.description }}</p>
+                                <span>{{ notification.date }}</span>
+                            </a>
+                        } @empty {
+                            <div class="notification-header">
+                                <p>You're up to date!</p>
+                            </div>
+                        }
+                    </div>   
+                }                  
+            </i>                   
+            <i class="big user circle icon h-100" style="color: whitesmoke;"></i>
+            <div class="" style="display: flex; flex-direction: column; justify-content: center; align-items: start;">
+                <b>{{ loggedUser.name }}</b>
                 <i>{{ loggedUser.email }}</i>
             </div>           
-            <div class="item">
+            <div class="ml-4">
                 <a class="ui button primary basic" (click)="logoutButton()">
                     Logout
                 </a>
@@ -21,10 +45,15 @@
         }
         @else {
             <div class="item">
+                <a class="ui basic primary button" routerLink="/register">
+                    Join as Teacher
+                </a>
+            </div>
+            <div class="item">
                 <a class="ui primary button" routerLink="/login">
                     Login
                 </a>
             </div>
         }
     </div>
-</div>
+</header>

@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
-import { CommonModule } from '@angular/common'; 
+import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { TAuthUser } from '../../models/models';
+import { IUser } from '../../models/models';
 
 @Component({
   selector: 'app-header',
@@ -13,22 +13,41 @@ import { TAuthUser } from '../../models/models';
 })
 export class HeaderComponent {
 
-  loggedUser: TAuthUser | undefined = undefined;
+  loggedUser: IUser | undefined = undefined;
+
+  notificationPanelOpen = false;
 
   constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit(): void {
     this.authService.loggedUser.subscribe(
       loggedUser => {
-        console.log('isLoggedIn', loggedUser);
         this.loggedUser = loggedUser
       }
     );
+    this.authService.refreshUserData();
   }
 
-  logoutButton() {  
+  logoutButton() {
     this.authService.logout();
     this.router.navigateByUrl('/login');
   }
-  
+
+  toggleNotificationPanel() {
+    this.notificationPanelOpen = !this.notificationPanelOpen;
+  }
+
+  clearNotifications() {
+    this.authService.clearNotifications();
+  }
+
+  routerLinkSameUrl(path: string | undefined) {
+    if (!path) return;
+    
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigateByUrl(path);
+    });
+  }
+
+
 }

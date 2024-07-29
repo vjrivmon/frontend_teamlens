@@ -1,51 +1,72 @@
 export interface IUser {
-    id: string;
+    _id: string;
     email: string;
-    name: string;
     role: string;
+    traits?: string[];
+    name?: string;
+    lastName?: string;
+    birthDate?: string;
+    invitationToken?: string;
+    resetToken?: string;
+    gender?: string;
+    activities?: IActivity[];
+    askedQuestionnaires: TQuestionnaireResult[];
+    groups?: IGroup[];
+    notifications?: INotification[];
 }
 
-export interface IProfile {
+export interface INotification {
 
-    id: string;
-    //genre: string;
-    //birthdate: number;
-    //notifications: string[];
-    activities: IActivity[];
-    groups: IGroup[];
-    answeredQuestionnaires: IQuestionnaire[];
-    //comments: IComment[];
+    _id: string;
+    title: string;
+    description: string;
+    link?: string;
+    date?: Date;
 }
+
 
 export interface IQuestionnaire {
-    id: string;
+    _id: string;
     title: string;
     description: string;
     questions: TQuestion[];
+    questionnaireType: string;
+    enabled: boolean;
 }
 
 export interface IActivity {
-    id: string;
+    _id: string;
     title: string;
     description: string;
+    startDate?: number;
+    finishDate?: number;
     teacher: IUser;
-    students: IUser[];
-    groups: IGroup[];
+    students?: IUser[];
+    groups?: IGroup[];
+    algorithmStatus?: string;
 }
 
 export interface IGroup {
-    id: string;
+    _id: string;
     name: string;
-    members: IUser[];
+    students: IUser[];
 }
 
+export interface INewActivity extends Omit<IActivity, '_id'  | 'teacher' | 'students' | 'groups'> {
 
-export type TAuthUser = Omit<IUser, 'id'>;
-export type TNewActivity = Omit<IActivity, 'id'  | 'teacher' | 'students' | 'groups'>;
-export type TNewGroup = Omit<IGroup, 'id'>;
+};
+export interface INewGroup extends Omit<IGroup, '_id'  | 'students'> {
+    students: string[]; // only need the ids
+};
 
 export type TQuestion = {
-    id: string;
-    statement: string;
-    options: string[];
+    _id: string;
+    question: string;
+    type: 'MultipleChoice' | 'OpenText' | 'Rating' | 'Distribution';
+    options?: string[];
+}
+
+export type TQuestionnaireResult = {
+    questionnaire: string;
+    result: string;
 }

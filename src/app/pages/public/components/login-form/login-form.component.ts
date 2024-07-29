@@ -30,9 +30,18 @@ export class LoginFormComponent {
     }
 
     // Process checkout data here    
-    this.authService.login(email!, password!);
-    //if OK, navigate to dashboard
-    this.router.navigateByUrl('/dashboard');
+    this.authService.login(email!, password!, {
+      done: () => {
+         //if OK, navigate to dashboard
+        this.router.navigateByUrl('/dashboard');
+      },
+      err: (error: any) => {
+        console.log(error)
+        alert('Error logging in');
+      }
+    
+    });
+    
   }
 
  

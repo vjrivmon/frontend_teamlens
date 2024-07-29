@@ -1,0 +1,20 @@
+:host ::ng-deep .p-chips .p-chips-multiple-container .p-chips-token {
+    padding: 0.25rem 0.5rem;
+    margin-right: 0.5rem;
+    background: #dde7f1;
+    color: #495057;
+    border-radius: 2px;
+    max-height: 40px;
+}
+
+
+:host ::ng-deep .p-chips .p-chips-multiple-container {
+    margin: 0;
+    padding: 8px;
+    list-style-type: none;
+    cursor: text;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}

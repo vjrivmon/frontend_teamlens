@@ -1,0 +1,39 @@
+.restrictions-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.restriction-item {
+    
+    display: flex;
+
+    &.item-green {
+        border-left: 4px solid rgb(69, 216, 94);
+    }
+
+    &.item-red {
+        border-left: 4px solid rgb(253, 85, 85);
+    }
+
+    &.item-blue {
+        border-left: 4px solid rgb(0, 110, 255);
+    }
+
+
+    p {
+        margin: 0;
+        padding: 0.5rem;
+        font-size: 1rem;
+    
+    }
+}
+
+.create-button {
+    width: 100%;
+    padding: 0.8rem;
+    display: flex;
+    justify-content: center;
+    border: none;
+    background-color: whitesmoke;
+}

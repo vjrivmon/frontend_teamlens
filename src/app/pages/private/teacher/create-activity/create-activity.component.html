@@ -1,0 +1,18 @@
+<form [formGroup]="activityForm" (ngSubmit)="onSubmit()" class="flex flex-column gap-4">
+    <div class="flex flex-column gap-2">
+        <label for="title">Title</label>
+        <input pInputText type="text" id="title" formControlName="title">
+    </div>
+    <div class="flex flex-column gap-2">
+        <label for="description">Description</label>
+        <textarea pInputTextarea [autoResize]="true" id="description" formControlName="description"
+            [style]="{ minHeight:'60px'}"></textarea>
+    </div>
+    <div>
+        
+    </div>
+    <div class="flex justify-content-between">
+        <p>*You can add students later.</p>
+        <p-button type="submit" [disabled]="!activityForm.valid">Create</p-button>
+    </div>
+</form>

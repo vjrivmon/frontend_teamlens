@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { IActivity, IGroup, TNewActivity, TNewGroup } from '../models/models';
-import { Observable, of } from 'rxjs';
+import { IActivity, IGroup, IUser, INewActivity, INewGroup } from '../models/models';
+import { Observable } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
 
@@ -9,140 +9,59 @@ import { HttpClient } from '@angular/common/http';
 })
 export class ActivitiesService {
 
-  static activities: IActivity[] = [
-    {
-      id: '1',
-      title: 'Maths',
-      description: 'Maths class',
-      teacher: {
-        id: '0',
-        email: 'teacher@mail.com',
-        name: 'Teacher',
-        role: 'teacher'
-      },
-      students: [
-        {
-          id: '1',
-          email: 'student1@mail.com',
-          name: 'Student 1',
-          role: 'student'
-        },
-        {
-          id: '2',
-          email: 'student2@mail.com',
-          name: 'Student 2',
-          role: 'student'
-        },
-        {
-          id: '3',
-          email: 'student3@mail.com',
-          name: 'Student 3',
-          role: 'student',
-        },
-        {
-          id: '4',
-          email: 'student4@mail.com',
-          name: 'Student 4',
-          role: 'student'
-        },
-        {
-          id: '5',
-          email: 'student5@mail.com',
-          name: 'Student 5',
-          role: 'student'
-        },
-      ],
-      groups: [
-        {
-          id: '1',
-          name: 'Group 1',
-          members: [
-            {
-              id: '1',
-              email: 'student1@mail.com',
-              name: 'Student 1',
-              role: 'student'
-            },
-            {
-              id: '2',
-              email: 'student2@mail.com',
-              name: 'Student 2',
-              role: 'student'
-            },
-          ]
-        },
-        {
-          id: '2',
-          name: 'Group 2',
-          members: [
-            {
-              id: '3',
-              email: 'student3@mail.com',
-              name: 'Student 3',
-              role: 'student'
-            },
-            {
-              id: '4',
-              email: 'student4@mail.com',
-              name: 'Student 4',
-              role: 'student'
-            },
-          ]
-        }
-      ]
-    }
-  ];
-  
   http = inject(HttpClient);
 
-  getActivities(): Observable<IActivity[]> {
-    // This is a mockup of the data that would come from a backend
-    //return this.http.get<IActivity[]>('http://localhost:3000/activities'); // Specify the type of the response as IActivity[]
-    return of(ActivitiesService.activities);
+  getActivitiesByUserId(userId: string): Observable<IActivity[]> { 
+    return this.http.get<IActivity[]>('http://localhost:3000/users/' + userId + '/activities/');
   }
 
-  getActivity(activityId: string): Observable<IActivity | undefined> {
-    return of(ActivitiesService.activities.find(activity => activity.id === activityId));
+  getActivityById(activityId: string): Observable<IActivity | undefined> {
+    return this.http.get<IActivity>('http://localhost:3000/activities/' + activityId);
   }
 
-  createActivity(activityData: TNewActivity): Observable<IActivity | undefined> {
-
-    const activity: IActivity = {
-      id: String(ActivitiesService.activities.length + 1),
-      teacher: { //get logged user id
-        id: "1",
-        name: "teacher",
-        email: "teacher@mail.com",
-        role: "teacher"
-      },
-      groups: [],
-      students: [],
-      ...activityData,
-    }
-    ActivitiesService.activities.push(activity);
-
-    return of(activity)
-
+  getStudentsByActivityById(activityId: string): Observable<IUser[] | undefined> {
+    return this.http.get<IUser[]>('http://localhost:3000/activities/' + activityId + "/students");
   }
 
-  createGroup(activity: IActivity, groupData: TNewGroup): Observable<IGroup | undefined> {
-   
-    if(!activity) return of(undefined); //more detailed error
-    
-    const group: IGroup = {
-      id: String(activity.groups.length + 1),
-      ...groupData
-    }
-
-    activity.groups.push(group);
-
-    return of(group)
+  getGroupsByActivityById(activityId: string): Observable<IGroup[] | undefined> {
+    return this.http.get<IGroup[]>('http://localhost:3000/activities/' + activityId + "/groups");
   }
 
-  getGroup(activityId: string, groupId: string): Observable<IGroup | undefined> {
-    const activity = ActivitiesService.activities.find(a => a.id === activityId);
-    if(!activity) return of(undefined);
-    return of(activity.groups.find(g => g.id === groupId));
+  createActivity(activityData: INewActivity): Observable<IActivity | undefined> {
+    return this.http.post<IActivity>('http://localhost:3000/activities/', activityData);
+  }
+
+  createGroup(activityId: string, groupData: INewGroup): Observable<IGroup | undefined> {
+    return this.http.post<IGroup>('http://localhost:3000/activities/' + activityId + '/groups', groupData);
+  }
+
+  createGroupsAlgorithm(activityId: string, algorithmData: {}): Observable<IGroup | undefined> {
+    return this.http.post<IGroup>('http://localhost:3000/activities/' + activityId + '/create-algorithm', algorithmData);
+  }
+
+  getGroupById(activityId: string, groupId: string): Observable<IGroup | undefined> {
+    return this.http.get<IGroup>('http://localhost:3000/activities/' + activityId + '/groups/' + groupId);
+  }
+
+  addStudentsToActivityByEmail(activityId: string, emails: string[]): Observable<IUser[] | undefined> {
+    return this.http.post<IUser[]>('http://localhost:3000/activities/' + activityId + '/students', { emails });
+  }
+
+  deleteActivityById(activityId: string): Observable<any> {
+    return this.http.delete('http://localhost:3000/activities/' + activityId);
   }
   
+  deleteGroupById(activityId: string, groupId: string): Observable<any> {
+    return this.http.delete('http://localhost:3000/activities/' + activityId + "/groups/" + groupId);
+  }
+
+  addStudentToGroup(activityId: string, groupId: string, studentIds: string[]): Observable<any> {
+    return this.http.post('http://localhost:3000/activities/' + activityId + "/groups/" + groupId + "/students", { students: studentIds });
+  }
+
+  removeStudentFromGroup(activityId: string, groupId: string, studentId: string): Observable<any> {
+    return this.http.delete('http://localhost:3000/activities/' + activityId + "/groups/" + groupId + "/students/" + studentId);
+  }
+  
+
 }

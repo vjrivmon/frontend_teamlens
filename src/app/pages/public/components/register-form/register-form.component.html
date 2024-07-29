@@ -1,0 +1,19 @@
+<form class="ui form" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" formControlName="email">
+    </div>
+    <div class="field">
+        <label for="name">Name</label>
+        <input type="text" id="name" formControlName="name">
+    </div>
+    <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" formControlName="password" autocomplete="on">
+    </div>
+    <div class="field">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" formControlName="confirmPassword" autocomplete="on">
+    </div>
+    <button class="ui fluid primary button" type="submit" [disabled]="!registerForm.valid">Register</button>
+</form>
