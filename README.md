@@ -45,23 +45,21 @@ tsconfig.spec.json
 
 ## Key files
 
-**Configuration Files**:
-  [`angular.json`]: Main configuration file for Angular CLI, defining build, serve, and test configurations.
-  
-  [`tsconfig.json`], [`tsconfig.app.json`], [`tsconfig.spec.json`]: TypeScript configuration files for the application, application-specific settings, and test settings, respectively.
-  
+**Configuration Files**:\
+  [`angular.json`]: Main configuration file for Angular CLI, defining build, serve, and test configurations.\
+  [`tsconfig.json`], [`tsconfig.app.json`], [`tsconfig.spec.json`]: TypeScript configuration files for the application, application-specific settings, and test settings, respectively.\
   [`.editorconfig`], [`.gitignore`], [`.vscode/`]: Configuration files for the editor and version control.
 
 **Source Code**:
-  [`src/`]: Main source directory.
-    [`app/`]: Contains the core application code.
-      [`app.component.ts`]: Root component of the application.
-      [`app.config.ts`]: Application-wide configuration, including providers and routes.
-      [`app.routes.ts`]: Defines the routes for the application.
-      [`services/`]: Contains service classes like [`ActivitiesService`] and [`AuthService`].
-      [`models/`]: Defines TypeScript interfaces and models used throughout the application.
-      [`pages/`]: Contains feature modules and components, organized by functionality (e.g., [`teacher`], [`dashboard`], [`create-activity`]).
-      [`directives/`], `guards/`, [`interceptors/`]: Custom directives, route guards, and HTTP interceptors.
+  [`src/`]: Main source directory.\
+    [`app/`]: Contains the core application code.\
+      [`app.component.ts`]: Root component of the application.\
+      [`app.config.ts`]: Application-wide configuration, including providers and routes.\
+      [`app.routes.ts`]: Defines the routes for the application.\
+      [`services/`]: Contains service classes like [`ActivitiesService`] and [`AuthService`].\
+      [`models/`]: Defines TypeScript interfaces and models used throughout the application.\
+      [`pages/`]: Contains feature modules and components, organized by functionality (e.g., [`teacher`], [`dashboard`], [`create-activity`]).\
+      [`directives/`], `guards/`, [`interceptors/`]: Custom directives, route guards, and HTTP interceptors.\
       [`layout/`]: Contains layout components like [`HeaderComponent`].
 
 ## Key Components and Services
@@ -73,11 +71,11 @@ tsconfig.spec.json
   [`app.routes.ts`]: Defines the routes for the application, enabling navigation between different views.
 
 **Services**:
-  [`ActivitiesService`]: Manages activities-related operations.
+  [`ActivitiesService`]: Manages activities-related operations.\
   [`AuthService`]: Handles authentication and user management.
 
 **Feature Components**:
-  [`CreateActivityComponent`]: Allows teachers to create new activities.
+  [`CreateActivityComponent`]: Allows teachers to create new activities.\
   [`DashboardComponent`]: Displays an overview of activities and questionnaires for the logged-in user.
 
 ## Forms and Validation
