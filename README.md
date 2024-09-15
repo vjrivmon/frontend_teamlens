@@ -47,7 +47,9 @@ tsconfig.spec.json
 
 **Configuration Files**:
   [`angular.json`]: Main configuration file for Angular CLI, defining build, serve, and test configurations.
+  
   [`tsconfig.json`], [`tsconfig.app.json`], [`tsconfig.spec.json`]: TypeScript configuration files for the application, application-specific settings, and test settings, respectively.
+  
   [`.editorconfig`], [`.gitignore`], [`.vscode/`]: Configuration files for the editor and version control.
 
 **Source Code**:
