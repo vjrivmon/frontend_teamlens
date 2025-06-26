@@ -174,7 +174,7 @@
                     </div>
                     <div teacherOnly>
                         <div class="flex justify-content-between gap-2">
-                            <button [disabled]="students.length <= 0" class="ui button primary flex-grow-1">
+                            <button [disabled]="students.length <= 0" (click)="onSendQuestionnaireToStudents(questionnaire._id)" class="ui button primary flex-grow-1">
                                 Send to students
                             </button>
                         </div>
@@ -225,3 +225,6 @@
         </div>
     </ng-template>
 </p-confirmDialog>
+
+<!-- Toast para mostrar notificaciones -->
+<p-toast position="top-right" [life]="5000"></p-toast>

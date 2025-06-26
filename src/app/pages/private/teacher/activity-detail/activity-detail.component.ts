@@ -16,6 +16,7 @@ import { CardModule } from 'primeng/card';
 import { BadgeModule } from 'primeng/badge';
 import { FieldsetModule } from 'primeng/fieldset';
 import { DividerModule } from 'primeng/divider';
+import { ToastModule } from 'primeng/toast';
 
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -55,7 +56,8 @@ import { QuestionnairesService } from '../../../../services/questionnaires.servi
     DividerModule,
     ConfirmDialogModule,
     CreateGroupComponent,
-    CreateGroupsAlgorithmFormComponent
+    CreateGroupsAlgorithmFormComponent,
+    ToastModule
   ]
 })
 export class ActivityDetailComponent {
@@ -132,7 +134,7 @@ export class ActivityDetailComponent {
     });
 
     this.questionnairesService.getQuestionnaires().subscribe((questionnaires) => {
-      this.questionnaires = questionnaires;
+      this.questionnaires = questionnaires || [];
     });
 
   }
@@ -188,6 +190,35 @@ export class ActivityDetailComponent {
       })
       this.createGroupDialogVisible = !event.ok;
     }
+  }
+
+  /**
+   * Envía un cuestionario a todos los estudiantes de la actividad que aún no lo han respondido
+   * @param questionnaireId ID del cuestionario a enviar
+   */
+  onSendQuestionnaireToStudents(questionnaireId: string) {
+    console.log('📧 Enviando cuestionario a estudiantes...', { activityId: this.activityId, questionnaireId });
+    
+    this.activitiesService.sendQuestionnaireToStudents(this.activityId, questionnaireId).subscribe({
+      next: (response) => {
+        console.log('✅ Cuestionario enviado exitosamente:', response);
+        this.messageService.add({ 
+          severity: 'success', 
+          summary: 'Cuestionario Enviado', 
+          detail: 'El cuestionario ha sido enviado a todos los estudiantes que aún no lo han respondido',
+          life: 5000 
+        });
+      },
+      error: (error) => {
+        console.error('❌ Error enviando cuestionario:', error);
+        this.messageService.add({ 
+          severity: 'error', 
+          summary: 'Error', 
+          detail: 'No se pudo enviar el cuestionario. Inténtalo de nuevo.',
+          life: 5000 
+        });
+      }
+    });
   }
 
   deleteGroup(groupId: string) {

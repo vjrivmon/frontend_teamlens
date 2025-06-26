@@ -62,6 +62,15 @@ export class ActivitiesService {
   removeStudentFromGroup(activityId: string, groupId: string, studentId: string): Observable<any> {
     return this.http.delete('http://localhost:3000/activities/' + activityId + "/groups/" + groupId + "/students/" + studentId);
   }
-  
+
+  /**
+   * Envía un cuestionario a todos los estudiantes de una actividad que aún no lo han respondido
+   * @param activityId ID de la actividad
+   * @param questionnaireId ID del cuestionario a enviar
+   * @returns Observable con la respuesta del servidor
+   */
+  sendQuestionnaireToStudents(activityId: string, questionnaireId: string): Observable<any> {
+    return this.http.post(`http://localhost:3000/activities/${activityId}/send-questionnaire-remaining/${questionnaireId}`, {});
+  }
 
 }
