@@ -15,40 +15,246 @@
             </ng-template>
             <ng-template pTemplate="content" let-nextCallback="nextCallback" let-index="index">
                 <div class="flex flex-column gap-2 mt-4" style="min-height: 55vh; min-width: 70vw">
-                    <h2>Basic setup</h2>
-                    <p>Select the pairing algorithm, team size and other options.</p>
+                    <h2>Configuración Básica</h2>
+                    <p>Selecciona el algoritmo de emparejamiento y configura los tipos de grupos que necesitas.</p>
+                    
                     <form [formGroup]="teamBuilderForm" class="flex gap-4">
                         <div class="flex flex-column gap-2">
-                            <h5>Algorithm</h5>
+                            <h5>Algoritmo</h5>
                             <div class="flex flex-column gap-2">
-                                <label for="name">Pairing Algorithm</label>
+                                <label for="algorithm">Algoritmo de Emparejamiento</label>
                                 <p-dropdown formControlName="algorithm" [options]="questionnaires" optionLabel="title"
-                                    placeholder="Select an Algorithm" />
+                                    placeholder="Selecciona un Algoritmo" />
                             </div>
                         </div>
-                        <div class="flex flex-column gap-2">
-                            <h5>Groups</h5>
-                            <div class="flex gap-3">
-                                <div class="flex flex-column gap-2">
-                                    <label for="name">Min.</label>
-                                    <p-inputNumber inputId="integeronly" formControlName="minGroups" />
-                                    <small for="name">min. number of groups</small>
+                    </form>
+
+                    <!-- Nueva sección moderna para configuración de grupos -->
+                    <div class="mt-6">
+                        <div class="mb-4">
+                            <h3 class="text-2xl font-bold text-900 mb-2">Configuración de Grupos</h3>
+                            <p class="text-600 line-height-3">Define cuántos grupos de cada tamaño necesitas. Por ejemplo: 3 grupos de 4 estudiantes + 2 grupos de 3 estudiantes</p>
+                        </div>
+                        
+                        <!-- Card de resumen de estudiantes -->
+                        <div class="bg-white border-round-lg shadow-1 p-4 mb-4">
+                            <div class="flex align-items-center justify-content-between">
+                                <div class="flex align-items-center gap-3">
+                                    <div class="flex align-items-center justify-content-center w-3rem h-3rem bg-primary-50 border-round-md">
+                                        <i class="pi pi-users text-primary text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-900 font-semibold m-0">{{ selectedStudents.length }} estudiantes seleccionados</h4>
+                                        <p class="text-600 m-0 text-sm">{{ getTotalStudentsInGroups() }} asignados • {{ getRemainingStudents() }} disponibles</p>
+                                    </div>
                                 </div>
-                                <div class="flex flex-column gap-2">
-                                    <label for="name">Max.</label>
-                                    <p-inputNumber inputId="integeronly" formControlName="maxGroups" />
-                                    <small for="name">max. number of groups</small>
-                                </div>
-                                <div class="flex flex-column gap-2">
-                                    <label for="name">Member size</label>
-                                    <p-inputNumber inputId="integeronly" formControlName="groupSize" />
-                                    <small for="name">Desired size for the groups</small>
+                                <div class="text-right">
+                                    <p-tag [value]="getGroupsConfigurationSummary()" 
+                                           [severity]="selectedStudents.length > 0 ? 'success' : 'secondary'" 
+                                           class="font-medium"></p-tag>
                                 </div>
                             </div>
-                        </div>                       
-                    </form>
-                    <h2>Students</h2>
-                    <p>Select the students who want to group.</p>
+                        </div>
+
+                        <!-- Configuración de rango de grupos -->
+                        <div class="bg-white border-round-lg shadow-1 p-4 mb-4">
+                            <div class="flex align-items-center gap-3 mb-4">
+                                <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-purple-50 border-round-md">
+                                    <i class="pi pi-sliders-h text-purple-600"></i>
+                                </div>
+                                <h5 class="m-0 text-900 font-semibold">Configuración Global de Grupos</h5>
+                            </div>
+                            
+                            <div class="grid">
+                                <div class="col-12 md:col-6">
+                                    <div class="flex flex-column gap-2">
+                                        <label class="text-900 font-medium">Número mínimo de grupos</label>
+                                        <div class="flex align-items-center" style="gap: 0.25rem;">
+                                            <p-inputNumber 
+                                                [ngModel]="teamBuilderForm.get('minGroups')?.value"
+                                                (ngModelChange)="updateMinGroups($event)"
+                                                [min]="1" 
+                                                [max]="20"
+                                                [showButtons]="true"
+                                                [size]="1"
+                                                class="w-8rem"
+                                                placeholder="Ej: 3">
+                                            </p-inputNumber>
+                                            <span class="text-purple-600 font-medium text-sm">mín.</span>
+                                        </div>
+                                        <small class="text-600">El algoritmo creará al menos este número de grupos</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12 md:col-6">
+                                    <div class="flex flex-column gap-2">
+                                        <label class="text-900 font-medium">Número máximo de grupos</label>
+                                        <div class="flex align-items-center" style="gap: 0.25rem;">
+                                            <p-inputNumber 
+                                                [ngModel]="teamBuilderForm.get('maxGroups')?.value"
+                                                (ngModelChange)="updateMaxGroups($event)"
+                                                [min]="1" 
+                                                [max]="50"
+                                                [showButtons]="true"
+                                                [size]="1"
+                                                class="w-8rem"
+                                                placeholder="Ej: 8">
+                                            </p-inputNumber>
+                                            <span class="text-purple-600 font-medium text-sm">máx.</span>
+                                        </div>
+                                        <small class="text-600">El algoritmo no creará más de este número de grupos</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista moderna de configuraciones de grupos -->
+                        <div class="flex flex-column gap-3" *ngIf="groupConfigurations.length > 0">
+                            <h5 class="text-900 font-semibold m-0">Configuraciones Activas</h5>
+                            
+                            <div *ngFor="let config of groupConfigurations; let i = index" 
+                                 class="bg-white border-round-lg border-1 border-200 p-4 hover:shadow-2 transition-all transition-duration-200">
+                                
+                                <div class="flex align-items-center justify-content-between">
+                                    <!-- Sección de configuración -->
+                                    <div class="flex align-items-center gap-4 flex-1">
+                                        <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-blue-50 border-round-md">
+                                            <i class="pi pi-sitemap text-blue-600"></i>
+                                        </div>
+                                        
+                                        <div class="flex align-items-center gap-4">
+                                            <div class="flex align-items-center gap-3 text-lg">
+                                                <p-inputNumber 
+                                                    [(ngModel)]="config.quantity" 
+                                                    [min]="1" 
+                                                    [max]="getMaxGroupsForConfig()"
+                                                    [showButtons]="true"
+                                                    [size]="1"
+                                                    class="w-6rem"
+                                                    (onInput)="updateGroupConfiguration()"
+                                                    (ngModelChange)="updateGroupConfiguration()">
+                                                </p-inputNumber>
+                                                <span class="text-900 font-semibold text-lg">grupos de</span>
+                                                <p-inputNumber 
+                                                    [(ngModel)]="config.size" 
+                                                    [min]="1" 
+                                                    [max]="15"
+                                                    [showButtons]="true"
+                                                    [size]="1"
+                                                    class="w-6rem"
+                                                    (onInput)="updateGroupConfiguration()">
+                                                </p-inputNumber>
+                                                <span class="text-900 font-semibold text-lg">estudiantes</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Información y acciones -->
+                                    <div class="flex align-items-center gap-3">
+                                        <div class="text-right">
+                                            <p-tag [value]="getConfigurationSummary(config)" 
+                                                   severity="info" 
+                                                   class="font-medium"></p-tag>
+                                        </div>
+                                        <button pButton 
+                                                icon="pi pi-trash" 
+                                                class="p-button-text p-button-sm p-button-danger p-button-rounded"
+                                                (click)="removeGroupConfiguration(i)"
+                                                pTooltip="Eliminar configuración"
+                                                tooltipPosition="top">
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Área de acciones -->
+                        <div class="mt-4">
+                            <button pButton 
+                                    [label]="canAddMoreGroupConfigurations() ? 'Añadir Configuración de Grupo' : 'Límite de grupos alcanzado'"
+                                    [icon]="canAddMoreGroupConfigurations() ? 'pi pi-plus' : 'pi pi-ban'" 
+                                    class="p-button-outlined w-full justify-content-center py-3"
+                                    [disabled]="!canAddMoreGroupConfigurations()"
+                                    (click)="addGroupConfiguration()">
+                            </button>
+                            <small *ngIf="!canAddMoreGroupConfigurations()" class="text-orange-600 block mt-2 text-center">
+                                Has alcanzado el límite máximo de {{ teamBuilderForm.get('maxGroups')?.value }} grupos configurados ({{ getTotalGroupsConfigured() }} actualmente)
+                            </small>
+                        </div>
+
+                        <!-- Sistema de alertas moderno con emojis -->
+                        <div *ngIf="getValidationMessage()" class="mt-5">
+                            <div class="border-round-lg p-4 shadow-1" 
+                                 [ngClass]="{
+                                    'bg-blue-50 border-left-3 border-blue-500': getValidationType() === 'info',
+                                    'bg-orange-50 border-left-3 border-orange-500': getValidationType() === 'warning',
+                                    'bg-red-50 border-left-3 border-red-500': getValidationType() === 'error',
+                                    'bg-green-50 border-left-3 border-green-500': getValidationType() === 'success'
+                                 }">
+                                <div class="flex align-items-start gap-3">
+                                    <div class="flex align-items-center justify-content-center w-2rem h-2rem border-round-md" 
+                                         [ngClass]="{
+                                            'bg-blue-100': getValidationType() === 'info',
+                                            'bg-orange-100': getValidationType() === 'warning',
+                                            'bg-red-100': getValidationType() === 'error',
+                                            'bg-green-100': getValidationType() === 'success'
+                                         }">
+                                        <span class="text-lg">
+                                            <ng-container [ngSwitch]="getValidationType()">
+                                                <span *ngSwitchCase="'info'">ℹ️</span>
+                                                <span *ngSwitchCase="'warning'">⚠️</span>
+                                                <span *ngSwitchCase="'error'">❌</span>
+                                                <span *ngSwitchCase="'success'">✅</span>
+                                            </ng-container>
+                                        </span>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="m-0 font-medium line-height-3" [ngClass]="{
+                                            'text-blue-900': getValidationType() === 'info',
+                                            'text-orange-900': getValidationType() === 'warning',
+                                            'text-red-900': getValidationType() === 'error',
+                                            'text-green-900': getValidationType() === 'success'
+                                        }">{{ getValidationMessage() }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vista previa moderna de grupos -->
+                        <div *ngIf="groupConfigurations.length > 0 && getTotalStudentsInGroups() > 0" class="mt-6">
+                            <div class="bg-white border-round-lg shadow-1 p-4">
+                                <div class="flex align-items-center gap-3 mb-4">
+                                    <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-indigo-50 border-round-md">
+                                        <i class="pi pi-eye text-indigo-600"></i>
+                                    </div>
+                                    <h5 class="m-0 text-900 font-semibold">Vista Previa de Grupos</h5>
+                                    <p-tag [value]="getGroupsPreview().length + ' grupos'" severity="info" class="ml-auto"></p-tag>
+                                </div>
+                                
+                                <div class="grid">
+                                    <div *ngFor="let preview of getGroupsPreview()" 
+                                         class="col-12 sm:col-6 md:col-4 lg:col-3 xl:col-2">
+                                        <div class="border-round-lg p-3 text-center transition-all transition-duration-200 hover:shadow-2 cursor-pointer"
+                                             [style]="{ 
+                                                'background': 'linear-gradient(135deg, ' + preview.color + '15, ' + preview.color + '05)', 
+                                                'border': '2px solid ' + preview.color + '30' 
+                                             }">
+                                            <div class="flex align-items-center justify-content-center w-3rem h-3rem border-round-md mx-auto mb-2"
+                                                 [style]="{ 'background-color': preview.color + '20' }">
+                                                <i class="pi pi-users text-lg" [style]="{ 'color': preview.color }"></i>
+                                            </div>
+                                            <h6 class="m-0 font-semibold text-900 mb-1">{{ preview.name }}</h6>
+                                            <p class="m-0 text-sm text-600">{{ preview.size }} estudiantes</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección de estudiantes (existente, sin cambios) -->
+                    <h2>Estudiantes</h2>
+                    <p>Selecciona los estudiantes que quieres agrupar.</p>
                     <p-table #dt1 [value]="students" [(selection)]="selectedStudents" dataKey="_id"
                         [globalFilterFields]="['_id', 'name', 'email']">
                         <ng-template pTemplate="caption">
@@ -87,8 +293,12 @@
                     </p-table>
                 </div>
                 <div class="flex pt-4 justify-content-end">
-                    <p-button [disabled]="selectedStudents.length == 0" label="Next" icon="pi pi-arrow-right"
-                        iconPos="right" (onClick)="nextCallback.emit()" />
+                    <p-button [disabled]="selectedStudents.length == 0" 
+                              label="Siguiente" 
+                              icon="pi pi-arrow-right"
+                              iconPos="right" 
+                              class="p-button-lg"
+                              (onClick)="nextCallback.emit()" />
                 </div>
             </ng-template>
         </p-stepperPanel>
@@ -216,8 +426,15 @@
                     </div>
                 </div>
                 <div class="flex pt-4 justify-content-between">
-                    <p-button label="Back" icon="pi pi-arrow-left" (onClick)="prevCallback.emit()" />
-                    <p-button label="Next" icon="pi pi-arrow-right" iconPos="right" (onClick)="nextCallback.emit()" />
+                    <p-button label="Atrás" 
+                              icon="pi pi-arrow-left" 
+                              class="p-button-outlined"
+                              (onClick)="prevCallback.emit()" />
+                    <p-button label="Siguiente" 
+                              icon="pi pi-arrow-right" 
+                              iconPos="right" 
+                              class="p-button-lg"
+                              (onClick)="nextCallback.emit()" />
                 </div>
             </ng-template>
         </p-stepperPanel>
@@ -236,51 +453,105 @@
             </ng-template>
             <ng-template pTemplate="content" let-prevCallback="prevCallback" let-index="index">
                 <div class="flex flex-column gap-2 mt-4" style="min-height: 55vh; min-width: 70vw">
-                    <h2>Confirm</h2>
-                    <div>
-                        <h4>Algorithm</h4>
-                        <p>{{ teamBuilderForm.value.algorithm?.title }}</p>
-                        <h4>Group settings</h4>
-                        <p>Min. groups: {{ teamBuilderForm.value.minGroups }}</p>
-                        <p>Max. groups: {{ teamBuilderForm.value.maxGroups }}</p>
-                        <p>Group size: {{ teamBuilderForm.value.groupSize }}</p>
+                    <div class="mb-4">
+                        <h2 class="text-2xl font-bold text-900 mb-2">Confirmación</h2>
+                        <p class="text-600 line-height-3">Revisa la configuración antes de crear los grupos</p>
                     </div>
-                    @if (restrictions.mustBeTogether.length > 0) {
-                        <div>
-                            <h4>Must be together</h4>
-                            <div class="flex flex-column gap-3">
-                                @for (restriction of restrictions.mustBeTogether; track $index) {
-                                <div class="restriction-item item-green">
-                                    <div class="flex flex-column flex-grow-1">
-                                        @for (student of restriction; track $index) {
-                                        <p>{{ student.email }}</p>
-                                        }
+                    
+                    <!-- Resumen de algoritmo -->
+                    <div class="bg-white border-round-lg shadow-1 p-4 mb-4">
+                        <div class="flex align-items-center gap-3 mb-3">
+                            <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-primary-50 border-round-md">
+                                <i class="pi pi-cog text-primary"></i>
+                            </div>
+                            <h4 class="m-0 text-900 font-semibold">Algoritmo Seleccionado</h4>
+                        </div>
+                        <p class="text-lg text-700 m-0">{{ teamBuilderForm.get('algorithm')?.value?.title }}</p>
+                    </div>
+                    
+                    <!-- Resumen de configuración de grupos -->
+                    <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="groupConfigurations.length > 0">
+                        <div class="flex align-items-center gap-3 mb-3">
+                            <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-blue-50 border-round-md">
+                                <i class="pi pi-sitemap text-blue-600"></i>
+                            </div>
+                            <h4 class="m-0 text-900 font-semibold">Configuración de Grupos</h4>
+                        </div>
+                        <div class="grid">
+                            <div *ngFor="let config of groupConfigurations; let i = index" class="col-12 md:col-6">
+                                <div class="border-1 border-200 border-round p-3">
+                                    <div class="flex align-items-center gap-2">
+                                        <i class="pi pi-users text-primary"></i>
+                                        <span class="font-medium">{{ config.quantity }} grupos de {{ config.size }} estudiantes</span>
                                     </div>
+                                    <p class="text-sm text-600 m-0 mt-1">Total: {{ config.quantity * config.size }} estudiantes</p>
                                 </div>
-                                }
                             </div>
                         </div>
-                    }
-                    @if (restrictions.mustNotBeTogether.length > 0) {
-                        <div>
-                            <h4>Must NOT be together</h4>
-                            <div class="flex flex-column gap-3">
-                                @for (restriction of restrictions.mustNotBeTogether; track $index) {
-                                <div class="restriction-item item-red">
-                                    <div class="flex flex-column">
-                                        @for (student of restriction; track $index) {
-                                        <p>{{ student.email }}</p>
-                                        }
-                                    </div>
-                                </div>
-                                }
+                        <div class="mt-3 p-3 bg-green-50 border-round">
+                            <div class="flex align-items-center gap-2 text-green-800">
+                                <i class="pi pi-check-circle"></i>
+                                <span class="font-medium">{{ getGroupsConfigurationSummary() }}</span>
                             </div>
                         </div>
-                    }                                      
+                    </div>
+                    <!-- Restricciones: Deben estar juntos -->
+                    <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="restrictions.mustBeTogether.length > 0">
+                        <div class="flex align-items-center gap-3 mb-3">
+                            <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-green-50 border-round-md">
+                                <i class="pi pi-link text-green-600"></i>
+                            </div>
+                            <h4 class="m-0 text-900 font-semibold">Deben estar juntos</h4>
+                        </div>
+                        <div class="flex flex-column gap-2">
+                            <div *ngFor="let restriction of restrictions.mustBeTogether; let i = index" 
+                                 class="border-1 border-green-200 bg-green-50 border-round p-3">
+                                <div class="flex align-items-start gap-2">
+                                    <i class="pi pi-users text-green-600 mt-1"></i>
+                                    <div class="flex-1">
+                                        <div *ngFor="let student of restriction" class="text-green-800 font-medium">
+                                            {{ student.name || student.email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Restricciones: NO deben estar juntos -->
+                    <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="restrictions.mustNotBeTogether.length > 0">
+                        <div class="flex align-items-center gap-3 mb-3">
+                            <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-red-50 border-round-md">
+                                <i class="pi pi-ban text-red-600"></i>
+                            </div>
+                            <h4 class="m-0 text-900 font-semibold">NO deben estar juntos</h4>
+                        </div>
+                        <div class="flex flex-column gap-2">
+                            <div *ngFor="let restriction of restrictions.mustNotBeTogether; let i = index" 
+                                 class="border-1 border-red-200 bg-red-50 border-round p-3">
+                                <div class="flex align-items-start gap-2">
+                                    <i class="pi pi-ban text-red-600 mt-1"></i>
+                                    <div class="flex-1">
+                                        <div *ngFor="let student of restriction" class="text-red-800 font-medium">
+                                            {{ student.name || student.email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                                      
                 </div>
                 <div class="flex pt-4 justify-content-between">
-                    <p-button label="Back" icon="pi pi-arrow-left" (onClick)="prevCallback.emit()" />
-                    <p-button label="Create groups" (onClick)="onCreateGroups()" severity="success"> <i class="pi pi-sparkles mr-2"></i></p-button>
+                    <p-button label="Atrás" 
+                              icon="pi pi-arrow-left" 
+                              class="p-button-outlined"
+                              (onClick)="prevCallback.emit()" />
+                    <p-button label="Crear Grupos" 
+                              icon="pi pi-star-fill" 
+                              class="p-button-lg"
+                              severity="success" 
+                              (onClick)="onCreateGroups()">
+                    </p-button>
                 </div>
             </ng-template>
         </p-stepperPanel>
