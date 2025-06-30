@@ -17,6 +17,7 @@ import { BadgeModule } from 'primeng/badge';
 import { FieldsetModule } from 'primeng/fieldset';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -57,7 +58,8 @@ import { QuestionnairesService } from '../../../../services/questionnaires.servi
     ConfirmDialogModule,
     CreateGroupComponent,
     CreateGroupsAlgorithmFormComponent,
-    ToastModule
+    ToastModule,
+    TooltipModule
   ]
 })
 export class ActivityDetailComponent {
@@ -81,6 +83,11 @@ export class ActivityDetailComponent {
   createAlgGroupsDialogVisible: boolean = false;
 
   groupsLocked: boolean = false;
+
+  // Variables para el drag & drop
+  draggedStudent: IUser | null = null;
+  draggedFromGroup: IGroup | null = null;
+  isDragging: boolean = false;
 
   get activeMembers() {
     return this.students.filter(student => !student.invitationToken).length;
@@ -278,6 +285,309 @@ export class ActivityDetailComponent {
     });
   }
 
+  // ==================== FUNCIONALIDAD DRAG & DROP ====================
 
+  /**
+   * Obtiene estudiantes que no están asignados a ningún grupo
+   */
+  getUnassignedStudents(): IUser[] {
+    return this.students.filter(student => {
+      return !this.groups.some(group => 
+        group.students.some(groupStudent => groupStudent._id === student._id)
+      );
+    });
+  }
+
+  /**
+   * Obtiene el número total de estudiantes asignados a grupos
+   */
+  getTotalAssignedStudents(): number {
+    return this.students.length - this.getUnassignedStudents().length;
+  }
+
+  /**
+   * Obtiene la inicial de un estudiante para el avatar
+   */
+  getStudentInitial(student: IUser): string {
+    if (student.name && student.name.trim()) {
+      return student.name.charAt(0).toUpperCase();
+    }
+    if (student.email) {
+      return student.email.charAt(0).toUpperCase();
+    }
+    return 'U';
+  }
+
+  /**
+   * Remueve rápidamente un estudiante de un grupo
+   */
+  quickRemoveStudent(student: IUser, fromGroup: IGroup): void {
+    console.log('⚡ Eliminación rápida:', { student: student.name, group: fromGroup.name });
+
+    // Mostrar confirmación para prevenir eliminaciones accidentales
+    this.confirmationService.confirm({
+      key: 'dd',
+      header: '¿Remover estudiante?',
+      message: `¿Estás seguro de que quieres remover a ${student.name || student.email} del grupo ${fromGroup.name}?`,
+      accept: () => {
+        this.removeStudentFromGroup(student, fromGroup);
+      },
+      reject: () => {
+        // No hacer nada
+      }
+    });
+  }
+
+  /**
+   * Inicia el arrastre de un estudiante
+   */
+  onDragStart(event: DragEvent, student: IUser, fromGroup: IGroup | null) {
+    console.log('🎯 Iniciando drag:', { student: student.name, fromGroup: fromGroup?.name });
+    
+    // Resetear estado previo por si acaso
+    this.resetDragState();
+    
+    this.draggedStudent = student;
+    this.draggedFromGroup = fromGroup;
+    this.isDragging = true;
+    
+    // Configurar datos de transferencia
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', student._id);
+    }
+    
+    // Añadir clase visual al elemento arrastrado
+    const target = event.target as HTMLElement;
+    setTimeout(() => {
+      target.classList.add('dragging');
+    }, 0);
+  }
+
+  /**
+   * Finaliza el arrastre
+   */
+  onDragEnd(event: DragEvent) {
+    console.log('🏁 Finalizando drag');
+    
+    // Limpiar clases visuales del elemento arrastrado
+    const target = event.target as HTMLElement;
+    target.classList.remove('dragging');
+    
+    // Limpiar todas las clases de drop zones
+    setTimeout(() => {
+      document.querySelectorAll('.drag-over').forEach(el => {
+        el.classList.remove('drag-over');
+      });
+      
+      // Resetear estado después de un pequeño delay para evitar conflictos
+      this.resetDragState();
+    }, 100);
+  }
+
+  /**
+   * Permite el drop en una zona válida
+   */
+  onDragOver(event: DragEvent) {
+    if (this.isDragging && this.draggedStudent) {
+      event.preventDefault();
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'move';
+      }
+    }
+  }
+
+  /**
+   * Visual feedback al entrar en zona de drop
+   */
+  onDragEnter(event: DragEvent) {
+    if (this.isDragging && this.draggedStudent) {
+      event.preventDefault();
+      const target = event.currentTarget as HTMLElement;
+      if (target) {
+        target.classList.add('drag-over');
+      }
+    }
+  }
+
+  /**
+   * Remueve visual feedback al salir de zona de drop
+   */
+  onDragLeave(event: DragEvent) {
+    const target = event.currentTarget as HTMLElement;
+    const relatedTarget = event.relatedTarget as Node;
+    
+    // Solo remover si realmente salimos del elemento (no de un hijo)
+    if (target && relatedTarget && !target.contains(relatedTarget)) {
+      target.classList.remove('drag-over');
+    }
+  }
+
+  /**
+   * Maneja el drop de un estudiante en un grupo
+   */
+  onDrop(event: DragEvent, targetGroup: IGroup) {
+    event.preventDefault();
+    
+    if (!this.draggedStudent || !this.isDragging) {
+      console.error('❌ No hay estudiante siendo arrastrado o estado inválido');
+      this.resetDragState();
+      return;
+    }
+
+    console.log('📍 Drop en grupo:', { 
+      student: this.draggedStudent.name, 
+      targetGroup: targetGroup.name,
+      fromGroup: this.draggedFromGroup?.name || 'Sin asignar'
+    });
+
+    // Limpiar clases visuales inmediatamente
+    const target = event.currentTarget as HTMLElement;
+    if (target) {
+      target.classList.remove('drag-over');
+    }
+
+    // No hacer nada si se suelta en el mismo grupo
+    if (this.draggedFromGroup && this.draggedFromGroup._id === targetGroup._id) {
+      console.log('⏭️  Mismo grupo, no se hace nada');
+      this.resetDragState();
+      return;
+    }
+
+    // Guardar referencias antes de resetear el estado
+    const studentToMove = this.draggedStudent;
+    const fromGroup = this.draggedFromGroup;
+    
+    // Resetear estado inmediatamente para evitar interferencias
+    this.resetDragState();
+    
+    // Mover el estudiante
+    this.moveStudentToGroup(studentToMove, fromGroup, targetGroup);
+  }
+
+  /**
+   * Maneja el drop de un estudiante en la zona de "sin asignar"
+   */
+  onDropToUnassigned(event: DragEvent) {
+    event.preventDefault();
+    
+    if (!this.draggedStudent || !this.draggedFromGroup || !this.isDragging) {
+      console.error('❌ No hay estudiante válido siendo arrastrado o ya está sin asignar');
+      this.resetDragState();
+      return;
+    }
+
+    console.log('📍 Drop en zona sin asignar:', { 
+      student: this.draggedStudent.name, 
+      fromGroup: this.draggedFromGroup.name
+    });
+
+    // Limpiar clases visuales inmediatamente
+    const target = event.currentTarget as HTMLElement;
+    if (target) {
+      target.classList.remove('drag-over');
+    }
+
+    // Guardar referencias antes de resetear el estado
+    const studentToRemove = this.draggedStudent;
+    const fromGroup = this.draggedFromGroup;
+    
+    // Resetear estado inmediatamente
+    this.resetDragState();
+    
+    // Remover del grupo
+    this.removeStudentFromGroup(studentToRemove, fromGroup);
+  }
+
+  /**
+   * Mueve un estudiante a un grupo específico
+   */
+  private moveStudentToGroup(student: IUser, fromGroup: IGroup | null, toGroup: IGroup) {
+    console.log('🔄 Moviendo estudiante:', { 
+      student: student.name, 
+      from: fromGroup?.name || 'Sin asignar', 
+      to: toGroup.name 
+    });
+
+    // Actualizar en backend
+    this.activitiesService.addStudentToGroup(this.activityId, toGroup._id, [student._id]).subscribe({
+      next: (response) => {
+        console.log('✅ Estudiante movido exitosamente en backend:', response);
+        
+        // Actualizar UI: remover del grupo anterior si existía
+        if (fromGroup) {
+          fromGroup.students = fromGroup.students.filter(s => s._id !== student._id);
+        }
+        
+        // Actualizar UI: añadir al nuevo grupo si no está ya
+        if (!toGroup.students.some(s => s._id === student._id)) {
+          toGroup.students.push(student);
+        }
+
+        // Mostrar notificación de éxito
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Estudiante Movido',
+          detail: `${student.name || student.email} ha sido movido a ${toGroup.name}`,
+          life: 3000
+        });
+      },
+      error: (error) => {
+        console.error('❌ Error moviendo estudiante:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo mover el estudiante. Inténtalo de nuevo.',
+          life: 3000
+        });
+      }
+    });
+  }
+
+  /**
+   * Remueve un estudiante de un grupo
+   */
+  private removeStudentFromGroup(student: IUser, fromGroup: IGroup) {
+    console.log('➖ Removiendo estudiante del grupo:', { 
+      student: student.name, 
+      group: fromGroup.name 
+    });
+
+    // Actualizar en backend
+    this.activitiesService.removeStudentFromGroup(this.activityId, fromGroup._id, student._id).subscribe({
+      next: (response) => {
+        console.log('✅ Estudiante removido exitosamente en backend:', response);
+        
+        // Actualizar UI
+        fromGroup.students = fromGroup.students.filter(s => s._id !== student._id);
+
+        // Mostrar notificación de éxito
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Estudiante Removido',
+          detail: `${student.name || student.email} ha sido removido de ${fromGroup.name}`,
+          life: 3000
+        });
+      },
+      error: (error) => {
+        console.error('❌ Error removiendo estudiante:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: 'No se pudo remover el estudiante. Inténtalo de nuevo.',
+          life: 3000
+        });
+      }
+    });
+  }
+
+  /**
+   * Resetea el estado del drag & drop
+   */
+  private resetDragState() {
+    this.draggedStudent = null;
+    this.draggedFromGroup = null;
+    this.isDragging = false;
+  }
 
 }

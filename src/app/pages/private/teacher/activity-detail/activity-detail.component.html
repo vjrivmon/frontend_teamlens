@@ -116,41 +116,166 @@
                         <h2>Groups</h2>
                         <p>Here you can create the groups manually or through our algorithm.</p>
                     </div>
-                    <button (click)="onCreateAlgGroupsButton()" class="w-fit ml-auto ui button teal">
-                        <i class="pi pi-sparkles mr-2"></i>
-                        Create groups
-                    </button>
-                </div>
-            </div>
-
-            <div class="groups-list" [hidden]="groupsLocked">
-                @for (group of (groups); track $index) {
-                <div class="app-card flex flex-column gap-2" (click)="goGroupDetail(group._id)">
-                    <span class="title">
-                        {{ group.name }}
-                    </span>
-                    <p>
-                        {{ group.students.length }} members
-                    </p>
-                    <p-button teacherOnly severity="danger" [outlined]="true"
-                        (click)="confirmDeleteGroup(group._id); $event.stopPropagation()"
-                        class="mt-auto align-self-end">
-                        <i class="pi pi-trash"></i>
-                    </p-button>
-                </div>
-                } @empty {
-                    <p class="p-info">There are no groups yet.</p>
-                }
-                <div teacherOnly>
-                    <div class="app-card-new flex flex-column gap-2" (click)="onCreateGroupButton()">
-                        <i class="pi pi-plus text-500"></i>
-                        Create group
+                    <div class="flex gap-2 ml-auto">
+                        <button pButton 
+                                icon="pi pi-plus" 
+                                label="Nuevo Grupo"
+                                class="p-button-sm"
+                                (click)="onCreateGroupButton()">
+                        </button>
+                        <button (click)="onCreateAlgGroupsButton()" class="w-fit ui button teal">
+                            <i class="pi pi-sparkles mr-2"></i>
+                            Create groups
+                        </button>
                     </div>
                 </div>
             </div>
 
+            <!-- INTERFAZ DE GRUPOS SIMPLIFICADA -->
+            <div class="groups-dashboard" [hidden]="groupsLocked">
+                
+                <!-- Estadísticas simples cuando hay grupos -->
+                @if (groups.length > 0) {
+                    <div class="dashboard-header">
+                        <div class="header-stats">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ groups.length }}</div>
+                                <div class="stat-label">Grupos</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">{{ getTotalAssignedStudents() }}</div>
+                                <div class="stat-label">Asignados</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">{{ getUnassignedStudents().length }}</div>
+                                <div class="stat-label">Disponibles</div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Contenido Principal -->
+                @if (groups.length > 0) {
+                    <!-- Vista de Grupos Existentes -->
+                    <div class="groups-grid">
+                        @for (group of groups; track group._id) {
+                            <div class="group-panel" 
+                                 (drop)="onDrop($event, group)" 
+                                 (dragover)="onDragOver($event)" 
+                                 (dragenter)="onDragEnter($event)"
+                                 (dragleave)="onDragLeave($event)">
+                                
+                                <!-- Header del Grupo -->
+                                <div class="group-panel-header">
+                                    <div class="group-meta">
+                                        <h4 class="group-name">{{ group.name }}</h4>
+                                        <span class="group-count">{{ group.students.length }} miembros</span>
+                                    </div>
+                                    <div class="group-controls">
+                                        <button pButton 
+                                                icon="pi pi-eye" 
+                                                class="p-button-text p-button-sm control-btn"
+                                                (click)="goGroupDetail(group._id)"
+                                                pTooltip="Ver detalles">
+                                        </button>
+                                        <button pButton 
+                                                icon="pi pi-trash" 
+                                                severity="danger"
+                                                class="p-button-text p-button-sm control-btn"
+                                                (click)="confirmDeleteGroup(group._id)"
+                                                pTooltip="Eliminar grupo">
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Lista de Estudiantes -->
+                                <div class="students-list">
+                                    @if (group.students.length > 0) {
+                                        @for (student of group.students; track student._id) {
+                                            <div class="student-item" 
+                                                 draggable="true"
+                                                 (dragstart)="onDragStart($event, student, group)"
+                                                 (dragend)="onDragEnd($event)">
+                                                
+                                                <div class="student-info-compact">
+                                                    <div class="student-initial">
+                                                        {{ getStudentInitial(student) }}
+                                                    </div>
+                                                    <div class="student-details">
+                                                        <div class="student-name-compact">{{ student.name || 'Sin nombre' }}</div>
+                                                        <div class="student-email-compact">{{ student.email }}</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="student-actions">
+                                                    <button pButton 
+                                                            icon="pi pi-times" 
+                                                            severity="danger"
+                                                            class="p-button-text p-button-sm student-remove-btn"
+                                                            (click)="quickRemoveStudent(student, group)"
+                                                            pTooltip="Remover del grupo">
+                                                    </button>
+                                                    <div class="drag-indicator">
+                                                        <i class="pi pi-arrows-alt"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    } @else {
+                                        <div class="empty-group-state">
+                                            <i class="pi pi-user-plus"></i>
+                                            <span>Arrastra estudiantes aquí</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Panel de Estudiantes Disponibles -->
+                    @if (getUnassignedStudents().length > 0) {
+                        <div class="available-panel">
+                            <div class="available-header">
+                                <h4 class="available-title">
+                                    <i class="pi pi-users mr-2"></i>
+                                    Estudiantes Disponibles
+                                </h4>
+                                <span class="available-count">{{ getUnassignedStudents().length }}</span>
+                            </div>
+                            
+                            <div class="available-students" 
+                                 (drop)="onDropToUnassigned($event)" 
+                                 (dragover)="onDragOver($event)" 
+                                 (dragenter)="onDragEnter($event)"
+                                 (dragleave)="onDragLeave($event)">
+                                @for (student of getUnassignedStudents(); track student._id) {
+                                    <div class="available-student" 
+                                         draggable="true"
+                                         (dragstart)="onDragStart($event, student, null)"
+                                         (dragend)="onDragEnd($event)">
+                                        
+                                        <div class="student-initial available">
+                                            {{ getStudentInitial(student) }}
+                                        </div>
+                                        <div class="student-details">
+                                            <div class="student-name-compact">{{ student.name || 'Sin nombre' }}</div>
+                                            <div class="student-email-compact">{{ student.email }}</div>
+                                        </div>
+                                        <div class="drag-indicator">
+                                            <i class="pi pi-arrows-alt"></i>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                }
+            </div>
+
         </section>
 
+        <!-- Sección de Questionnaires: Siempre visible -->
         <section teacherOnly>
             <p-divider />
             <h3>Questionnaires</h3>
