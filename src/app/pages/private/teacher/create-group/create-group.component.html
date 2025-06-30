@@ -1,34 +1,98 @@
-@if (freeStudents.length === 0 && selectedStudents.length === 0) {
-    <p>There are not students out.</p>
-}
-@else {
+<!-- Modal de Creación de Grupo - Interfaz Simplificada -->
+<div class="create-group-container">
     
-    <h3>Students</h3>
-    
-    @if (freeStudents.length > 0) {
-        @for (student of freeStudents; track $index) {
-            <p-card class="m-2" (click)="selectUser(student)">{{student._id}} <i>{{student.email}}</i></p-card>
-        }
-    } @else {
-        <p>There are no more students who do not belong to a group.</p>
-    }
-
-    <form [formGroup]="groupForm" (ngSubmit)="onSubmit()">
-        <div class="flex flex-column gap-2">
-            <label for="name">Name</label>
-            <input pInputText type="text" id="name" formControlName="name">
+    <!-- Estado Sin Estudiantes -->
+    @if (freeStudents.length === 0 && selectedStudents.length === 0) {
+        <div class="empty-state">
+            <i class="pi pi-users"></i>
+            <h3>No hay estudiantes disponibles</h3>
+            <p>Todos los estudiantes ya están asignados a grupos o no hay estudiantes registrados en esta actividad.</p>
         </div>
-        <div class="flex flex-column gap-2">
-            <label for="title">Members</label>
-            <div>
-                @for (student of selectedStudents; track $index) {
-                    <p-card (click)="removeSelectedUser(student)">{{student._id}} <i>{{student.email}}</i></p-card>
+    } @else {
+        
+        <!-- Sección de Estudiantes Disponibles -->
+        <div class="section">
+            <h3 class="section-title">Estudiantes Disponibles ({{ freeStudents.length }})</h3>
+
+            @if (freeStudents.length > 0) {
+                <div class="students-list">
+                    @for (student of freeStudents; track $index) {
+                        <div class="student-card" (click)="selectUser(student)">
+                            <div class="student-avatar">
+                                <span>{{ getStudentInitial(student) }}</span>
+                            </div>
+                            <div class="student-info">
+                                <div class="student-name">{{ student.name || 'Sin nombre' }}</div>
+                                <div class="student-email">{{ student.email }}</div>
+                            </div>
+                            <i class="pi pi-plus"></i>
+                        </div>
+                    }
+                </div>
+            } @else {
+                <div class="no-students">
+                    <i class="pi pi-info-circle"></i>
+                    No hay más estudiantes disponibles
+                </div>
+            }
+        </div>
+
+        <!-- Formulario -->
+        <form [formGroup]="groupForm" (ngSubmit)="onSubmit()" class="form-section">
+            
+            <!-- Nombre del Grupo -->
+            <div class="input-group">
+                <label for="name">Nombre del Grupo *</label>
+                <input 
+                    pInputText 
+                    type="text" 
+                    id="name" 
+                    formControlName="name"
+                    placeholder="Ej: Grupo Alpha, Equipo 1..."
+                    class="form-input"
+                >
+                @if (groupForm.get('name')?.invalid && groupForm.get('name')?.touched) {
+                    <small class="error-message">El nombre del grupo es obligatorio</small>
                 }
             </div>
-        </div>
-        
-        <p-button type="submit" [disabled]="!groupForm.valid">Create</p-button>
 
-    </form>
+            <!-- Miembros Seleccionados -->
+            <div class="input-group">
+                <label>Miembros Seleccionados ({{ selectedStudents.length }})</label>
+                
+                @if (selectedStudents.length > 0) {
+                    <div class="selected-students">
+                        @for (student of selectedStudents; track $index) {
+                            <div class="student-card selected" (click)="removeSelectedUser(student)">
+                                <div class="student-avatar selected">
+                                    <span>{{ getStudentInitial(student) }}</span>
+                                </div>
+                                <div class="student-info">
+                                    <div class="student-name">{{ student.name || 'Sin nombre' }}</div>
+                                    <div class="student-email">{{ student.email }}</div>
+                                </div>
+                                <i class="pi pi-times"></i>
+                            </div>
+                        }
+                    </div>
+                } @else {
+                    <div class="empty-selection">
+                        <i class="pi pi-user-plus"></i>
+                        <span>Selecciona estudiantes de la lista superior</span>
+                    </div>
+                }
+            </div>
 
-}
+            <!-- Botón de Envío -->
+            <div class="form-actions">
+                <p-button 
+                    type="submit" 
+                    label="Crear Grupo"
+                    [disabled]="!groupForm.valid || selectedStudents.length === 0"
+                    [loading]="isSubmitting">
+                </p-button>
+            </div>
+
+        </form>
+    }
+</div>

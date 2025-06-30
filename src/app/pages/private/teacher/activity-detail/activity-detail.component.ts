@@ -327,8 +327,8 @@ export class ActivityDetailComponent {
     // Mostrar confirmación para prevenir eliminaciones accidentales
     this.confirmationService.confirm({
       key: 'dd',
-      header: '¿Remover estudiante?',
-      message: `¿Estás seguro de que quieres remover a ${student.name || student.email} del grupo ${fromGroup.name}?`,
+      header: '¿Eliminar estudiante?',
+      message: `¿Estás seguro de que quieres eliminar a ${student.name || student.email} del grupo ${fromGroup.name}?`,
       accept: () => {
         this.removeStudentFromGroup(student, fromGroup);
       },
@@ -417,7 +417,7 @@ export class ActivityDetailComponent {
     const target = event.currentTarget as HTMLElement;
     const relatedTarget = event.relatedTarget as Node;
     
-    // Solo remover si realmente salimos del elemento (no de un hijo)
+    // Solo eliminar si realmente salimos del elemento (no de un hijo)
     if (target && relatedTarget && !target.contains(relatedTarget)) {
       target.classList.remove('drag-over');
     }
@@ -495,7 +495,7 @@ export class ActivityDetailComponent {
     // Resetear estado inmediatamente
     this.resetDragState();
     
-    // Remover del grupo
+    // Eliminar del grupo
     this.removeStudentFromGroup(studentToRemove, fromGroup);
   }
 
@@ -514,7 +514,7 @@ export class ActivityDetailComponent {
       next: (response) => {
         console.log('✅ Estudiante movido exitosamente en backend:', response);
         
-        // Actualizar UI: remover del grupo anterior si existía
+        // Actualizar UI: Eliminar del grupo anterior si existía
         if (fromGroup) {
           fromGroup.students = fromGroup.students.filter(s => s._id !== student._id);
         }
@@ -574,7 +574,7 @@ export class ActivityDetailComponent {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'No se pudo remover el estudiante. Inténtalo de nuevo.',
+          detail: 'No se pudo eliminar el estudiante. Inténtalo de nuevo.',
           life: 3000
         });
       }

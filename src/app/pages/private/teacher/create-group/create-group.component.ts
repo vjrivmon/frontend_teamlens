@@ -35,6 +35,7 @@ export class CreateGroupComponent {
 
   freeStudents: IUser[] = []; // Students that are not in any group
   selectedStudents: IUser[] = [];
+  isSubmitting = false; // Estado de envío del formulario
 
   groupForm = this.formBuilder.group({
     name: ['', [Validators.required]]
@@ -44,6 +45,18 @@ export class CreateGroupComponent {
 
   ngOnChanges(changes: any) {
     this.freeStudents = this.students.filter(student => !this.checkUserAlreadyInAGroup(student));
+  }
+
+  /**
+   * Obtiene la inicial del nombre del estudiante para mostrar en el avatar
+   * @param student - Estudiante del cual obtener la inicial
+   * @returns Inicial del nombre o primera letra del email si no hay nombre
+   */
+  getStudentInitial(student: IUser): string {
+    if (student.name && student.name.trim()) {
+      return student.name.charAt(0).toUpperCase();
+    }
+    return student.email.charAt(0).toUpperCase();
   }
 
   checkUserAlreadyInAGroup(user: IUser): boolean {
@@ -61,18 +74,24 @@ export class CreateGroupComponent {
   }
 
   onSubmit(): void {
-
     const { name } = this.groupForm.value;
 
-    console.log(this.selectedStudents);
-
-    if (this.selectedStudents.length < 0) {
-      alert('Select at least one student'); //replace
+    // Validación mejorada
+    if (this.selectedStudents.length === 0) {
+      // Aquí podrías mostrar una notificación toast en lugar de alert
+      alert('Selecciona al menos un estudiante para el grupo');
       return;
     }
 
+    if (!name || name.trim() === '') {
+      alert('El nombre del grupo es obligatorio');
+      return;
+    }
+
+    this.isSubmitting = true;
+
     const group: INewGroup = {
-      name: name!,
+      name: name.trim(),
       students: this.selectedStudents.map(student => student._id )
     }
 
@@ -81,13 +100,14 @@ export class CreateGroupComponent {
         this.groupForm.reset();
         this.onGroupCreated.emit({ ok: true, group: data.group });
         this.selectedStudents = [];
+        this.isSubmitting = false;
       },
       error: (error) => {
         console.error('Error creating group', error);
-        alert('Error creating group');
+        alert('Error al crear el grupo. Por favor, inténtalo de nuevo.');
+        this.isSubmitting = false;
       }
     });
-
   }
 
 }

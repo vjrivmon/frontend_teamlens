@@ -213,7 +213,7 @@
                                                             severity="danger"
                                                             class="p-button-text p-button-sm student-remove-btn"
                                                             (click)="quickRemoveStudent(student, group)"
-                                                            pTooltip="Remover del grupo">
+                                                            pTooltip="Eliminar del grupo">
                                                     </button>
                                                     <div class="drag-indicator">
                                                         <i class="pi pi-arrows-alt"></i>
@@ -278,7 +278,7 @@
         <!-- Sección de Questionnaires: Siempre visible -->
         <section teacherOnly>
             <p-divider />
-            <h3>Questionnaires</h3>
+            <h2>Questionnaires</h2>
             <div class="flex gap-3 flex-wrap">
                 @for (questionnaire of questionnaires; track $index) {
 
@@ -318,14 +318,26 @@
         <app-add-students-form (onAddStudents)="onAddStudents($event)"></app-add-students-form>
     </p-dialog>
 
-    <p-dialog header="Create an Group" [modal]="true" [(visible)]="createGroupDialogVisible"
-        [style]="{ width: '35rem' }">
-        <app-create-group [activity]="activity" [groups]="groups" [students]="students"
-            (onGroupCreated)="onGroupCreated($event)"></app-create-group>
+    <p-dialog 
+        header="Crear Nuevo Grupo"
+        [modal]="true" 
+        [(visible)]="createGroupDialogVisible"
+        [style]="{ width: '90vw', maxWidth: '700px', minWidth: '500px' }"
+        [breakpoints]="{ '1024px': '95vw', '768px': '98vw' }"
+        [closable]="true"
+        [resizable]="false">
+        
+        <app-create-group 
+            [activity]="activity" 
+            [groups]="groups" 
+            [students]="students"
+            (onGroupCreated)="onGroupCreated($event)">
+        </app-create-group>
     </p-dialog>
 
     <p-dialog header="Create Groups" [modal]="true" [(visible)]="createAlgGroupsDialogVisible"
-        [style]="{ width: 'fit-content', height: 'fit-content' }">
+        [style]="{ width: '90vw', maxWidth: '1200px', minWidth: '600px' }" 
+        [breakpoints]="{ '1024px': '95vw', '768px': '98vw' }">
         <app-create-groups-algorithm-form [activity]="activityId" [students]="students" (onRequestSent)="onAlgorithmRequestSent($event)"></app-create-groups-algorithm-form>
     </p-dialog>
 

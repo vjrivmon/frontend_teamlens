@@ -504,27 +504,25 @@ header {
     display: flex;
     gap: 16px;
     justify-content: center;
-    margin-bottom: 24px;
     flex-wrap: wrap;
 }
 
 .students-summary {
-    margin-top: 24px;
+    margin: 20px 0;
 }
 
 .summary-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(59, 130, 246, 0.1);
-    color: #1d4ed8;
+    display: inline-block;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
     padding: 8px 16px;
-    border-radius: 20px;
+    border-radius: 8px;
+    font-weight: 600;
     font-size: 0.875rem;
-    font-weight: 500;
+    margin: 0 8px 8px 0;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
     .dashboard-header {
         flex-direction: column;
@@ -534,12 +532,11 @@ header {
 
     .header-stats {
         justify-content: center;
-        gap: 16px;
     }
 
     .stat-card {
-        min-width: 70px;
-        padding: 12px 16px;
+        flex: 1;
+        max-width: 100px;
     }
 
     .stat-number {
@@ -556,20 +553,19 @@ header {
     }
 
     .group-panel-header {
-        padding: 16px 20px 12px;
+        padding: 16px;
     }
 
     .students-list {
-        padding: 12px 20px 20px;
+        padding: 12px 16px 16px;
     }
 
     .available-students {
         grid-template-columns: 1fr;
-        padding: 12px 20px 20px;
     }
 
     .empty-state {
-        min-height: 400px;
+        min-height: 300px;
         padding: 40px 20px;
     }
 
@@ -588,33 +584,32 @@ header {
 
     .empty-actions button {
         width: 100%;
-        max-width: 280px;
+        max-width: 200px;
     }
 }
 
-/* Animaciones */
 @keyframes slideInUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translate3d(0, 40px, 0);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0);
     }
 }
 
 .group-panel,
-.available-panel,
-.empty-state-content {
-    animation: slideInUp 0.4s ease-out;
+.available-panel {
+    animation: slideInUp 0.6s ease-out;
+    animation-fill-mode: both;
 }
 
-/* Eliminación de elementos que causan barras */
 .groups-dashboard * {
     box-sizing: border-box;
 }
 
 .groups-dashboard {
-    overflow: visible;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
+
