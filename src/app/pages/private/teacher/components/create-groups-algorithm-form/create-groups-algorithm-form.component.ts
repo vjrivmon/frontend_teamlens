@@ -19,15 +19,14 @@ import { ActivitiesService } from '../../../../../services/activities.service';
 import BelbinAlgorithmData from '../../../../../models/algorithm-data';
 
 /**
- * Interfaz para configuración de un tipo de grupo
+ * Interfaz para configuración de un tipo de grupo con rango flexible
  */
 interface GroupConfiguration {
-  quantity: number;    // Número de grupos de este tipo
-  size: number;        // Tamaño de cada grupo
-  id?: string;         // ID único para el tracking
+  minQuantity: number;    // Número mínimo de grupos de este tipo
+  maxQuantity: number;    // Número máximo de grupos de este tipo
+  size: number;           // Tamaño de cada grupo
+  id?: string;            // ID único para el tracking
 }
-
-
 
 /**
  * Interfaz para restricciones de grupos
@@ -73,10 +72,9 @@ export class CreateGroupsAlgorithmFormComponent {
     // }
   ]
 
+  // Formulario simplificado - solo el algoritmo, sin límites fijos
   teamBuilderForm = this.formBuilder.group({
-    algorithm: [this.questionnaires[0] || {} as IQuestionnaire, [Validators.required]],
-    minGroups: [3 as number | null, [Validators.required, Validators.min(1), Validators.max(20)]],
-    maxGroups: [8 as number | null, [Validators.required, Validators.min(1), Validators.max(50)]]
+    algorithm: [this.questionnaires[0] || {} as IQuestionnaire, [Validators.required]]
   })
 
   selectedStudents: IUser[] = [];
@@ -93,7 +91,7 @@ export class CreateGroupsAlgorithmFormComponent {
 
   active: number = 0;
 
-  // Configuraciones de grupos múltiples
+  // Configuraciones de grupos múltiples con rangos flexibles
   groupConfigurations: GroupConfiguration[] = [];
   
   // Colores para la vista previa
@@ -102,21 +100,25 @@ export class CreateGroupsAlgorithmFormComponent {
     '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1'
   ];
   
-
-
   constructor(private formBuilder: FormBuilder, private activityService: ActivitiesService) { 
-    // Dejar vacío para que el usuario configure manualmente
+    // Inicializar con una configuración básica basada en estudiantes disponibles
+    // Se actualizará dinámicamente cuando cambien los estudiantes seleccionados
+  }
+
+  /**
+   * Se ejecuta cuando cambian los estudiantes seleccionados
+   * Actualiza automáticamente las configuraciones existentes
+   */
+  onStudentsChange(): void {
+    console.log('👥 Estudiantes seleccionados cambiaron:', this.selectedStudents.length);
     
-    // Suscribirse a cambios en los límites globales para validar configuraciones existentes
-    this.teamBuilderForm.get('maxGroups')?.valueChanges.subscribe((newMaxGroups) => {
-      console.log('🔄 Cambio en maxGroups:', newMaxGroups);
-      this.updateGroupConfiguration();
-    });
+    // Actualizar configuraciones existentes para que sean coherentes
+    this.updateGroupConfiguration();
     
-    this.teamBuilderForm.get('minGroups')?.valueChanges.subscribe((newMinGroups) => {
-      console.log('🔄 Cambio en minGroups:', newMinGroups);
-      this.updateGroupConfiguration();
-    });
+    // Si no hay configuraciones y hay estudiantes, sugerir una configuración inicial
+    if (this.groupConfigurations.length === 0 && this.selectedStudents.length >= 4) {
+      this.addGroupConfiguration();
+    }
   }
 
   createRestriction(restrictionType: keyof IRestrictions) {
@@ -180,296 +182,236 @@ export class CreateGroupsAlgorithmFormComponent {
 
   /**
    * Verifica si se puede añadir más configuraciones de grupo
+   * Ahora se basa en si hay estudiantes disponibles para formar más grupos
    */
   canAddMoreGroupConfigurations(): boolean {
-    const maxGroupsControl = this.teamBuilderForm.get('maxGroups');
-    const maxGroups = maxGroupsControl?.value;
-    
-    console.log('🔍 Verificando límite completo:', { 
-      maxGroupsControl: maxGroupsControl?.value, 
-      hasValue: !!maxGroups 
-    });
-    
-    // Si no hay límite máximo definido, permitir
-    if (!maxGroups || maxGroups === 0) {
-      return true;
-    }
-    
-    const currentTotalGroups = this.getTotalGroupsConfigured();
-    const canAdd = currentTotalGroups < maxGroups;
-    
-    console.log('🔍 Resultado validación:', { 
-      currentTotalGroups, 
-      maxGroups, 
-      canAdd,
-      configurations: this.groupConfigurations.length
-    });
-    
-    return canAdd;
+    // Siempre permitir añadir configuraciones mientras haya estudiantes disponibles
+    return this.selectedStudents.length > 0;
   }
 
   /**
-   * Añade una nueva configuración de grupo
+   * Añade una nueva configuración de grupo basada en estudiantes disponibles
    */
   addGroupConfiguration(): void {
-    const maxGroups = this.teamBuilderForm.get('maxGroups')?.value;
-    const currentTotal = this.getTotalGroupsConfigured();
+    const availableStudents = this.selectedStudents.length;
     
-    console.log('➕ Intentando añadir grupo:', { currentTotal, maxGroups });
-    
-    // Verificar si se puede añadir más grupos
-    if (maxGroups && maxGroups > 0 && currentTotal >= maxGroups) {
-      console.log('❌ No se puede añadir: límite alcanzado');
-      return; // No hacer nada si se alcanzó el límite
+    if (availableStudents === 0) {
+      console.log('❌ No hay estudiantes disponibles');
+      return;
     }
 
+    // Calcular un rango inteligente basado en estudiantes disponibles
+    const suggestedGroupSize = 4; // Tamaño por defecto
+    const maxPossibleGroups = Math.floor(availableStudents / suggestedGroupSize);
+    const minGroups = Math.max(1, Math.floor(maxPossibleGroups * 0.5)); // Al menos la mitad
+    const maxGroups = Math.max(1, maxPossibleGroups); // Máximo posible
+
     const newConfig: GroupConfiguration = {
-      quantity: 1,
-      size: 4,
+      minQuantity: minGroups,
+      maxQuantity: maxGroups,
+      size: suggestedGroupSize,
       id: this.generateUniqueId()
     };
     
     this.groupConfigurations.push(newConfig);
     console.log('✅ Configuración añadida:', newConfig);
-    this.updateGroupConfiguration();
   }
 
   /**
    * Elimina una configuración de grupo
    */
   removeGroupConfiguration(index: number): void {
-    if (this.groupConfigurations.length > 1) {
-      this.groupConfigurations.splice(index, 1);
-      this.updateGroupConfiguration();
-    }
+    this.groupConfigurations.splice(index, 1);
   }
 
   /**
    * Actualiza los cálculos cuando cambian las configuraciones
+   * Ahora se basa en rangos flexibles
    */
   updateGroupConfiguration(): void {
-    // Validar que no se exceda el límite máximo de grupos
-    const maxGroups = this.teamBuilderForm.get('maxGroups')?.value;
-    
-    if (maxGroups && maxGroups > 0) {
-      const totalGroups = this.getTotalGroupsConfigured();
-      console.log('📊 Actualizando configuración:', { totalGroups, maxGroups });
+    // Validar que las configuraciones sean coherentes con estudiantes disponibles
+    this.groupConfigurations.forEach(config => {
+      const maxPossibleGroups = Math.floor(this.selectedStudents.length / config.size);
       
-      if (totalGroups > maxGroups) {
-        console.log('⚠️ Excede el límite, ajustando...');
-        
-        // Calcular el exceso
-        let excess = totalGroups - maxGroups;
-        
-        // Reducir desde la última configuración hacia atrás
-        for (let i = this.groupConfigurations.length - 1; i >= 0 && excess > 0; i--) {
-          const config = this.groupConfigurations[i];
-          const maxReduction = config.quantity - 1; // Mantener al menos 1
-          const reduction = Math.min(maxReduction, excess);
-          
-          if (reduction > 0) {
-            config.quantity -= reduction;
-            excess -= reduction;
-            console.log(`🔧 Reducido config ${i}: quantity=${config.quantity}, excess restante=${excess}`);
-          }
-        }
-        
-        // Si aún hay exceso, eliminar configuraciones
-        while (excess > 0 && this.groupConfigurations.length > 0) {
-          const lastConfig = this.groupConfigurations[this.groupConfigurations.length - 1];
-          if (lastConfig.quantity <= excess) {
-            excess -= lastConfig.quantity;
-            this.groupConfigurations.pop();
-            console.log('🗑️ Eliminada última configuración');
-          } else {
-            lastConfig.quantity -= excess;
-            excess = 0;
-          }
-        }
+      // Ajustar máximo si excede lo posible
+      if (config.maxQuantity > maxPossibleGroups) {
+        config.maxQuantity = Math.max(1, maxPossibleGroups);
       }
-    }
+      
+      // Asegurar que mínimo no sea mayor que máximo
+      if (config.minQuantity > config.maxQuantity) {
+        config.minQuantity = config.maxQuantity;
+      }
+    });
     
-    // Trigger change detection y validaciones
-    console.log('✅ Configuración actualizada:', this.groupConfigurations);
+    console.log('✅ Configuraciones actualizadas:', this.groupConfigurations);
   }
 
-
+  /**
+   * Calcula el rango total de estudiantes que pueden ser asignados
+   */
+  getStudentAssignmentRange(): { min: number; max: number } {
+    const minStudents = this.groupConfigurations.reduce((total, config) => {
+      return total + (config.minQuantity * config.size);
+    }, 0);
+    
+    const maxStudents = this.groupConfigurations.reduce((total, config) => {
+      return total + (config.maxQuantity * config.size);
+    }, 0);
+    
+    return { min: minStudents, max: maxStudents };
+  }
 
   /**
-   * Calcula el total de estudiantes asignados a grupos
+   * Calcula el rango total de grupos configurados
+   */
+  getGroupsRange(): { min: number; max: number } {
+    const minGroups = this.groupConfigurations.reduce((total, config) => {
+      return total + config.minQuantity;
+    }, 0);
+    
+    const maxGroups = this.groupConfigurations.reduce((total, config) => {
+      return total + config.maxQuantity;
+    }, 0);
+    
+    return { min: minGroups, max: maxGroups };
+  }
+
+  /**
+   * Método de compatibilidad - devuelve el máximo de estudiantes asignados
    */
   getTotalStudentsInGroups(): number {
-    return this.groupConfigurations.reduce((total, config) => {
-      return total + (config.quantity * config.size);
-    }, 0);
+    return this.getStudentAssignmentRange().max;
   }
 
   /**
-   * Calcula el total de grupos configurados
+   * Método de compatibilidad - devuelve el máximo de grupos configurados
    */
   getTotalGroupsConfigured(): number {
-    return this.groupConfigurations.reduce((total, config) => {
-      return total + config.quantity;
-    }, 0);
+    return this.getGroupsRange().max;
   }
 
   /**
-   * Obtiene el máximo número de grupos permitido para una configuración individual
-   */
-  getMaxGroupsForConfig(): number {
-    const maxGroups = this.teamBuilderForm.get('maxGroups')?.value;
-    
-    if (!maxGroups || maxGroups === 0) {
-      return 20; // Valor por defecto si no hay límite
-    }
-    
-    // El máximo para una configuración individual es el límite global
-    // (la validación se hará después en updateGroupConfiguration)
-    return maxGroups;
-  }
-
-  /**
-   * Actualiza el valor mínimo de grupos
-   */
-  updateMinGroups(value: number | null): void {
-    this.teamBuilderForm.patchValue({ minGroups: value });
-  }
-
-  /**
-   * Actualiza el valor máximo de grupos
-   */
-  updateMaxGroups(value: number | null): void {
-    this.teamBuilderForm.patchValue({ maxGroups: value });
-  }
-
-  /**
-   * Calcula estudiantes restantes sin asignar
+   * Calcula estudiantes restantes sin asignar (basado en el mínimo)
    */
   getRemainingStudents(): number {
-    return Math.max(0, this.selectedStudents.length - this.getTotalStudentsInGroups());
+    const minAssigned = this.getStudentAssignmentRange().min;
+    return Math.max(0, this.selectedStudents.length - minAssigned);
   }
 
   /**
-   * Obtiene resumen de la configuración de grupos
+   * Obtiene resumen flexible de la configuración de grupos
    */
   getGroupsConfigurationSummary(): string {
-    const totalGroups = this.groupConfigurations.reduce((total, config) => total + config.quantity, 0);
-    const totalStudents = this.getTotalStudentsInGroups();
-    const maxGroups = this.teamBuilderForm.get('maxGroups')?.value;
-    
-    if (maxGroups && maxGroups > 0) {
-      if (totalGroups >= maxGroups) {
-        return `${totalGroups}/${maxGroups} grupos (límite alcanzado) • ${totalStudents} estudiantes`;
-      } else {
-        return `${totalGroups}/${maxGroups} grupos • ${totalStudents} estudiantes`;
-      }
+    if (this.groupConfigurations.length === 0) {
+      return `${this.selectedStudents.length} estudiantes disponibles`;
     }
     
-    return `${totalGroups} grupos • ${totalStudents} estudiantes`;
+    const { min: minGroups, max: maxGroups } = this.getGroupsRange();
+    const { min: minStudents, max: maxStudents } = this.getStudentAssignmentRange();
+    
+    if (minGroups === maxGroups) {
+      return `${minGroups} grupos • ${minStudents}${minStudents !== maxStudents ? `-${maxStudents}` : ''} estudiantes`;
+    }
+    
+    return `Entre ${minGroups}-${maxGroups} grupos • ${minStudents}-${maxStudents} estudiantes`;
   }
 
   /**
    * Obtiene resumen de una configuración específica
    */
   getConfigurationSummary(config: GroupConfiguration): string {
-    const totalStudents = config.quantity * config.size;
-    return `${totalStudents} estudiantes`;
+    const minStudents = config.minQuantity * config.size;
+    const maxStudents = config.maxQuantity * config.size;
+    
+    if (minStudents === maxStudents) {
+      return `${minStudents} estudiantes`;
+    }
+    
+    return `${minStudents}-${maxStudents} estudiantes`;
   }
 
   /**
-   * Obtiene mensaje de validación
+   * Obtiene mensaje de validación actualizado para rangos flexibles
    */
   getValidationMessage(): string {
-    const total = this.getTotalStudentsInGroups();
     const selected = this.selectedStudents.length;
-    const minGroups = this.teamBuilderForm.get('minGroups')?.value;
-    const maxGroups = this.teamBuilderForm.get('maxGroups')?.value;
-    
-    // Validar rangos de grupos
-    if (minGroups && maxGroups && minGroups > maxGroups) {
-      return 'El número máximo de grupos debe ser mayor o igual al mínimo';
-    }
     
     if (selected === 0) {
       return 'Selecciona los estudiantes que quieres agrupar';
     }
     
-    // Si no hay configuraciones específicas, validar solo los límites globales
     if (this.groupConfigurations.length === 0) {
-      if (!minGroups || !maxGroups) {
-        return 'Define el rango de grupos (mínimo y máximo) o añade configuraciones específicas';
-      }
-      return `Configuración lista: El algoritmo creará entre ${minGroups} y ${maxGroups} grupos con ${selected} estudiantes`;
+      return `${selected} estudiantes disponibles. Añade configuraciones de grupo para comenzar.`;
     }
     
-    if (total === 0) {
-      return 'Define el tamaño y cantidad de los grupos';
+    const { min: minStudents, max: maxStudents } = this.getStudentAssignmentRange();
+    const { min: minGroups, max: maxGroups } = this.getGroupsRange();
+    
+    if (maxStudents === 0) {
+      return 'Define el tamaño y rango de los grupos';
     }
     
-    if (total > selected) {
-      const difference = total - selected;
-      return `Necesitas ${difference} estudiante${difference > 1 ? 's' : ''} más para completar esta configuración`;
+    if (minStudents > selected) {
+      const needed = minStudents - selected;
+      return `Necesitas al menos ${needed} estudiante${needed > 1 ? 's' : ''} más para la configuración mínima`;
     }
     
-    if (total < selected) {
-      const remaining = selected - total;
-      return `${remaining} estudiante${remaining > 1 ? 's' : ''} quedarán sin asignar a ningún grupo`;
+    if (maxStudents < selected) {
+      const remaining = selected - maxStudents;
+      return `Hasta ${remaining} estudiante${remaining > 1 ? 's' : ''} podrían quedar sin asignar`;
     }
     
-    return '¡Configuración perfecta! Todos los estudiantes serán asignados a grupos específicos';
+    if (minStudents === maxStudents && minStudents === selected) {
+      return '¡Configuración perfecta! Todos los estudiantes serán asignados';
+    }
+    
+    return `El algoritmo creará entre ${minGroups}-${maxGroups} grupos con ${selected} estudiantes disponibles`;
   }
 
   /**
-   * Obtiene tipo de validación (success, warning, error)
+   * Obtiene tipo de validación actualizado para rangos flexibles
    */
   getValidationType(): 'success' | 'warning' | 'error' | 'info' {
-    const total = this.getTotalStudentsInGroups();
     const selected = this.selectedStudents.length;
-    const minGroups = this.teamBuilderForm.get('minGroups')?.value;
-    const maxGroups = this.teamBuilderForm.get('maxGroups')?.value;
     
-    // Error: validación de rangos
-    if (minGroups && maxGroups && minGroups > maxGroups) {
-      return 'error';
-    }
-    
-    // Error: sin estudiantes
     if (selected === 0) {
       return 'error';
     }
     
-    // Si no hay configuraciones específicas, usar solo límites globales
     if (this.groupConfigurations.length === 0) {
-      if (!minGroups || !maxGroups) {
-        return 'info';
-      }
-      // Con rangos válidos pero sin configuraciones específicas
-      return 'success';
+      return 'info';
     }
     
-    // Estados de error para configuraciones específicas
-    if (total === 0) {
+    const { min: minStudents, max: maxStudents } = this.getStudentAssignmentRange();
+    
+    if (maxStudents === 0) {
       return 'error';
     }
     
-    // Estado de advertencia: desbalance en configuraciones específicas
-    if (total !== selected) {
+    if (minStudents > selected) {
+      return 'error';
+    }
+    
+    if (maxStudents < selected) {
       return 'warning';
     }
     
-    // Estado perfecto para configuraciones específicas
     return 'success';
   }
 
   /**
-   * Genera vista previa de los grupos
+   * Genera vista previa de los grupos basada en rangos
    */
   getGroupsPreview(): GroupPreview[] {
     const previews: GroupPreview[] = [];
     let colorIndex = 0;
     
     this.groupConfigurations.forEach((config, configIndex) => {
-      for (let i = 0; i < config.quantity; i++) {
+      // Mostrar el promedio del rango para la vista previa
+      const avgQuantity = Math.ceil((config.minQuantity + config.maxQuantity) / 2);
+      
+      for (let i = 0; i < avgQuantity; i++) {
         previews.push({
           name: `Grupo ${previews.length + 1}`,
           size: config.size,
@@ -483,27 +425,22 @@ export class CreateGroupsAlgorithmFormComponent {
   }
 
   /**
-   * Validación para habilitar el botón de crear grupos
+   * Validación actualizada para habilitar el botón de crear grupos
    */
   canCreateGroups(): boolean {
-    const minGroups = this.teamBuilderForm.get('minGroups')?.value;
-    const maxGroups = this.teamBuilderForm.get('maxGroups')?.value;
-    
-    // Validaciones básicas
     if (this.selectedStudents.length === 0) return false;
-    if (minGroups && maxGroups && minGroups > maxGroups) return false;
     
-    // Con configuraciones específicas: debe estar balanceado perfectamente
+    // Con configuraciones específicas: verificar que sea factible
     if (this.groupConfigurations.length > 0) {
-      return this.getValidationType() === 'success';
+      return this.getValidationType() === 'success' || this.getValidationType() === 'warning';
     }
     
-    // Sin configuraciones específicas: solo necesita rangos válidos
-    return !!(minGroups && maxGroups && minGroups <= maxGroups);
+    // Sin configuraciones: siempre permitir si hay estudiantes
+    return true;
   }
 
   /**
-   * Crea los grupos con la nueva configuración
+   * Crea los grupos con la nueva configuración flexible
    */
   onCreateGroups(): void {
     if (!this.canCreateGroups()) {
@@ -511,8 +448,6 @@ export class CreateGroupsAlgorithmFormComponent {
     }
 
     const algorithmData = new BelbinAlgorithmData();    
-    const minGroups = this.teamBuilderForm.get('minGroups')?.value;
-    const maxGroups = this.teamBuilderForm.get('maxGroups')?.value;
     
     // Añadir miembros seleccionados
     this.selectedStudents.forEach(user => {
@@ -523,23 +458,26 @@ export class CreateGroupsAlgorithmFormComponent {
     algorithmData.addConstraint("AllAssigned", "", { number_members: this.selectedStudents.length });
     algorithmData.addConstraint("NonOverlapping", "");
     
-    // Si hay configuraciones específicas, usarlas
+    // Si hay configuraciones específicas, usar rangos flexibles
     if (this.groupConfigurations.length > 0) {
       this.groupConfigurations.forEach((config, index) => {
         algorithmData.addConstraint("SizeCardinality", `config_${index}`, { 
           team_size: config.size, 
-          min: config.quantity, 
-          max: config.quantity 
+          min: config.minQuantity, 
+          max: config.maxQuantity 
         });
       });
     } else {
-      // Si no hay configuraciones específicas, usar los límites globales
-      // Crear constraint básico con los límites
-      if (minGroups && maxGroups) {
-        algorithmData.addConstraint("SizeCardinality", "global_range", {
-          team_size: 4, // Tamaño por defecto
-          min: minGroups,
-          max: maxGroups
+      // Si no hay configuraciones específicas, crear una configuración automática
+      const availableStudents = this.selectedStudents.length;
+      const defaultGroupSize = 4;
+      const maxPossibleGroups = Math.floor(availableStudents / defaultGroupSize);
+      
+      if (maxPossibleGroups > 0) {
+        algorithmData.addConstraint("SizeCardinality", "auto_config", {
+          team_size: defaultGroupSize,
+          min: 1,
+          max: maxPossibleGroups
         });
       }
     }
@@ -559,8 +497,7 @@ export class CreateGroupsAlgorithmFormComponent {
     console.log('🎯 Configuración de grupos enviada:', {
       estudiantes: this.selectedStudents.length,
       configuracionesEspecificas: this.groupConfigurations,
-      minGroups: minGroups,
-      maxGroups: maxGroups,
+      rangosGrupos: this.getGroupsRange(),
       restricciones: this.restrictions
     });
 

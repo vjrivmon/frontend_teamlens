@@ -60,105 +60,87 @@
                         <div class="bg-white border-round-lg shadow-1 p-4 mb-4">
                             <div class="flex align-items-center gap-3 mb-4">
                                 <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-purple-50 border-round-md">
-                                    <i class="pi pi-sliders-h text-purple-600"></i>
+                                    <i class="pi pi-info-circle text-purple-600"></i>
                                 </div>
-                                <h5 class="m-0 text-900 font-semibold">Configuración Global de Grupos</h5>
+                                <h5 class="m-0 text-900 font-semibold">Configuración Inteligente de Grupos</h5>
                             </div>
                             
-                            <div class="grid">
-                                <div class="col-12 md:col-6">
-                                    <div class="flex flex-column gap-2">
-                                        <label class="text-900 font-medium">Número mínimo de grupos</label>
-                                        <div class="flex align-items-center" style="gap: 0.25rem;">
-                                            <p-inputNumber 
-                                                [ngModel]="teamBuilderForm.get('minGroups')?.value"
-                                                (ngModelChange)="updateMinGroups($event)"
-                                                [min]="1" 
-                                                [max]="20"
-                                                [showButtons]="true"
-                                                [size]="1"
-                                                class="w-8rem"
-                                                placeholder="Ej: 3">
-                                            </p-inputNumber>
-                                            <span class="text-purple-600 font-medium text-sm">mín.</span>
-                                        </div>
-                                        <small class="text-600">El algoritmo creará al menos este número de grupos</small>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-12 md:col-6">
-                                    <div class="flex flex-column gap-2">
-                                        <label class="text-900 font-medium">Número máximo de grupos</label>
-                                        <div class="flex align-items-center" style="gap: 0.25rem;">
-                                            <p-inputNumber 
-                                                [ngModel]="teamBuilderForm.get('maxGroups')?.value"
-                                                (ngModelChange)="updateMaxGroups($event)"
-                                                [min]="1" 
-                                                [max]="50"
-                                                [showButtons]="true"
-                                                [size]="1"
-                                                class="w-8rem"
-                                                placeholder="Ej: 8">
-                                            </p-inputNumber>
-                                            <span class="text-purple-600 font-medium text-sm">máx.</span>
-                                        </div>
-                                        <small class="text-600">El algoritmo no creará más de este número de grupos</small>
-                                    </div>
-                                </div>
+                            <div class="text-600 line-height-3">
+                                <p class="m-0">Este sistema crea grupos automáticamente basándose en los estudiantes disponibles. 
+                                Añade configuraciones específicas para definir rangos flexibles como "Entre 2-4 grupos de 5 estudiantes".</p>
                             </div>
                         </div>
 
-                        <!-- Lista moderna de configuraciones de grupos -->
-                        <div class="flex flex-column gap-3" *ngIf="groupConfigurations.length > 0">
+                        <!-- Lista moderna de configuraciones de grupos con rangos -->
+                        <div class="flex flex-column gap-4" *ngIf="groupConfigurations.length > 0">
                             <h5 class="text-900 font-semibold m-0">Configuraciones Activas</h5>
                             
                             <div *ngFor="let config of groupConfigurations; let i = index" 
-                                 class="bg-white border-round-lg border-1 border-200 p-4 hover:shadow-2 transition-all transition-duration-200">
+                                 class="bg-white border-round-lg border-1 border-200 p-5 hover:shadow-2 transition-all transition-duration-200">
                                 
-                                <div class="flex align-items-center justify-content-between">
-                                    <!-- Sección de configuración -->
-                                    <div class="flex align-items-center gap-4 flex-1">
+                                <div class="flex flex-column gap-4">
+                                    <!-- Sección de configuración con rangos -->
+                                    <div class="flex align-items-center gap-6 flex-wrap">
                                         <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-blue-50 border-round-md">
                                             <i class="pi pi-sitemap text-blue-600"></i>
                                         </div>
                                         
-                                        <div class="flex align-items-center gap-4">
-                                            <div class="flex align-items-center gap-3 text-lg">
-                                                <p-inputNumber 
-                                                    [(ngModel)]="config.quantity" 
-                                                    [min]="1" 
-                                                    [max]="getMaxGroupsForConfig()"
-                                                    [showButtons]="true"
-                                                    [size]="1"
-                                                    class="w-6rem"
-                                                    (onInput)="updateGroupConfiguration()"
-                                                    (ngModelChange)="updateGroupConfiguration()">
-                                                </p-inputNumber>
-                                                <span class="text-900 font-semibold text-lg">grupos de</span>
-                                                <p-inputNumber 
-                                                    [(ngModel)]="config.size" 
-                                                    [min]="1" 
-                                                    [max]="15"
-                                                    [showButtons]="true"
-                                                    [size]="1"
-                                                    class="w-6rem"
-                                                    (onInput)="updateGroupConfiguration()">
-                                                </p-inputNumber>
-                                                <span class="text-900 font-semibold text-lg">estudiantes</span>
+                                        <div class="flex align-items-center gap-4 flex-wrap">
+                                            <div class="flex align-items-center gap-4 text-lg">
+                                                <span class="text-900 font-semibold text-lg whitespace-nowrap">Entre</span>
+                                                <div class="flex align-items-center gap-2">
+                                                    <p-inputNumber 
+                                                        [(ngModel)]="config.minQuantity" 
+                                                        [min]="1" 
+                                                        [max]="config.maxQuantity"
+                                                        [showButtons]="true"
+                                                        [size]="1"
+                                                        class="w-6rem"
+                                                        (onInput)="updateGroupConfiguration()"
+                                                        (ngModelChange)="updateGroupConfiguration()">
+                                                    </p-inputNumber>
+                                                </div>
+                                                <span class="text-900 font-semibold text-lg mx-2">-</span>
+                                                <div class="flex align-items-center gap-2">
+                                                    <p-inputNumber 
+                                                        [(ngModel)]="config.maxQuantity" 
+                                                        [min]="config.minQuantity" 
+                                                        [max]="20"
+                                                        [showButtons]="true"
+                                                        [size]="1"
+                                                        class="w-6rem"
+                                                        (onInput)="updateGroupConfiguration()"
+                                                        (ngModelChange)="updateGroupConfiguration()">
+                                                    </p-inputNumber>
+                                                </div>
+                                                <span class="text-900 font-semibold text-lg whitespace-nowrap mx-2">grupos de</span>
+                                                <div class="flex align-items-center gap-2">
+                                                    <p-inputNumber 
+                                                        [(ngModel)]="config.size" 
+                                                        [min]="1" 
+                                                        [max]="15"
+                                                        [showButtons]="true"
+                                                        [size]="1"
+                                                        class="w-6rem"
+                                                        (onInput)="updateGroupConfiguration()">
+                                                    </p-inputNumber>
+                                                </div>
+                                                <span class="text-900 font-semibold text-lg whitespace-nowrap">estudiantes</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Información y acciones -->
-                                    <div class="flex align-items-center gap-3">
-                                        <div class="text-right">
+                                    <div class="flex align-items-center justify-content-between mt-2">
+                                        <div class="flex align-items-center gap-3">
                                             <p-tag [value]="getConfigurationSummary(config)" 
                                                    severity="info" 
                                                    class="font-medium"></p-tag>
                                         </div>
                                         <button pButton 
                                                 icon="pi pi-trash" 
-                                                class="p-button-text p-button-sm p-button-danger p-button-rounded"
+                                                label="Eliminar"
+                                                class="p-button-text p-button-sm p-button-danger"
                                                 (click)="removeGroupConfiguration(i)"
                                                 pTooltip="Eliminar configuración"
                                                 tooltipPosition="top">
@@ -168,18 +150,15 @@
                             </div>
                         </div>
 
-                        <!-- Área de acciones -->
+                        <!-- Área de acciones simplificada -->
                         <div class="mt-4">
                             <button pButton 
-                                    [label]="canAddMoreGroupConfigurations() ? 'Añadir Configuración de Grupo' : 'Límite de grupos alcanzado'"
-                                    [icon]="canAddMoreGroupConfigurations() ? 'pi pi-plus' : 'pi pi-ban'" 
+                                    [label]="canAddMoreGroupConfigurations() ? 'Añadir Configuración de Grupo' : 'Selecciona estudiantes primero'"
+                                    [icon]="canAddMoreGroupConfigurations() ? 'pi pi-plus' : 'pi pi-users'" 
                                     class="p-button-outlined w-full justify-content-center py-3"
                                     [disabled]="!canAddMoreGroupConfigurations()"
                                     (click)="addGroupConfiguration()">
                             </button>
-                            <small *ngIf="!canAddMoreGroupConfigurations()" class="text-orange-600 block mt-2 text-center">
-                                Has alcanzado el límite máximo de {{ teamBuilderForm.get('maxGroups')?.value }} grupos configurados ({{ getTotalGroupsConfigured() }} actualmente)
-                            </small>
                         </div>
 
                         <!-- Sistema de alertas moderno con emojis -->
@@ -221,14 +200,14 @@
                         </div>
 
                         <!-- Vista previa moderna de grupos -->
-                        <div *ngIf="groupConfigurations.length > 0 && getTotalStudentsInGroups() > 0" class="mt-6">
+                        <div *ngIf="groupConfigurations.length > 0" class="mt-6">
                             <div class="bg-white border-round-lg shadow-1 p-4">
                                 <div class="flex align-items-center gap-3 mb-4">
                                     <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-indigo-50 border-round-md">
                                         <i class="pi pi-eye text-indigo-600"></i>
                                     </div>
-                                    <h5 class="m-0 text-900 font-semibold">Vista Previa de Grupos</h5>
-                                    <p-tag [value]="getGroupsPreview().length + ' grupos'" severity="info" class="ml-auto"></p-tag>
+                                    <h5 class="m-0 text-900 font-semibold">Vista Previa de Grupos (Promedio)</h5>
+                                    <p-tag [value]="getGroupsPreview().length + ' grupos aprox.'" severity="info" class="ml-auto"></p-tag>
                                 </div>
                                 
                                 <div class="grid">
@@ -256,7 +235,8 @@
                     <h2>Estudiantes</h2>
                     <p>Selecciona los estudiantes que quieres agrupar.</p>
                     <p-table #dt1 [value]="students" [(selection)]="selectedStudents" dataKey="_id"
-                        [globalFilterFields]="['_id', 'name', 'email']">
+                        [globalFilterFields]="['_id', 'name', 'email']"
+                        (selectionChange)="onStudentsChange()">
                         <ng-template pTemplate="caption">
                             <div class="flex">
                                 <span class="p-input-icon-left">
@@ -482,9 +462,9 @@
                                 <div class="border-1 border-200 border-round p-3">
                                     <div class="flex align-items-center gap-2">
                                         <i class="pi pi-users text-primary"></i>
-                                        <span class="font-medium">{{ config.quantity }} grupos de {{ config.size }} estudiantes</span>
+                                        <span class="font-medium">Entre {{ config.minQuantity }}-{{ config.maxQuantity }} grupos de {{ config.size }} estudiantes</span>
                                     </div>
-                                    <p class="text-sm text-600 m-0 mt-1">Total: {{ config.quantity * config.size }} estudiantes</p>
+                                    <p class="text-sm text-600 m-0 mt-1">{{ getConfigurationSummary(config) }}</p>
                                 </div>
                             </div>
                         </div>
