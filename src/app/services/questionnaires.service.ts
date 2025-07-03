@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { IQuestionnaire, TQuestionnaireResult } from '../models/models';
+import { IQuestionnaire, TQuestionnaireResult, IQuestionnaireStats } from '../models/models';
 import { Observable } from 'rxjs';
 
 import { HttpClient } from '@angular/common/http';
@@ -26,6 +26,15 @@ export class QuestionnairesService {
 
   getAskedQuestionnaires(): Observable<TQuestionnaireResult[]> {
     return this.http.get<TQuestionnaireResult[]>('http://localhost:3000/questionnaires/asked');
+  }
+
+  /**
+   * Obtiene las estadísticas de completitud de cuestionarios para una actividad específica
+   * @param activityId ID de la actividad
+   * @returns Observable con las estadísticas de cada cuestionario
+   */
+  getQuestionnaireStatsByActivity(activityId: string): Observable<IQuestionnaireStats[]> {
+    return this.http.get<IQuestionnaireStats[]>(`http://localhost:3000/questionnaires/activity/${activityId}/stats`);
   }
 
   //getQuestionnairesByActivityId(activityId: string): Observable<IQuestionnaire[]> {

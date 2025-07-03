@@ -70,3 +70,16 @@ export type TQuestionnaireResult = {
     questionnaire: string;
     result: string;
 }
+
+/**
+ * Interfaz para las estadísticas de completitud de cuestionarios
+ * Utilizada para mostrar el progreso de respuestas en las actividades
+ */
+export interface IQuestionnaireStats {
+    questionnaireId: string;
+    questionnaireTitle: string;
+    questionnaireType: string;
+    totalStudents: number;
+    completedCount: number;
+    completionPercentage: number;
+}

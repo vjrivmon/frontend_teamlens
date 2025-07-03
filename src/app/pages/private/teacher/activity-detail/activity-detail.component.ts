@@ -1,6 +1,6 @@
 import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IActivity, IGroup, IQuestionnaire, IUser } from '../../../../models/models';
+import { IActivity, IGroup, IQuestionnaire, IUser, IQuestionnaireStats } from '../../../../models/models';
 import { ActivitiesService } from '../../../../services/activities.service';
 import { Router } from '@angular/router';
 
@@ -69,6 +69,7 @@ export class ActivityDetailComponent {
   groups: IGroup[] = [];
 
   questionnaires: IQuestionnaire[] = [];
+  questionnaireStats: IQuestionnaireStats[] = [];
 
   router = inject(Router);
 
@@ -144,6 +145,9 @@ export class ActivityDetailComponent {
       this.questionnaires = questionnaires || [];
     });
 
+    // Cargar estadísticas de cuestionarios para esta actividad
+    this.loadQuestionnaireStats();
+
   }
 
   addStudentsButton() {
@@ -215,6 +219,9 @@ export class ActivityDetailComponent {
           detail: 'El cuestionario ha sido enviado a todos los estudiantes que aún no lo han respondido',
           life: 5000 
         });
+        
+        // Recargar estadísticas después de enviar el cuestionario
+        this.loadQuestionnaireStats();
       },
       error: (error) => {
         console.error('❌ Error enviando cuestionario:', error);
@@ -588,6 +595,31 @@ export class ActivityDetailComponent {
     this.draggedStudent = null;
     this.draggedFromGroup = null;
     this.isDragging = false;
+  }
+
+  /**
+   * Carga las estadísticas de completitud de cuestionarios para la actividad actual
+   */
+  private loadQuestionnaireStats() {
+    this.questionnairesService.getQuestionnaireStatsByActivity(this.activityId).subscribe({
+      next: (stats) => {
+        this.questionnaireStats = stats || [];
+        console.log('📊 Estadísticas de cuestionarios cargadas:', this.questionnaireStats);
+      },
+      error: (error) => {
+        console.error('❌ Error cargando estadísticas de cuestionarios:', error);
+        this.questionnaireStats = [];
+      }
+    });
+  }
+
+  /**
+   * Obtiene las estadísticas de un cuestionario específico
+   * @param questionnaireId ID del cuestionario
+   * @returns Estadísticas del cuestionario o undefined si no se encuentra
+   */
+  getQuestionnaireStats(questionnaireId: string): IQuestionnaireStats | undefined {
+    return this.questionnaireStats.find(stat => stat.questionnaireId === questionnaireId);
   }
 
 }

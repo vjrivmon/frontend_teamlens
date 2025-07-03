@@ -282,14 +282,54 @@
             <div class="flex gap-3 flex-wrap">
                 @for (questionnaire of questionnaires; track $index) {
 
-                <div class="ui card p-4 m-0">
-                    <h3>{{ questionnaire.title }}</h3>
-                    <p>{{ questionnaire.description | slice:0:60 }}
-                        @if(questionnaire.description.length > 50) {
-                        ...
+                <div class="ui card p-4 m-0 questionnaire-card-enhanced">
+                    <div class="questionnaire-header">
+                        <h3>{{ questionnaire.title }}</h3>
+                        
+                        <!-- Indicador de estadísticas -->
+                        @if (getQuestionnaireStats(questionnaire._id); as stats) {
+                            <div class="completion-stats">
+                                <div class="stats-badge" 
+                                     [class.stats-complete]="stats.completionPercentage === 100"
+                                     [class.stats-partial]="stats.completionPercentage > 0 && stats.completionPercentage < 100"
+                                     [class.stats-none]="stats.completionPercentage === 0">
+                                    <span class="completion-text">
+                                        {{ stats.completedCount }}/{{ stats.totalStudents }}
+                                    </span>
+                                    <span class="completion-percentage">
+                                        ({{ stats.completionPercentage }}%)
+                                    </span>
+                                </div>
+                                
+                                <!-- Barra de progreso visual -->
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" 
+                                         [style.width.%]="stats.completionPercentage"
+                                         [class.progress-complete]="stats.completionPercentage === 100"
+                                         [class.progress-partial]="stats.completionPercentage > 0 && stats.completionPercentage < 100"
+                                         [class.progress-none]="stats.completionPercentage === 0">
+                                    </div>
+                                </div>
+                            </div>
+                        } @else {
+                            <!-- Estado de carga o sin datos -->
+                            <div class="completion-stats">
+                                <div class="stats-badge stats-loading">
+                                    <span class="completion-text">Cargando...</span>
+                                </div>
+                            </div>
                         }
-                    </p>
-                    <p>{{ questionnaire.questions.length }} questions.</p>
+                    </div>
+                    
+                    <div class="questionnaire-content">
+                        <p>{{ questionnaire.description | slice:0:60 }}
+                            @if(questionnaire.description.length > 50) {
+                            ...
+                            }
+                        </p>
+                        <p class="questions-count">{{ questionnaire.questions.length }} preguntas.</p>
+                    </div>
+                    
                     <div studentOnly>
                         <div class="flex justify-content-between gap-2">
                             <button class="ui button primary flex-grow-1">
@@ -299,8 +339,17 @@
                     </div>
                     <div teacherOnly>
                         <div class="flex justify-content-between gap-2">
-                            <button [disabled]="students.length <= 0" (click)="onSendQuestionnaireToStudents(questionnaire._id)" class="ui button primary flex-grow-1">
-                                Send to students
+                            <button [disabled]="students.length <= 0" 
+                                    (click)="onSendQuestionnaireToStudents(questionnaire._id)" 
+                                    class="ui button primary flex-grow-1"
+                                    [class.button-complete]="getQuestionnaireStats(questionnaire._id)?.completionPercentage === 100">
+                                @if (getQuestionnaireStats(questionnaire._id)?.completionPercentage === 100) {
+                                    <i class="pi pi-check mr-2"></i>
+                                    Reenviar cuestionario
+                                } @else {
+                                    <i class="pi pi-send mr-2"></i>
+                                    Send to students
+                                }
                             </button>
                         </div>
                     </div>
