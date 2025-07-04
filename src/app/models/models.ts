@@ -15,13 +15,33 @@ export interface IUser {
     notifications?: INotification[];
 }
 
+/**
+ * Modelo de Notificación Enterprise
+ * 
+ * Estructura avanzada que soporta gestión granular, categorización
+ * y seguimiento completo del estado de las notificaciones
+ */
 export interface INotification {
-
     _id: string;
     title: string;
     description: string;
     link?: string;
     date?: Date;
+    timestamp?: Date;
+    
+    // Nuevas propiedades para funcionalidad enterprise
+    read?: boolean;                           // Estado de lectura
+    type?: 'activity' | 'group' | 'system';  // Categorización inteligente
+    priority?: 'high' | 'normal' | 'low';    // Sistema de prioridades
+    icon?: string;                           // Icono específico para cada tipo
+    expiresAt?: Date;                        // Fecha de expiración automática
+    actionRequired?: boolean;                // Indica si requiere acción del usuario
+    metadata?: {                             // Metadatos adicionales para contexto
+        activityId?: string;
+        groupId?: string;
+        senderId?: string;
+        [key: string]: any;
+    };
 }
 
 

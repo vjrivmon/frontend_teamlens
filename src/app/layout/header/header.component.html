@@ -8,30 +8,34 @@
         </a>
     }    
     <div class="flex gap-2 ml-auto" style="align-items: center;">
-        @if (loggedUser) {     
-            <i class="large bell icon outline h-100" [ngClass]="{ notification: loggedUser.notifications && loggedUser.notifications.length > 0}" (click)="toggleNotificationPanel()">
-                @if(notificationPanelOpen) {
-                    <div class="notifications-panel" (click)="$event.stopPropagation()">
-                        @if ((loggedUser.notifications?.length ?? 0) > 0) {
-                            <div class="notification-item text-300 text-sm flex-row" (click)="clearNotifications(); $event.stopPropagation()">
-                                <i class="trash alternate outline icon"></i>
-                                <span>Clear notifications</span>
-                            </div>
-                        }
-                        @for(notification of loggedUser.notifications; track $index) {
-                            <a class="notification-item" (click)="routerLinkSameUrl(notification.link)">
-                                <b>{{ notification.title }}</b>
-                                <p>{{ notification.description }}</p>
-                                <span>{{ notification.date }}</span>
-                            </a>
-                        } @empty {
-                            <div class="notification-header">
-                                <p>You're up to date!</p>
-                            </div>
-                        }
-                    </div>   
-                }                  
-            </i>                   
+        @if (loggedUser) {
+            <!-- Contenedor del sistema de notificaciones enterprise -->
+            <div class="notifications-container" style="position: relative;">
+                <!-- Icono de notificaciones con indicador inteligente -->
+                <i [class]="getNotificationIconClass()" 
+                   [ngClass]="{ 
+                     'notification': (unreadCount$ | async) && (unreadCount$ | async)! > 0,
+                     'has-notifications': hasNotifications$ | async
+                   }" 
+                   (click)="toggleNotificationPanel()"
+                   title="Notificaciones">
+                   
+                    <!-- Badge dinámico de notificaciones no leídas -->
+                    <span class="notification-badge" 
+                          *ngIf="(unreadCount$ | async) && (unreadCount$ | async)! > 0">
+                        {{ (unreadCount$ | async)! > 99 ? '99+' : (unreadCount$ | async) }}
+                    </span>
+                </i>
+
+                <!-- Panel de notificaciones enterprise -->
+                <app-notifications-panel
+                    [isOpen]="notificationPanelOpen"
+                    [maxHeight]="'500px'"
+                    [showFilters]="true"
+                    (onClose)="closeNotificationPanel()"
+                    (onNotificationClick)="onNotificationClick($event)">
+                </app-notifications-panel>
+            </div>                   
             <i class="big user circle icon h-100" style="color: whitesmoke;"></i>
             <div class="" style="display: flex; flex-direction: column; justify-content: center; align-items: start;">
                 <b>{{ loggedUser.name }}</b>

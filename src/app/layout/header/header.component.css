@@ -11,54 +11,118 @@ header {
     position: relative;
 }
 
-.icon.bell:hover {
-    cursor: pointer;
+/* ==========================================================================
+   Sistema de Notificaciones Enterprise - Integración en Header
+   ========================================================================== */
+
+.notifications-container {
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
+.icon.bell:hover {
+    cursor: pointer;
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+
+/* Indicador moderno de notificaciones no leídas */
 .icon.notification::after {
     content: "";
     position: absolute;
-    width: 10px;
-    height: 10px;
-    top: -5px;
-    right: -5px;
-    background-color: #ff0000;
+    width: 8px;
+    height: 8px;
+    top: -2px;
+    right: -2px;
+    background: linear-gradient(45deg, #ff6b6b, #ff5252);
     border-radius: 50%;
+    animation: pulse-notification 2s infinite;
+    box-shadow: 0 0 8px rgba(255, 107, 107, 0.6);
 }
 
-.notifications-panel {
+/* Badge dinámico con contador */
+.notification-badge {
     position: absolute;
-    top: 25px;
-    right: 0;
-    width: 300px;
-    min-height: 10px;
-    background-color: whitesmoke;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    box-shadow: 0 4px 2px -2px rgba(0, 0, 0, 0.05);
-    z-index: 99;
-    user-select: none;
-}
-
-.notification-header {
-    text-align: left;
-    font-size: 0.9rem;
-    padding: 15px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: white;
-    cursor: default;
-}
-
-.notification-item {
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(45deg, #ff6b6b, #ff5252);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    text-align: left;
-    font-size: 1rem;
-    padding: 15px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    background-color: white;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    animation: badge-bounce 0.5s ease;
+    border: 2px solid white;
+    line-height: 1;
+    z-index: 10;
+}
 
-    &:hover {
-        background-color: #f0f0f0;
+/* Animación para el badge */
+@keyframes badge-bounce {
+    0% { transform: scale(0.8); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Animación de pulso para notificaciones */
+@keyframes pulse-notification {
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+    50% { 
+        opacity: 0.7; 
+        transform: scale(1.1); 
     }
 }
+
+/* Clase para icono con notificaciones (sin el punto rojo) */
+.icon.has-notifications {
+    color: #2185d0 !important;
+    transition: color 0.3s ease;
+}
+
+/* Estados hover mejorados */
+.icon.bell:hover {
+    color: #1e74c0 !important;
+}
+
+.icon.bell:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+
+/* Estilo para cuando el panel está abierto */
+.icon.bell.panel-open {
+    color: #2185d0 !important;
+    background: rgba(33, 133, 208, 0.1);
+    border-radius: 50%;
+    padding: 4px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notification-badge {
+        font-size: 0.65rem;
+        padding: 1px 4px;
+        min-width: 16px;
+        height: 16px;
+        top: -6px;
+        right: -6px;
+    }
+    
+    .icon.notification::after {
+        width: 6px;
+        height: 6px;
+    }
+}
+
+/* Eliminamos los estilos legacy del panel (ahora manejado por el componente) */
+/* .notifications-panel, .notification-header, .notification-item se manejan en NotificationsPanelComponent */

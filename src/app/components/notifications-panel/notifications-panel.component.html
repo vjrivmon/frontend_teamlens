@@ -1,0 +1,180 @@
+<!-- Panel de Notificaciones Simplificado -->
+<div class="notifications-panel" [class.panel-open]="isOpen" (click)="$event.stopPropagation()">
+  
+  <!-- Header del Panel Simplificado -->
+  <div class="panel-header">
+    <div class="header-left">
+      <div class="header-title">
+        <i class="bell icon"></i>
+        <h3>Notificaciones</h3>
+        <span class="unread-badge" *ngIf="state.unreadCount > 0">{{ state.unreadCount }}</span>
+      </div>
+    </div>
+    
+    <div class="header-actions">
+      <!-- Solo Botón de Cerrar -->
+      <button class="ui icon button close-btn" 
+              (click)="closePanel()"
+              title="Cerrar panel">
+        <i class="times icon"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Barra de Búsqueda -->
+  <div class="search-container">
+    <div class="ui fluid icon input">
+      <input type="text" 
+             placeholder="Buscar en notificaciones..." 
+             [(ngModel)]="searchTerm"
+             (input)="onSearch(searchTerm)"
+             maxlength="100">
+      <i class="search icon"></i>
+    </div>
+  </div>
+
+  <!-- Acciones Masivas -->
+  <div class="bulk-actions" *ngIf="state.notifications.length > 0">
+    <div class="bulk-actions-left">
+      <button class="ui basic mini button" 
+              (click)="markAllAsRead()"
+              [disabled]="state.unreadCount === 0"
+              title="Marcar todas como leídas">
+        <i class="check circle icon"></i>
+        Leer Todas
+      </button>
+      
+      <button class="ui basic mini button" 
+              (click)="clearAllNotifications()"
+              [disabled]="state.notifications.length === 0"
+              title="Eliminar todas las notificaciones">
+        <i class="trash icon"></i>
+        Eliminar Todas
+      </button>
+    </div>
+    
+    <div class="bulk-actions-right">
+      <span class="notifications-count">
+        {{ state.notifications.length }} notificación(es)
+      </span>
+    </div>
+  </div>
+
+  <!-- Lista de Notificaciones -->
+  <div class="notifications-list" 
+       [style.max-height]="maxHeight"
+       (scroll)="onScroll($event)">
+    
+    <!-- Estado de Carga Inicial -->
+    <div class="loading-state" *ngIf="state.loading && state.notifications.length === 0">
+      <div class="ui active centered inline loader"></div>
+      <p>Cargando notificaciones...</p>
+    </div>
+
+    <!-- Lista de Notificaciones -->
+    <div class="notification-items" *ngIf="!state.loading || state.notifications.length > 0">
+      
+      <!-- Item de Notificación Individual -->
+      <div class="notification-item" 
+           *ngFor="let notification of state.notifications; trackBy: trackByNotificationId; let i = index"
+           [class.unread]="!notification.read"
+           [class.high-priority]="notification.priority === 'high'"
+           [class.selected]="selectedNotifications.has(notification._id)"
+           (click)="onNotificationItemClick(notification)">
+        
+        <!-- Indicador de Estado -->
+        <div class="status-indicator">
+          <div class="read-status" [class.unread]="!notification.read"></div>
+          <div class="priority-indicator" [ngClass]="getPriorityClass(notification)"></div>
+        </div>
+
+        <!-- Icono de Notificación -->
+        <div class="notification-icon">
+          <i [class]="getNotificationIcon(notification) + ' icon'"></i>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="notification-content">
+          <div class="notification-header">
+            <h4 class="notification-title" [title]="notification.title">
+              {{ notification.title }}
+            </h4>
+            <span class="notification-type" *ngIf="notification.type">
+              {{ notification.type }}
+            </span>
+          </div>
+          
+          <p class="notification-description" [title]="notification.description">
+            {{ notification.description }}
+          </p>
+          
+          <div class="notification-meta">
+            <span class="notification-date">
+              {{ getRelativeDate(notification.date || notification.timestamp) }}
+            </span>
+            <span class="notification-priority" 
+                  *ngIf="notification.priority && notification.priority !== 'normal'"
+                  [class]="'priority-' + notification.priority">
+              {{ notification.priority === 'high' ? 'Alta' : 'Baja' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Acciones de Notificación -->
+        <div class="notification-actions">
+          
+          <!-- Botón Marcar como Leída/No Leída -->
+          <button class="ui mini basic icon button" 
+                  (click)="notification.read ? markAsUnread(notification) : markAsRead(notification); $event.stopPropagation()"
+                  [title]="notification.read ? 'Marcar como no leída' : 'Marcar como leída'">
+            <i [class]="notification.read ? 'circle outline icon' : 'check circle icon'"></i>
+          </button>
+
+          <!-- Botón Eliminar -->
+          <button class="ui mini basic icon button delete-btn" 
+                  (click)="deleteNotification(notification, $event)"
+                  title="Eliminar notificación">
+            <i class="trash icon"></i>
+          </button>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Estado: Sin Notificaciones -->
+    <div class="empty-state" *ngIf="!state.loading && state.notifications.length === 0">
+      <div class="empty-icon">
+        <i class="bell slash icon"></i>
+      </div>
+      <h4>¡Estás al día!</h4>
+      <p>No tienes notificaciones pendientes en este momento.</p>
+      <button class="ui basic button" (click)="refreshNotifications()">
+        <i class="refresh icon"></i>
+        Actualizar
+      </button>
+    </div>
+
+    <!-- Indicador de Carga para Paginación -->
+    <div class="pagination-loading" *ngIf="state.loading && state.notifications.length > 0">
+      <div class="ui active centered inline loader mini"></div>
+      <span>Cargando más notificaciones...</span>
+    </div>
+
+    <!-- Indicador: No hay más notificaciones -->
+    <div class="end-of-list" *ngIf="!state.hasMore && state.notifications.length > 0 && !state.loading">
+      <div class="ui horizontal divider">
+        <i class="check icon"></i>
+        Has visto todas las notificaciones
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Overlay para cerrar el panel haciendo clic fuera -->
+<div class="panel-overlay" 
+     *ngIf="isOpen" 
+     (click)="closePanel()">
+</div> 
