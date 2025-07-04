@@ -160,10 +160,10 @@
                     <div class="groups-grid">
                         @for (group of groups; track group._id) {
                             <div class="group-panel" 
-                                 (drop)="onDrop($event, group)" 
-                                 (dragover)="onDragOver($event)" 
-                                 (dragenter)="onDragEnter($event)"
-                                 (dragleave)="onDragLeave($event)">
+                                 (drop)="isTeacher() ? onDrop($event, group) : null" 
+                                 (dragover)="isTeacher() ? onDragOver($event) : null" 
+                                 (dragenter)="isTeacher() ? onDragEnter($event) : null"
+                                 (dragleave)="isTeacher() ? onDragLeave($event) : null">
                                 
                                 <!-- Header del Grupo -->
                                 <div class="group-panel-header">
@@ -179,6 +179,7 @@
                                                 pTooltip="Ver detalles">
                                         </button>
                                         <button pButton 
+                                                teacherOnly
                                                 icon="pi pi-trash" 
                                                 severity="danger"
                                                 class="p-button-text p-button-sm control-btn"
@@ -193,9 +194,9 @@
                                     @if (group.students.length > 0) {
                                         @for (student of group.students; track student._id) {
                                             <div class="student-item" 
-                                                 draggable="true"
-                                                 (dragstart)="onDragStart($event, student, group)"
-                                                 (dragend)="onDragEnd($event)">
+                                                 [attr.draggable]="isTeacher()"
+                                                 (dragstart)="isTeacher() ? onDragStart($event, student, group) : null"
+                                                 (dragend)="isTeacher() ? onDragEnd($event) : null">
                                                 
                                                 <div class="student-info-compact">
                                                     <div class="student-initial">
@@ -209,13 +210,14 @@
                                                 
                                                 <div class="student-actions">
                                                     <button pButton 
+                                                            teacherOnly
                                                             icon="pi pi-times" 
                                                             severity="danger"
                                                             class="p-button-text p-button-sm student-remove-btn"
                                                             (click)="quickRemoveStudent(student, group)"
                                                             pTooltip="Eliminar del grupo">
                                                     </button>
-                                                    <div class="drag-indicator">
+                                                    <div teacherOnly class="drag-indicator">
                                                         <i class="pi pi-arrows-alt"></i>
                                                     </div>
                                                 </div>
@@ -244,15 +246,15 @@
                             </div>
                             
                             <div class="available-students" 
-                                 (drop)="onDropToUnassigned($event)" 
-                                 (dragover)="onDragOver($event)" 
-                                 (dragenter)="onDragEnter($event)"
-                                 (dragleave)="onDragLeave($event)">
+                                 (drop)="isTeacher() ? onDropToUnassigned($event) : null" 
+                                 (dragover)="isTeacher() ? onDragOver($event) : null" 
+                                 (dragenter)="isTeacher() ? onDragEnter($event) : null"
+                                 (dragleave)="isTeacher() ? onDragLeave($event) : null">
                                 @for (student of getUnassignedStudents(); track student._id) {
                                     <div class="available-student" 
-                                         draggable="true"
-                                         (dragstart)="onDragStart($event, student, null)"
-                                         (dragend)="onDragEnd($event)">
+                                         [attr.draggable]="isTeacher()"
+                                         (dragstart)="isTeacher() ? onDragStart($event, student, null) : null"
+                                         (dragend)="isTeacher() ? onDragEnd($event) : null">
                                         
                                         <div class="student-initial available">
                                             {{ getStudentInitial(student) }}
@@ -261,7 +263,7 @@
                                             <div class="student-name-compact">{{ student.name || 'Sin nombre' }}</div>
                                             <div class="student-email-compact">{{ student.email }}</div>
                                         </div>
-                                        <div class="drag-indicator">
+                                        <div teacherOnly class="drag-indicator">
                                             <i class="pi pi-arrows-alt"></i>
                                         </div>
                                     </div>

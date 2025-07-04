@@ -128,4 +128,13 @@ export class GroupDetailComponent {
     this.freeStudents.push(user);
     this.selectedStudents = this.selectedStudents.filter(u => u._id !== user._id);
   }
+
+  /**
+   * Verifica si el usuario actual es un teacher
+   * @returns true si el usuario es teacher, false en caso contrario
+   */
+  isTeacher(): boolean {
+    const user = this.authService.getUser();
+    return user?.role === 'teacher';
+  }
 }

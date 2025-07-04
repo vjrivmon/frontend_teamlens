@@ -27,6 +27,7 @@ import { CreateGroupsAlgorithmFormComponent } from '../components/create-groups-
 
 import { TeacherOnlyDirective } from '../../../../directives/teacher-only';
 import { StudentOnlyDirective } from '../../../../directives/student-only';
+import { AuthService } from '../../../../services/auth.service';
 
 
 import { concatMap, retry } from 'rxjs';
@@ -98,7 +99,8 @@ export class ActivityDetailComponent {
     private activitiesService: ActivitiesService,
     private questionnairesService: QuestionnairesService,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private authService: AuthService
   ) { }
 
 
@@ -620,6 +622,15 @@ export class ActivityDetailComponent {
    */
   getQuestionnaireStats(questionnaireId: string): IQuestionnaireStats | undefined {
     return this.questionnaireStats.find(stat => stat.questionnaireId === questionnaireId);
+  }
+
+  /**
+   * Verifica si el usuario actual es un teacher
+   * @returns true si el usuario es teacher, false en caso contrario
+   */
+  isTeacher(): boolean {
+    const user = this.authService.getUser();
+    return user?.role === 'teacher';
   }
 
 }
