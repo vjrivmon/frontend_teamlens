@@ -70,27 +70,57 @@
             @case ('Distribution') {
                 <div class="w-full">
                     <div class="flex flex-column gap-0" [formGroupName]="questionIndex.toString()">
+                        <!-- Mostrar contador de puntos total -->
+                        <div class="distribution-counter" 
+                             [ngClass]="{
+                               'counter-valid': getTotalPoints(questionIndex) === 10,
+                               'counter-invalid': getTotalPoints(questionIndex) !== 10,
+                               'counter-exceeded': getTotalPoints(questionIndex) > 10
+                             }">
+                            <strong>Puntos utilizados: {{ getTotalPoints(questionIndex) }} / 10</strong>
+                            @if (getTotalPoints(questionIndex) > 10) {
+                                <span class="error-text"> - ¡Has excedido el límite!</span>
+                            }
+                            @if (getTotalPoints(questionIndex) < 10 && submitted) {
+                                <span class="error-text"> - Debes usar exactamente 10 puntos</span>
+                            }
+                        </div>
+                        
+                        <div class="distribution-options">
                         @for (option of question.options; let distIndex = $index; track distIndex) {
-                        <div class="distribution-option" [style]="{ backgroundColor: pickHex([248,249,250], [225, 255, 224], questionnaireFormGroup.get(questionIndex.toString())?.get(distIndex.toString())?.value) }">
-                            <label [for]="questionIndex.toString() + distIndex.toString()">
-                                {{ option }}
-                            </label>
-                            <p-inputNumber
-                                [inputId]="questionIndex.toString() + distIndex.toString()"
-                                formControlName="{{distIndex.toString()}}"
-                                mode="decimal" [min]="0" [max]="10" 
-                                [showButtons]="true" 
-                                buttonLayout="horizontal" 
-                                inputId="horizontal" 
-                                spinnerMode="horizontal" 
-                                [step]="1"
-                                decrementButtonClass="p-button-secondary"
-                                incrementButtonClass="p-button-secondary"
-                                incrementButtonIcon="pi pi-plus"
-                                decrementButtonIcon="pi pi-minus" />
+                        <div class="distribution-option">
+                            <!-- Input number compacto con botones -->
+                            <div class="input-container">
+                                <button type="button" 
+                                        class="btn-control" 
+                                        [disabled]="getOptionValue(questionIndex, distIndex) <= 0"
+                                        (click)="decreaseValue(questionIndex, distIndex)">-</button>
+                                
+                                <input type="number" 
+                                       class="number-input"
+                                       [id]="questionIndex.toString() + distIndex.toString()"
+                                       [formControlName]="distIndex.toString()"
+                                       [min]="0"
+                                       [max]="getRemainingPoints(questionIndex, distIndex) + getOptionValue(questionIndex, distIndex)"
+                                       (input)="onInputChange(questionIndex, distIndex, $event)"
+                                       (blur)="validateInput(questionIndex, distIndex)" />
+                                
+                                <button type="button" 
+                                        class="btn-control" 
+                                        [disabled]="!canIncrease(questionIndex, distIndex)"
+                                        (click)="increaseValue(questionIndex, distIndex)">+</button>
                             </div>
                             
+                            <!-- Texto de la opción -->
+                            <div class="option-label-container">
+                                <label [for]="questionIndex.toString() + distIndex.toString()" class="option-label">
+                                    {{ option }}
+                                </label>
+                            </div>
+                        </div>
+                            
                         }
+                        </div>
                     </div>
                     @if ( submitted && this.questionnaireFormGroup.get(questionIndex.toString())?.errors) {
                         <div class="invalid-feedback">
@@ -98,7 +128,7 @@
                                 <div>Invalid input</div>
                             }
                             @if (this.questionnaireFormGroup.get(questionIndex.toString())?.errors!['sumaExacta']) {
-                                <div>Total sum of the fields is not 10.</div>
+                                <div>El total debe ser exactamente 10 puntos. Actual: {{ this.questionnaireFormGroup.get(questionIndex.toString())?.errors!['sumaExacta'].actual }}</div>
                             }
                         </div>
                     }

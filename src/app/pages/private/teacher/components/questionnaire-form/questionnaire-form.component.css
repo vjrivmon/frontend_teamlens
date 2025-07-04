@@ -24,14 +24,276 @@ form {
         cursor: pointer;
         border: 1px solid #007bff;
     }    
-    
 }
 
+/* Estilos principales para el test de Belbin */
 .distribution-option {
-    display: grid;
-    grid-template-columns: 11fr 1fr;
+    display: flex;
     align-items: center;
-    padding: 0.5rem;
+    gap: 0.8rem;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+    background-color: #ffffff;
+    min-height: 50px;
+    
+    &:hover {
+        background-color: rgba(0, 123, 255, 0.02) !important;
+        border-left: 3px solid #007bff;
+        padding-left: calc(1rem - 3px);
+    }
+    
+    &:last-child {
+        border-bottom: none;
+    }
+}
+
+/* Contenedor de controles - muy compacto */
+.input-container {
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+/* Botones de incremento/decremento */
+.btn-control {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+    padding: 0 !important;
+    border: 1px solid #dee2e6 !important;
+    background-color: #f8f9fa !important;
+    color: #495057 !important;
+    border-radius: 3px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
+    line-height: 1 !important;
+    user-select: none !important;
+    transition: all 0.15s ease !important;
+    
+    &:hover:not(:disabled) {
+        background-color: #e9ecef !important;
+        border-color: #adb5bd !important;
+    }
+    
+    &:active:not(:disabled) {
+        background-color: #dee2e6 !important;
+        transform: scale(0.95) !important;
+    }
+    
+    &:disabled {
+        background-color: #f8f9fa !important;
+        color: #6c757d !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+    }
+}
+
+/* Input numérico - Mejorado */
+.number-input {
+    width: 36px !important;
+    height: 20px !important;
+    padding: 0 !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 3px !important;
+    text-align: center !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    background-color: #ffffff !important;
+    color: #495057 !important;
+    line-height: 18px !important;
+    font-family: inherit !important;
+    
+    /* Eliminar spinners del navegador */
+    -webkit-appearance: none !important;
+    -moz-appearance: textfield !important;
+    
+    &:focus {
+        outline: none !important;
+        border-color: #80bdff !important;
+        box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.25) !important;
+    }
+    
+    &:disabled {
+        background-color: #f8f9fa !important;
+        color: #6c757d !important;
+        cursor: not-allowed !important;
+        opacity: 0.6 !important;
+    }
+    
+    &:invalid {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 1px rgba(220, 53, 69, 0.25) !important;
+    }
+}
+
+/* Eliminar spinners específicos del navegador */
+.number-input::-webkit-outer-spin-button,
+.number-input::-webkit-inner-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+
+/* Firefox spinner removal */
+.number-input[type=number] {
+    -moz-appearance: textfield !important;
+}
+
+/* Contenedor del texto de las opciones */
+.option-label-container {
+    flex: 1;
+    min-width: 0;
+    padding-left: 1.2rem;
+    line-height: 1.4;
+}
+
+.option-label {
+    font-size: 0.9rem;
+    color: #212529;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+/* Contador de puntos */
+.distribution-counter {
+    text-align: center;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.counter-valid {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.counter-invalid {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+.counter-exceeded {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 20%, 50%, 80%, 100% { transform: translateX(0); }
+    10% { transform: translateX(-5px); }
+    30% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    90% { transform: translateX(3px); }
+}
+
+/* Contenedor de opciones */
+.distribution-options {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .distribution-option {
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+        padding: 1rem;
+        min-height: auto;
+    }
+    
+    .input-container {
+        width: 100px !important;
+        min-width: 100px !important;
+        max-width: 100px !important;
+        justify-content: center;
+        gap: 4px;
+    }
+    
+    .btn-control {
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px !important;
+        min-height: 24px !important;
+        font-size: 12px !important;
+    }
+    
+    .number-input {
+        width: 44px !important;
+        height: 24px !important;
+        font-size: 12px !important;
+        line-height: 22px !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: textfield !important;
+    }
+    
+    .option-label-container {
+        padding-left: 0;
+        text-align: center;
+    }
+    
+    .option-label {
+        text-align: center;
+        font-size: 0.9rem;
+    }
+}
+
+/* Estados de las opciones cuando están deshabilitadas */
+.distribution-option.disabled {
+    opacity: 0.7;
+    background-color: #f8f9fa;
+    
+    .option-label {
+        color: #6c757d;
+    }
+}
+
+/* Asegurar que no hay overflow ni solapamientos */
+.distribution-option * {
+    box-sizing: border-box;
+}
+
+/* Eliminar cualquier margen/padding no deseado */
+.distribution-option .input-container * {
+    margin: 0;
+    padding: 0;
+}
+
+/* Forzar el ancho del contenedor padre si es necesario */
+.distribution-options .distribution-option {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.error-text {
+    font-weight: 400;
+    font-size: 0.8rem;
+    margin-left: 0.25rem;
 }
 
 textarea {
@@ -48,7 +310,18 @@ textarea {
 
 .invalid-feedback {
     margin-top: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: rgb(255, 232, 232);
-    color: red;
+    padding: 0.5rem 0.75rem;
+    background-color: rgba(248, 215, 218, 0.8);
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    border-left: 4px solid #dc3545;
+}
+
+
+
+/* Asegurar que no hay overflow en el contenedor principal */
+.w-full {
+    overflow: hidden;
 }
