@@ -20,6 +20,9 @@ import { ActivitiesService } from '../../../../../services/activities.service';
 
 import BelbinAlgorithmData from '../../../../../models/algorithm-data';
 
+// Importar el componente modal para el progreso del algoritmo
+import { AlgorithmProgressModalComponent } from '../algorithm-progress-modal/algorithm-progress-modal.component';
+
 // Importaciones de RxJS para manejo de timeout
 import { timeout, catchError } from 'rxjs/operators';
 import { throwError, TimeoutError } from 'rxjs';
@@ -55,7 +58,21 @@ interface GroupPreview {
 @Component({
   selector: 'app-create-groups-algorithm-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, ButtonModule, InputTextModule, InputNumberModule, InputTextareaModule, StepperModule, DropdownModule, TableModule, TagModule, ProgressSpinnerModule],
+  imports: [
+    CommonModule, 
+    ReactiveFormsModule, 
+    FormsModule, 
+    ButtonModule, 
+    InputTextModule, 
+    InputNumberModule, 
+    InputTextareaModule, 
+    StepperModule, 
+    DropdownModule, 
+    TableModule, 
+    TagModule, 
+    ProgressSpinnerModule,
+    AlgorithmProgressModalComponent  // Componente modal para progreso del algoritmo
+  ],
   templateUrl: './create-groups-algorithm-form.component.html',
   styleUrl: './create-groups-algorithm-form.component.css'
 })
@@ -103,6 +120,13 @@ export class CreateGroupsAlgorithmFormComponent {
   estimatedTime: number = 0;
   elapsedTime: number = 0;
   private algorithmTimer: any;
+
+  // NUEVO: Variables para el modal de progreso dedicado
+  showProgressModal: boolean = false;
+  algorithmCompleted: boolean = false;
+  algorithmSuccess: boolean = false;
+  algorithmsGroupsCreated: number = 0;
+  algorithmErrorMessage: string = '';
 
   // Configuraciones de grupos múltiples con rangos flexibles
   groupConfigurations: GroupConfiguration[] = [];
@@ -656,6 +680,7 @@ export class CreateGroupsAlgorithmFormComponent {
 
   /**
    * Muestra información detallada cuando el algoritmo se completa exitosamente
+   * MODIFICADO: Configura el estado del modal
    */
   private showAlgorithmCompletionInfo(result: any): void {
     const teamsCount = result.teamsCreated || result.result?.teamsCount || 0;
@@ -663,8 +688,9 @@ export class CreateGroupsAlgorithmFormComponent {
     
     console.log(`🎊 Algoritmo completado: ${teamsCount} equipos creados en ${executionTime}s`);
     
-    // Actualizar el mensaje de progreso con información específica
-    this.algorithmProgress = `🎉 ¡${teamsCount} equipos creados exitosamente en ${executionTime} segundos!`;
+    // NUEVO: Configurar estado del modal con información específica
+    this.algorithmsGroupsCreated = teamsCount;
+    this.algorithmProgress = `¡${teamsCount} equipos creados exitosamente en ${executionTime} segundos!`;
   }
 
   /**
@@ -732,11 +758,18 @@ export class CreateGroupsAlgorithmFormComponent {
 
   /**
    * Inicia el indicador de progreso del algoritmo
-   * MEJORADO: Tiempo estimado más preciso basado en complejidad
+   * MODIFICADO: Ahora abre el modal dedicado de progreso
    */
   private startAlgorithmProgress(): void {
+    console.log('🚀 Iniciando modal de progreso del algoritmo');
+    
+    // Resetear estado del modal
+    this.resetProgressModalState();
+    
+    // Configurar estado inicial
     this.isAlgorithmRunning = true;
     this.elapsedTime = 0;
+    this.algorithmProgress = '🔍 Iniciando algoritmo...';
     
     // Calcular tiempo estimado basado en número de estudiantes y complejidad
     const baseTime = 20; // 20 segundos base
@@ -744,8 +777,10 @@ export class CreateGroupsAlgorithmFormComponent {
     const restrictionsFactor = (this.restrictions.mustBeTogether.length + this.restrictions.mustNotBeTogether.length) * 3; // 3 segundos por restricción
     this.estimatedTime = baseTime + studentFactor + restrictionsFactor;
     
-    console.log(`⏱️ Algoritmo iniciado - Tiempo estimado: ${this.estimatedTime} segundos`);
-    console.log(`📊 Factores: base=${baseTime}s, estudiantes=${studentFactor}s, restricciones=${restrictionsFactor}s`);
+    console.log(`⏱️ Tiempo estimado: ${this.estimatedTime} segundos`);
+    
+    // NUEVO: Abrir el modal de progreso
+    this.showProgressModal = true;
     
     // Actualizar progreso cada segundo
     this.algorithmTimer = setInterval(() => {
@@ -756,7 +791,7 @@ export class CreateGroupsAlgorithmFormComponent {
 
   /**
    * Para el indicador de progreso del algoritmo
-   * MEJORADO: Mejor manejo de mensajes de error
+   * MODIFICADO: Configura el estado del modal correctamente
    */
   private stopAlgorithmProgress(success: boolean, errorMessage?: string): void {
     this.isAlgorithmRunning = false;
@@ -766,16 +801,16 @@ export class CreateGroupsAlgorithmFormComponent {
       this.algorithmTimer = null;
     }
     
+    // NUEVO: Configurar estado del modal
+    this.algorithmCompleted = true;
+    this.algorithmSuccess = success;
+    
     if (success) {
       this.algorithmProgress = '🎉 ¡Equipos creados exitosamente!';
     } else {
       this.algorithmProgress = errorMessage || '❌ Error al crear equipos';
+      this.algorithmErrorMessage = errorMessage || 'Error desconocido al crear equipos';
     }
-    
-    // Limpiar mensaje después de 5 segundos
-    setTimeout(() => {
-      this.algorithmProgress = '';
-    }, 5000);
   }
 
   /**
@@ -815,6 +850,53 @@ export class CreateGroupsAlgorithmFormComponent {
    */
   private generateUniqueId(): string {
     return `config_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  /**
+   * NUEVO: Métodos para el modal de progreso del algoritmo
+   */
+
+  /**
+   * Cierra el modal de progreso cuando el algoritmo ha terminado
+   */
+  onProgressModalClose(): void {
+    this.showProgressModal = false;
+    
+    // Si fue exitoso, emitir evento para actualizar los grupos
+    if (this.algorithmSuccess) {
+      this.onRequestSent.emit(true);
+    }
+    
+    // Resetear estado
+    this.resetProgressModalState();
+  }
+
+  /**
+   * Cancela el algoritmo en ejecución
+   */
+  onProgressModalCancel(): void {
+    console.log('🛑 Usuario canceló el algoritmo');
+    
+    // Detener el algoritmo
+    this.stopAlgorithmProgress(false, 'Algoritmo cancelado por el usuario');
+    
+    // Cerrar modal
+    this.showProgressModal = false;
+    
+    // Resetear estado
+    this.resetProgressModalState();
+  }
+
+  /**
+   * Resetea el estado del modal de progreso
+   */
+  private resetProgressModalState(): void {
+    this.algorithmCompleted = false;
+    this.algorithmSuccess = false;
+    this.algorithmsGroupsCreated = 0;
+    this.algorithmErrorMessage = '';
+    this.algorithmProgress = '';
+    this.elapsedTime = 0;
   }
 
   // Métodos existentes mantenidos para compatibilidad

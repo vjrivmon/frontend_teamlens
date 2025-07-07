@@ -1,0 +1,79 @@
+/* 
+ * Estilos para el modal de progreso del algoritmo
+ * Diseño limpio y centrado sin interferencias con otros componentes
+ */
+
+/* Contenedor principal del modal */
+:host ::ng-deep .algorithm-progress-dialog {
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Header del modal */
+:host ::ng-deep .algorithm-progress-dialog .p-dialog-header {
+    background: linear-gradient(135deg, #f8fafe, #f3f4f6);
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 12px 12px 0 0;
+    padding: 1.5rem;
+}
+
+/* Contenido del modal */
+:host ::ng-deep .algorithm-progress-dialog .p-dialog-content {
+    padding: 0;
+    border-radius: 0;
+}
+
+/* Footer del modal */
+:host ::ng-deep .algorithm-progress-dialog .p-dialog-footer {
+    background: #fafafa;
+    border-top: 1px solid #e5e7eb;
+    border-radius: 0 0 12px 12px;
+    padding: 1.25rem 1.5rem;
+}
+
+/* Animación suave para el spinner */
+:host ::ng-deep .p-progress-spinner-circle {
+    animation: rotate 1.2s linear infinite;
+}
+
+/* Animación para los iconos de estado */
+.status-icon-enter {
+    animation: fadeInScale 0.4s ease-out;
+}
+
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Mejora la legibilidad del texto */
+.progress-text {
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+/* Efectos hover para botones */
+:host ::ng-deep .p-button:hover {
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+/* Responsividad para móviles */
+@media (max-width: 768px) {
+    :host ::ng-deep .algorithm-progress-dialog {
+        margin: 1rem;
+        width: calc(100vw - 2rem) !important;
+        max-width: none !important;
+    }
+    
+    :host ::ng-deep .algorithm-progress-dialog .p-dialog-header,
+    :host ::ng-deep .algorithm-progress-dialog .p-dialog-footer {
+        padding: 1rem;
+    }
+} 

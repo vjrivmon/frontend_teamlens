@@ -522,29 +522,7 @@
                     </div>                                      
                 </div>
                 
-                <!-- MEJORADO: Indicador de progreso del algoritmo con mejor diseño -->
-                <div *ngIf="isAlgorithmRunning" class="mt-4">
-                    <div class="algorithm-progress-container">
-                        <div class="algorithm-progress-content">
-                            <p-progressSpinner 
-                                [style]="{'width': '40px', 'height': '40px'}" 
-                                strokeWidth="4" 
-                                fill="transparent"
-                                animationDuration="1s">
-                            </p-progressSpinner>
-                            <div class="algorithm-progress-text">
-                                <h5>🤖 Algoritmo en ejecución</h5>
-                                <p>{{ algorithmProgress }}</p>
-                                <div class="algorithm-progress-info">
-                                    <i class="pi pi-clock"></i>
-                                    <span>{{ getEstimatedTimeRemaining() }}</span>
-                                    <span>•</span>
-                                    <span>{{ elapsedTime }}s transcurridos</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Mensaje de resultado -->
                 <div *ngIf="!isAlgorithmRunning && algorithmProgress" class="mt-4">
@@ -626,5 +604,19 @@
             </ng-template>
         </p-stepperPanel>
     </p-stepper>
+
+    <!-- NUEVO: Modal dedicado para el progreso del algoritmo -->
+    <app-algorithm-progress-modal
+        [visible]="showProgressModal"
+        [progressMessage]="algorithmProgress"
+        [elapsedTime]="elapsedTime"
+        [estimatedTimeRemaining]="getEstimatedTimeRemaining()"
+        [isCompleted]="algorithmCompleted"
+        [isSuccess]="algorithmSuccess"
+        [groupsCreated]="algorithmsGroupsCreated"
+        [errorMessage]="algorithmErrorMessage"
+        (onClose)="onProgressModalClose()"
+        (onCancel)="onProgressModalCancel()">
+    </app-algorithm-progress-modal>
 
 </div>
