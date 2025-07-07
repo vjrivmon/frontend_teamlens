@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 import { FormBuilder, Validators } from '@angular/forms';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -100,7 +101,7 @@ export class CreateGroupsAlgorithmFormComponent {
     '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1'
   ];
   
-  constructor(private formBuilder: FormBuilder, private activityService: ActivitiesService) { 
+  constructor(private formBuilder: FormBuilder, private activityService: ActivitiesService, private http: HttpClient) { 
     // Inicializar con una configuración básica basada en estudiantes disponibles
     // Se actualizará dinámicamente cuando cambien los estudiantes seleccionados
   }
@@ -501,14 +502,14 @@ export class CreateGroupsAlgorithmFormComponent {
       restricciones: this.restrictions
     });
 
-    // Enviar solicitud al backend
-    this.activityService.createGroupsAlgorithm(this.activityId, algorithmData.toDTO()).subscribe({
-      next: (res) => {
-        console.log('✅ Grupos creados exitosamente:', res);
+    // Enviar solicitud al backend usando el nuevo endpoint correcto
+    this.http.post(`http://localhost:3000/activities/${this.activityId}/algorithm/execute`, {}).subscribe({
+      next: (res: any) => {
+        console.log('✅ Algoritmo ejecutado exitosamente:', res);
         this.onRequestSent.emit(true);
       },
-      error: (error) => {
-        console.error('❌ Error creando grupos:', error);
+      error: (error: any) => {
+        console.error('❌ Error ejecutando algoritmo:', error);
         // Aquí podrías añadir manejo de errores más sofisticado
       }
     });    
