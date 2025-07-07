@@ -386,10 +386,41 @@
         </app-create-group>
     </p-dialog>
 
-    <p-dialog header="Create Groups" [modal]="true" [(visible)]="createAlgGroupsDialogVisible"
-        [style]="{ width: '90vw', maxWidth: '1200px', minWidth: '600px' }" 
-        [breakpoints]="{ '1024px': '95vw', '768px': '98vw' }">
-        <app-create-groups-algorithm-form [activity]="activityId" [students]="students" (onRequestSent)="onAlgorithmRequestSent($event)"></app-create-groups-algorithm-form>
+    <p-dialog 
+        header="Create Groups" 
+        [modal]="true" 
+        [(visible)]="createAlgGroupsDialogVisible"
+        [style]="{ 
+            width: '95vw', 
+            maxWidth: '1400px', 
+            minWidth: '800px',
+            height: 'auto',
+            maxHeight: '88vh'
+        }" 
+        [breakpoints]="{ 
+            '1600px': '85vw', 
+            '1200px': '90vw', 
+            '1024px': '95vw', 
+            '768px': '98vw',
+            '480px': '100vw'
+        }"
+        [contentStyle]="{
+            'padding': '0',
+            'overflow': 'hidden',
+            'display': 'flex',
+            'flex-direction': 'column',
+            'max-height': 'calc(88vh - 60px)',
+            'min-height': '60vh'
+        }"
+        [closable]="true"
+        [resizable]="false"
+        [draggable]="false">
+        
+        <app-create-groups-algorithm-form 
+            [activity]="activityId" 
+            [students]="students" 
+            (onRequestSent)="onAlgorithmRequestSent($event)">
+        </app-create-groups-algorithm-form>
     </p-dialog>
 
 </div>

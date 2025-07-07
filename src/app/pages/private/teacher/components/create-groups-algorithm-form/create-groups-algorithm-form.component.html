@@ -1,5 +1,5 @@
-<div class="p-4">
-    <p-stepper [(activeStep)]="active">
+<div class="modal-form-container">
+    <p-stepper [(activeStep)]="active" class="responsive-stepper">
         <p-stepperPanel>
             <ng-template pTemplate="header" let-index="index">
                 <button class="bg-transparent border-none inline-flex flex-column gap-2">
@@ -14,7 +14,7 @@
                 </button>
             </ng-template>
             <ng-template pTemplate="content" let-nextCallback="nextCallback" let-index="index">
-                <div class="flex flex-column gap-2 mt-4" style="min-height: 55vh; min-width: 70vw">
+                <div class="flex flex-column gap-2 mt-4 stepper-content">
                     <h2>Configuración Básica</h2>
                     <p>Selecciona el algoritmo de emparejamiento y configura los tipos de grupos que necesitas.</p>
                     
@@ -297,7 +297,7 @@
             </ng-template>
             <ng-template pTemplate="content" let-prevCallback="prevCallback" let-nextCallback="nextCallback"
                 let-index="index">
-                <div class="flex flex-column gap-2 mt-4" style="min-height: 55vh; min-width: 70vw">
+                <div class="flex flex-column gap-2 mt-4 stepper-content">
                     <h2>Create restrictions</h2>
                     <p>Select students to create a restriction.</p>
                     <p-table #dt2 [value]="selectedStudents" [(selection)]="selectedRestrictionStudents" dataKey="_id"
@@ -432,7 +432,7 @@
                 </button>
             </ng-template>
             <ng-template pTemplate="content" let-prevCallback="prevCallback" let-index="index">
-                <div class="flex flex-column gap-2 mt-4" style="min-height: 55vh; min-width: 70vw">
+                <div class="flex flex-column gap-2 mt-4 stepper-content">
                     <div class="mb-4">
                         <h2 class="text-2xl font-bold text-900 mb-2">Confirmación</h2>
                         <p class="text-600 line-height-3">Revisa la configuración antes de crear los grupos</p>
