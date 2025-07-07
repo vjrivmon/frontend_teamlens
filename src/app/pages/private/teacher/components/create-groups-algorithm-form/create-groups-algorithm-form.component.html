@@ -521,15 +521,68 @@
                         </div>
                     </div>                                      
                 </div>
+                
+                <!-- Indicador de progreso del algoritmo -->
+                <div *ngIf="isAlgorithmRunning" class="mt-4">
+                    <div class="bg-blue-50 border-round-lg border-1 border-blue-200 p-4">
+                        <div class="flex align-items-center gap-4">
+                            <p-progressSpinner 
+                                [style]="{'width': '40px', 'height': '40px'}" 
+                                strokeWidth="4" 
+                                fill="transparent"
+                                animationDuration="1s">
+                            </p-progressSpinner>
+                            <div class="flex-1">
+                                <h5 class="m-0 text-blue-900 font-semibold mb-1">🤖 Algoritmo en ejecución</h5>
+                                <p class="m-0 text-blue-800 mb-2">{{ algorithmProgress }}</p>
+                                <div class="flex align-items-center gap-2 text-sm text-blue-700">
+                                    <i class="pi pi-clock"></i>
+                                    <span>{{ getEstimatedTimeRemaining() }}</span>
+                                    <span class="ml-2">•</span>
+                                    <span>{{ elapsedTime }}s transcurridos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensaje de resultado -->
+                <div *ngIf="!isAlgorithmRunning && algorithmProgress" class="mt-4">
+                    <div class="border-round-lg p-4" 
+                         [ngClass]="{
+                            'bg-green-50 border-1 border-green-200': algorithmProgress.includes('exitosamente'),
+                            'bg-red-50 border-1 border-red-200': algorithmProgress.includes('Error')
+                         }">
+                        <div class="flex align-items-center gap-3">
+                            <div class="flex align-items-center justify-content-center w-2rem h-2rem border-round-md" 
+                                 [ngClass]="{
+                                    'bg-green-100': algorithmProgress.includes('exitosamente'),
+                                    'bg-red-100': algorithmProgress.includes('Error')
+                                 }">
+                                <span class="text-lg">
+                                    {{ algorithmProgress.includes('exitosamente') ? '🎉' : '❌' }}
+                                </span>
+                            </div>
+                            <p class="m-0 font-medium" 
+                               [ngClass]="{
+                                  'text-green-900': algorithmProgress.includes('exitosamente'),
+                                  'text-red-900': algorithmProgress.includes('Error')
+                               }">{{ algorithmProgress }}</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="flex pt-4 justify-content-between">
                     <p-button label="Atrás" 
                               icon="pi pi-arrow-left" 
                               class="p-button-outlined"
+                              [disabled]="isAlgorithmRunning"
                               (onClick)="prevCallback.emit()" />
-                    <p-button label="Crear Grupos" 
-                              icon="pi pi-star-fill" 
+                    <p-button [label]="isAlgorithmRunning ? 'Creando grupos...' : 'Crear Grupos'" 
+                              [icon]="isAlgorithmRunning ? 'pi pi-spin pi-spinner' : 'pi pi-star-fill'" 
                               class="p-button-lg"
-                              severity="success" 
+                              severity="success"
+                              [disabled]="isAlgorithmRunning"
                               (onClick)="onCreateGroups()">
                     </p-button>
                 </div>

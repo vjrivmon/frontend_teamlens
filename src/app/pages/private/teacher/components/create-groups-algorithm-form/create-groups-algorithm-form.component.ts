@@ -13,6 +13,7 @@ import { StepperModule } from 'primeng/stepper';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import { IUser, IQuestionnaire } from '../../../../../models/models';
 import { ActivitiesService } from '../../../../../services/activities.service';
@@ -50,7 +51,7 @@ interface GroupPreview {
 @Component({
   selector: 'app-create-groups-algorithm-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, ButtonModule, InputTextModule, InputNumberModule, InputTextareaModule, StepperModule, DropdownModule, TableModule, TagModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ButtonModule, InputTextModule, InputNumberModule, InputTextareaModule, StepperModule, DropdownModule, TableModule, TagModule, ProgressSpinnerModule],
   templateUrl: './create-groups-algorithm-form.component.html',
   styleUrl: './create-groups-algorithm-form.component.css'
 })
@@ -91,6 +92,13 @@ export class CreateGroupsAlgorithmFormComponent {
   };
 
   active: number = 0;
+
+  // Estados del algoritmo
+  isAlgorithmRunning: boolean = false;
+  algorithmProgress: string = '';
+  estimatedTime: number = 0;
+  elapsedTime: number = 0;
+  private algorithmTimer: any;
 
   // Configuraciones de grupos múltiples con rangos flexibles
   groupConfigurations: GroupConfiguration[] = [];
@@ -448,6 +456,9 @@ export class CreateGroupsAlgorithmFormComponent {
       return;
     }
 
+    // Iniciar indicador visual
+    this.startAlgorithmProgress();
+
     const algorithmData = new BelbinAlgorithmData();    
     
     // Añadir miembros seleccionados
@@ -506,13 +517,88 @@ export class CreateGroupsAlgorithmFormComponent {
     this.http.post(`http://localhost:3000/activities/${this.activityId}/algorithm/execute`, {}).subscribe({
       next: (res: any) => {
         console.log('✅ Algoritmo ejecutado exitosamente:', res);
+        this.stopAlgorithmProgress(true);
         this.onRequestSent.emit(true);
       },
       error: (error: any) => {
         console.error('❌ Error ejecutando algoritmo:', error);
+        this.stopAlgorithmProgress(false);
         // Aquí podrías añadir manejo de errores más sofisticado
       }
     });    
+  }
+
+  /**
+   * Inicia el indicador de progreso del algoritmo
+   */
+  private startAlgorithmProgress(): void {
+    this.isAlgorithmRunning = true;
+    this.elapsedTime = 0;
+    
+    // Calcular tiempo estimado basado en número de estudiantes
+    const baseTime = 15; // 15 segundos base
+    const studentFactor = Math.ceil(this.selectedStudents.length / 5) * 5; // 5 segundos por cada 5 estudiantes
+    this.estimatedTime = baseTime + studentFactor;
+    
+    console.log(`⏱️ Algoritmo iniciado - Tiempo estimado: ${this.estimatedTime} segundos`);
+    
+    // Actualizar progreso cada segundo
+    this.algorithmTimer = setInterval(() => {
+      this.elapsedTime++;
+      this.updateAlgorithmProgress();
+    }, 1000);
+  }
+
+  /**
+   * Para el indicador de progreso del algoritmo
+   */
+  private stopAlgorithmProgress(success: boolean): void {
+    this.isAlgorithmRunning = false;
+    
+    if (this.algorithmTimer) {
+      clearInterval(this.algorithmTimer);
+      this.algorithmTimer = null;
+    }
+    
+    if (success) {
+      this.algorithmProgress = '🎉 ¡Equipos creados exitosamente!';
+    } else {
+      this.algorithmProgress = '❌ Error al crear equipos';
+    }
+    
+    // Limpiar mensaje después de 3 segundos
+    setTimeout(() => {
+      this.algorithmProgress = '';
+    }, 3000);
+  }
+
+  /**
+   * Actualiza el mensaje de progreso basado en tiempo transcurrido
+   */
+  private updateAlgorithmProgress(): void {
+    const progress = Math.min((this.elapsedTime / this.estimatedTime) * 100, 95);
+    
+    if (this.elapsedTime <= 3) {
+      this.algorithmProgress = '🔍 Analizando perfiles BELBIN...';
+    } else if (this.elapsedTime <= 8) {
+      this.algorithmProgress = '⚙️ Aplicando restricciones...';
+    } else if (this.elapsedTime <= 15) {
+      this.algorithmProgress = '🧠 Ejecutando algoritmo de optimización...';
+    } else if (this.elapsedTime <= this.estimatedTime) {
+      this.algorithmProgress = '✨ Finalizando formación de equipos...';
+    } else {
+      this.algorithmProgress = '🔄 Procesando resultados...';
+    }
+  }
+
+  /**
+   * Obtiene el tiempo restante estimado en formato legible
+   */
+  getEstimatedTimeRemaining(): string {
+    if (!this.isAlgorithmRunning) return '';
+    
+    const remaining = Math.max(0, this.estimatedTime - this.elapsedTime);
+    return remaining > 0 ? `${remaining}s restantes` : 'Finalizando...';
   }
 
   /**
