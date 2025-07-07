@@ -1,0 +1,141 @@
+/* Estilos funcionales para portal académico */
+
+/* Hero Section */
+.hero-section {
+  padding: 3rem 0 2.5rem 0;
+}
+
+.platform-description {
+  font-size: 1.4rem !important;
+  font-weight: 400 !important;
+  line-height: 1.4 !important;
+  color: #495057 !important;
+  margin-bottom: 2.5rem !important;
+  max-width: 500px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.hero-section .ui.buttons {
+  margin-bottom: 1.5rem !important;
+}
+
+/* Funcionalidades */
+.features-section {
+  padding: 3rem 0 !important;
+  background: #f8f9fa !important;
+  border-top: 1px solid #dee2e6 !important;
+  border-bottom: 1px solid #dee2e6 !important;
+}
+
+.features-section .ui.segment {
+  padding: 2rem 1.5rem !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.primary-color {
+  color: #2185d0 !important;
+  margin-bottom: 1rem !important;
+}
+
+.features-section h4 {
+  font-size: 1.2rem !important;
+  font-weight: 600 !important;
+  color: #2c3e50 !important;
+  margin-bottom: 0.8rem !important;
+}
+
+.features-section p {
+  font-size: 0.95rem !important;
+  line-height: 1.5 !important;
+  color: #6c757d !important;
+}
+
+/* Información de acceso */
+.access-info {
+  padding: 3rem 0 2rem 0 !important;
+}
+
+.access-info .ui.header {
+  font-size: 1.6rem !important;
+  font-weight: 500 !important;
+  color: #2c3e50 !important;
+  margin-bottom: 1.5rem !important;
+}
+
+.access-info p {
+  font-size: 1rem !important;
+  line-height: 1.6 !important;
+  color: #6c757d !important;
+  max-width: 600px !important;
+  margin: 0 auto !important;
+}
+
+/* Espaciado general */
+.ui.container {
+  max-width: 1000px !important;
+}
+
+.ui.segment {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Botones */
+.ui.buttons .button {
+  padding: 0.9rem 1.8rem !important;
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 2.5rem 0 2rem 0;
+  }
+  
+  .platform-description {
+    font-size: 1.2rem !important;
+    padding: 0 1rem !important;
+  }
+  
+  .ui.buttons.large {
+    flex-direction: column !important;
+  }
+  
+  .ui.buttons.large .button {
+    width: 100% !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .ui.buttons.large .or {
+    display: none !important;
+  }
+  
+  .features-section .ui.segment {
+    padding: 1.5rem 1rem !important;
+  }
+  
+  .access-info .ui.header {
+    font-size: 1.4rem !important;
+  }
+  
+  .access-info p {
+    padding: 0 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .platform-description {
+    font-size: 1.1rem !important;
+  }
+  
+  .features-section {
+    padding: 2rem 0 !important;
+  }
+  
+  .access-info {
+    padding: 2rem 0 1.5rem 0 !important;
+  }
+}
