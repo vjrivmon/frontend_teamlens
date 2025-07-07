@@ -185,11 +185,83 @@ export class ActivityDetailComponent {
     this.createAlgGroupsDialogVisible = true;
   }
 
+  /**
+   * CORREGIDO: Maneja la finalización del algoritmo con actualización automática
+   * @param result Resultado del algoritmo (true si fue exitoso)
+   */
   onAlgorithmRequestSent(result: boolean) {
+    console.log('🎯 [ActivityDetail] Algoritmo finalizado:', { result });
+    
     if (result) {
-      this.groupsLocked = true;
+      console.log('✅ [ActivityDetail] Algoritmo exitoso, actualizando grupos...');
+      
+      // Cerrar el modal inmediatamente para mejor UX
       this.createAlgGroupsDialogVisible = false;
+      
+      // Mostrar notificación de finalización
+      this.messageService.add({
+        severity: 'success',
+        summary: '🎉 Algoritmo Completado',
+        detail: 'Los grupos han sido creados exitosamente. Actualizando interfaz...',
+        life: 4000
+      });
+      
+      // CRÍTICO: Recargar grupos desde el backend
+      this.reloadGroupsFromBackend();
+      
+      // Opcional: Bloquear grupos después de la actualización (comentado para mantener funcionalidad)
+      // this.groupsLocked = true;
+      
+    } else {
+      console.log('❌ [ActivityDetail] Algoritmo falló');
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error en Algoritmo',
+        detail: 'Hubo un problema creando los grupos. Inténtalo de nuevo.',
+        life: 5000
+      });
     }
+  }
+
+  /**
+   * NUEVO: Recarga la lista de grupos desde el backend
+   * Esencial para mostrar los grupos creados por el algoritmo
+   */
+  private reloadGroupsFromBackend(): void {
+    console.log('🔄 [ActivityDetail] Recargando grupos desde el backend...');
+    
+    this.activitiesService.getGroupsByActivityById(this.activityId).subscribe({
+      next: (groups: IGroup[] | undefined) => {
+        console.log('✅ [ActivityDetail] Grupos recargados exitosamente:', groups);
+        
+        // Actualizar la lista de grupos en la interfaz, manejando undefined
+        this.groups = groups || [];
+        
+        // Mostrar mensaje informativo sobre los grupos creados
+        if (groups && groups.length > 0) {
+          this.messageService.add({
+            severity: 'info',
+            summary: '📋 Grupos Actualizados',
+            detail: `Se muestran ${groups.length} grupos en la interfaz`,
+            life: 3000
+          });
+        } else {
+          console.log('ℹ️ [ActivityDetail] No hay grupos disponibles o lista vacía');
+        }
+        
+        console.log('🎊 [ActivityDetail] Interfaz actualizada con nuevos grupos');
+      },
+      error: (error: any) => {
+        console.error('❌ [ActivityDetail] Error recargando grupos:', error);
+        
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Error Actualizando',
+          detail: 'Los grupos se crearon pero hay un problema mostrándolos. Recarga la página.',
+          life: 6000
+        });
+      }
+    });
   }
 
   onGroupCreated(event: IGroupCreatedEvent) {

@@ -20,6 +20,10 @@ import { ActivitiesService } from '../../../../../services/activities.service';
 
 import BelbinAlgorithmData from '../../../../../models/algorithm-data';
 
+// Importaciones de RxJS para manejo de timeout
+import { timeout, catchError } from 'rxjs/operators';
+import { throwError, TimeoutError } from 'rxjs';
+
 /**
  * Interfaz para configuración de un tipo de grupo con rango flexible
  */
@@ -131,22 +135,48 @@ export class CreateGroupsAlgorithmFormComponent {
   }
 
   createRestriction(restrictionType: keyof IRestrictions) {
+    console.log(`🔍 [CreateRestriction] Iniciando creación de restricción tipo: ${restrictionType}`);
+    console.log(`👥 [CreateRestriction] Estudiantes seleccionados: ${this.selectedRestrictionStudents.length}`);
+    console.log(`📋 [CreateRestriction] Lista de estudiantes:`, this.selectedRestrictionStudents.map(s => s.email));
 
-    // if (this.selectedRestrictionStudents.length < 2) {
-    //   alert("You must select at least 2 students to create a restriction")
-    //   return;
-    // }
+    if (this.selectedRestrictionStudents.length < 2) {
+      console.log(`❌ [CreateRestriction] Insuficientes estudiantes seleccionados (${this.selectedRestrictionStudents.length})`);
+      alert("Debes seleccionar al menos 2 estudiantes para crear una restricción");
+      return;
+    }
 
     // Check if the restriction is valid and makes sense with another ones
     const conflict = this.hasConflict(this.restrictions, this.selectedRestrictionStudents, restrictionType as 'mustBeTogether' | 'mustNotBeTogether') //todo: enum
 
     if (conflict) {
-      alert("This restriction conflicts with another one")
+      console.log(`⚠️ [CreateRestriction] Conflicto detectado con restricción existente`);
+      alert("Esta restricción entra en conflicto con otra existente");
       return;
     }
 
-    this.restrictions[restrictionType].push(this.selectedRestrictionStudents);
+    // CRÍTICO: Crear una COPIA de los estudiantes seleccionados para evitar referencias
+    const restrictionStudents = [...this.selectedRestrictionStudents];
+    console.log(`✅ [CreateRestriction] Añadiendo restricción con ${restrictionStudents.length} estudiantes`);
+    console.log(`📧 [CreateRestriction] Emails: ${restrictionStudents.map(s => s.email).join(', ')}`);
+
+    this.restrictions[restrictionType].push(restrictionStudents);
     this.selectedRestrictionStudents = [];
+    
+    console.log(`🎯 [CreateRestriction] Estado final de restricciones:`, {
+      mustBeTogether: this.restrictions.mustBeTogether.length,
+      mustNotBeTogether: this.restrictions.mustNotBeTogether.length,
+      mustBeAGroup: this.restrictions.mustBeAGroup.length
+    });
+    
+    // Debug detallado de restricciones mustBeTogether
+    this.restrictions.mustBeTogether.forEach((restriction, index) => {
+      console.log(`   mustBeTogether[${index}]: ${restriction.map(s => s.email).join(', ')} (${restriction.length} estudiantes)`);
+    });
+    
+    // Debug detallado de restricciones mustNotBeTogether  
+    this.restrictions.mustNotBeTogether.forEach((restriction, index) => {
+      console.log(`   mustNotBeTogether[${index}]: ${restriction.map(s => s.email).join(', ')} (${restriction.length} estudiantes)`);
+    });
   }
 
   removeRestriction(restrictionType: keyof IRestrictions, restrictionIndex: number) {
@@ -450,21 +480,21 @@ export class CreateGroupsAlgorithmFormComponent {
 
   /**
    * Crea los grupos con la nueva configuración flexible
+   * MEJORADO: Ahora espera el resultado real del algoritmo con timeouts y mejor progreso
    */
   onCreateGroups(): void {
     if (!this.canCreateGroups()) {
       return;
     }
 
-    // Iniciar indicador visual
+    // Iniciar indicador visual mejorado
     this.startAlgorithmProgress();
 
     const algorithmData = new BelbinAlgorithmData();    
     
-    // Añadir miembros seleccionados
-    this.selectedStudents.forEach(user => {
-      algorithmData.addMember({ id: user._id, traits: user.traits ?? [] });
-    });
+    // NO enviar members con traits - el backend los obtendrá automáticamente
+    // Solo enviar el número de estudiantes seleccionados
+    algorithmData.number_members = this.selectedStudents.length;
 
     // Añadir constraints básicas
     algorithmData.addConstraint("AllAssigned", "", { number_members: this.selectedStudents.length });
@@ -494,53 +524,228 @@ export class CreateGroupsAlgorithmFormComponent {
       }
     }
 
-    // Añadir restricciones personalizadas
-    this.restrictions.mustBeTogether.forEach(restriction => {
-      algorithmData.addConstraint("SameTeam", "", { members: restriction.map(u => u._id) });
+    // MEJORADO: Añadir restricciones personalizadas con logging detallado
+    console.log(`🔍 [onCreateGroups] DEBUG - Procesando restricciones ANTES de enviar:`);
+    console.log(`   mustBeTogether total: ${this.restrictions.mustBeTogether.length}`);
+    console.log(`   mustNotBeTogether total: ${this.restrictions.mustNotBeTogether.length}`);
+    
+    this.restrictions.mustBeTogether.forEach((restriction, index) => {
+      console.log(`🤝 [onCreateGroups] Procesando mustBeTogether[${index}]:`, {
+        cantidad: restriction.length,
+        emails: restriction.map(u => u.email),
+        ids: restriction.map(u => u._id)
+      });
+      
+      if (restriction.length >= 2) {
+        algorithmData.addConstraint("SameTeam", "", { members: restriction.map(u => u._id) });
+        console.log(`✅ [onCreateGroups] SameTeam constraint añadida para ${restriction.length} estudiantes`);
+      } else {
+        console.log(`⚠️ [onCreateGroups] mustBeTogether ignorada - solo tiene ${restriction.length} estudiante(s)`);
+      }
     });
 
-    this.restrictions.mustNotBeTogether.forEach(restriction => {
-      algorithmData.addConstraint("DifferentTeam", "", { members: restriction.map(u => u._id) });
+    this.restrictions.mustNotBeTogether.forEach((restriction, index) => {
+      console.log(`🚫 [onCreateGroups] Procesando mustNotBeTogether[${index}]:`, {
+        cantidad: restriction.length,
+        emails: restriction.map(u => u.email),
+        ids: restriction.map(u => u._id)
+      });
+      
+      if (restriction.length >= 2) {
+        algorithmData.addConstraint("DifferentTeam", "", { members: restriction.map(u => u._id) });
+        console.log(`✅ [onCreateGroups] DifferentTeam constraint añadida para ${restriction.length} estudiantes`);
+      } else {
+        console.log(`⚠️ [onCreateGroups] mustNotBeTogether ignorada - solo tiene ${restriction.length} estudiante(s)`);
+      }
     });
-
-    // Configurar algoritmo
-    algorithmData.number_members = this.selectedStudents.length;
 
     console.log('🎯 Configuración de grupos enviada:', {
       estudiantes: this.selectedStudents.length,
       configuracionesEspecificas: this.groupConfigurations,
       rangosGrupos: this.getGroupsRange(),
-      restricciones: this.restrictions
+      restricciones: this.restrictions,
+      algorithmData: algorithmData
     });
 
-    // Enviar solicitud al backend usando el nuevo endpoint correcto
-    this.http.post(`http://localhost:3000/activities/${this.activityId}/algorithm/execute`, {}).subscribe({
+    // MEJORADO: Configurar timeout más largo para esperar el resultado real
+    const timeoutDuration = Math.max(60000, this.selectedStudents.length * 3000); // Mínimo 1 minuto, 3 segundos por estudiante
+    console.log(`⏱️ Configurando timeout de ${timeoutDuration / 1000} segundos para el algoritmo`);
+
+    // Enviar el algorithmData completo al backend junto con los IDs de estudiantes
+    this.http.post(`http://localhost:3000/activities/${this.activityId}/algorithm/execute`, {
+      algorithmData: algorithmData.toDTO(),
+      selectedStudentIds: this.selectedStudents.map(s => s._id),
+      groupConfigurations: this.groupConfigurations,
+      restrictions: this.restrictions
+    }).pipe(
+      timeout(timeoutDuration),
+      catchError((error: any) => {
+        console.error('❌ Error ejecutando algoritmo:', error);
+        
+        // Manejar diferentes tipos de errores
+        let errorMessage = 'Error desconocido ejecutando el algoritmo';
+        
+        if (error instanceof TimeoutError) {
+          errorMessage = `El algoritmo está tardando más de lo esperado (${timeoutDuration / 1000}s). Continúa ejecutándose en segundo plano.`;
+          console.log('⏰ Timeout alcanzado, pero el algoritmo puede continuar ejecutándose');
+          
+          // En caso de timeout, iniciar polling para verificar si completó
+          this.startPollingForResult();
+          return throwError(() => new Error(errorMessage));
+        } else if (error.status === 409) {
+          errorMessage = 'El algoritmo ya se está ejecutando para esta actividad';
+        } else if (error.status === 400) {
+          errorMessage = error.error?.message || 'Error de configuración en el algoritmo';
+        } else if (error.status === 500) {
+          errorMessage = 'Error interno del servidor ejecutando el algoritmo';
+        } else if (error.status === 0) {
+          errorMessage = 'Error de conexión con el servidor';
+        }
+        
+        return throwError(() => new Error(errorMessage));
+      })
+    ).subscribe({
       next: (res: any) => {
-        console.log('✅ Algoritmo ejecutado exitosamente:', res);
+        console.log('🎉 Algoritmo completado exitosamente:', res);
+        
+        // El algoritmo terminó correctamente
         this.stopAlgorithmProgress(true);
+        
+        // Mostrar información detallada del resultado
+        this.showAlgorithmCompletionInfo(res);
+        
+        // MEJORADO: Emitir evento y forzar actualización
+        console.log('📤 Emitiendo evento de finalización del algoritmo...');
         this.onRequestSent.emit(true);
+        
+        // Pequeño delay para asegurar que el evento se procese
+        setTimeout(() => {
+          // Forzar detección de cambios si es necesario
+          if (typeof window !== 'undefined') {
+            console.log('🔄 Algoritmo completado, los grupos deberían actualizarse automáticamente');
+          }
+        }, 500);
       },
       error: (error: any) => {
         console.error('❌ Error ejecutando algoritmo:', error);
-        this.stopAlgorithmProgress(false);
-        // Aquí podrías añadir manejo de errores más sofisticado
+        
+        // Manejar diferentes tipos de errores
+        let errorMessage = 'Error desconocido ejecutando el algoritmo';
+        
+        if (error instanceof TimeoutError) {
+          errorMessage = `El algoritmo está tardando más de lo esperado (${timeoutDuration / 1000}s). Continúa ejecutándose en segundo plano.`;
+          console.log('⏰ Timeout alcanzado, pero el algoritmo puede continuar ejecutándose');
+          
+          // En caso de timeout, iniciar polling para verificar si completó
+          this.startPollingForResult();
+          return; // No detener el progreso todavía
+        } else if (error.status === 409) {
+          errorMessage = 'El algoritmo ya se está ejecutando para esta actividad';
+        } else if (error.status === 400) {
+          errorMessage = error.error?.message || 'Error de configuración en el algoritmo';
+        } else if (error.status === 500) {
+          errorMessage = 'Error interno del servidor ejecutando el algoritmo';
+        } else if (error.status === 0) {
+          errorMessage = 'Error de conexión con el servidor';
+        }
+        
+        this.stopAlgorithmProgress(false, errorMessage);
       }
     });    
   }
 
   /**
+   * Muestra información detallada cuando el algoritmo se completa exitosamente
+   */
+  private showAlgorithmCompletionInfo(result: any): void {
+    const teamsCount = result.teamsCreated || result.result?.teamsCount || 0;
+    const executionTime = result.executionTime ? Math.round(result.executionTime / 1000) : 0;
+    
+    console.log(`🎊 Algoritmo completado: ${teamsCount} equipos creados en ${executionTime}s`);
+    
+    // Actualizar el mensaje de progreso con información específica
+    this.algorithmProgress = `🎉 ¡${teamsCount} equipos creados exitosamente en ${executionTime} segundos!`;
+  }
+
+  /**
+   * Inicia polling para verificar si el algoritmo completó después de un timeout
+   */
+  private startPollingForResult(): void {
+    console.log('🔄 Iniciando polling para verificar estado del algoritmo...');
+    
+    // Cambiar el mensaje de progreso
+    this.algorithmProgress = '🔄 Verificando estado del algoritmo...';
+    
+    // Polling cada 5 segundos por hasta 5 minutos
+    const maxPollingAttempts = 60; // 5 minutos / 5 segundos
+    let pollingAttempts = 0;
+    
+    const pollingInterval = setInterval(() => {
+      pollingAttempts++;
+      
+      if (pollingAttempts > maxPollingAttempts) {
+        clearInterval(pollingInterval);
+        this.stopAlgorithmProgress(false, 'Timeout verificando el estado del algoritmo');
+        return;
+      }
+      
+      // Verificar estado de la actividad
+      this.http.get(`http://localhost:3000/activities/${this.activityId}`).subscribe({
+        next: (activity: any) => {
+          console.log(`🔍 Polling ${pollingAttempts}/${maxPollingAttempts}: Estado = ${activity.algorithmStatus}`);
+          
+          if (activity.algorithmStatus === 'done') {
+            clearInterval(pollingInterval);
+            console.log('✅ Algoritmo completado detectado via polling');
+            
+            this.stopAlgorithmProgress(true);
+            this.showAlgorithmCompletionInfo({ 
+              teamsCreated: activity.algorithmResult?.teamsCount || 0,
+              executionTime: 0 
+            });
+            
+            // MEJORADO: Asegurar que se emita el evento de finalización
+            console.log('📤 [Polling] Emitiendo evento de finalización del algoritmo...');
+            this.onRequestSent.emit(true);
+            
+            // Forzar actualización después del polling
+            setTimeout(() => {
+              console.log('🔄 [Polling] Algoritmo completado, forzando actualización de la interfaz');
+            }, 200);
+            
+          } else if (activity.algorithmStatus === 'error') {
+            clearInterval(pollingInterval);
+            console.log('❌ Error del algoritmo detectado via polling');
+            
+            const errorMsg = activity.algorithmError || 'Error desconocido en el algoritmo';
+            this.stopAlgorithmProgress(false, errorMsg);
+          }
+          // Si sigue 'running', continuar polling
+        },
+        error: (error: any) => {
+          console.error(`❌ Error en polling ${pollingAttempts}:`, error);
+          // Continuar polling en caso de error de red temporal
+        }
+      });
+    }, 5000); // Verificar cada 5 segundos
+  }
+
+  /**
    * Inicia el indicador de progreso del algoritmo
+   * MEJORADO: Tiempo estimado más preciso basado en complejidad
    */
   private startAlgorithmProgress(): void {
     this.isAlgorithmRunning = true;
     this.elapsedTime = 0;
     
-    // Calcular tiempo estimado basado en número de estudiantes
-    const baseTime = 15; // 15 segundos base
-    const studentFactor = Math.ceil(this.selectedStudents.length / 5) * 5; // 5 segundos por cada 5 estudiantes
-    this.estimatedTime = baseTime + studentFactor;
+    // Calcular tiempo estimado basado en número de estudiantes y complejidad
+    const baseTime = 20; // 20 segundos base
+    const studentFactor = Math.ceil(this.selectedStudents.length / 3) * 5; // 5 segundos por cada 3 estudiantes
+    const restrictionsFactor = (this.restrictions.mustBeTogether.length + this.restrictions.mustNotBeTogether.length) * 3; // 3 segundos por restricción
+    this.estimatedTime = baseTime + studentFactor + restrictionsFactor;
     
     console.log(`⏱️ Algoritmo iniciado - Tiempo estimado: ${this.estimatedTime} segundos`);
+    console.log(`📊 Factores: base=${baseTime}s, estudiantes=${studentFactor}s, restricciones=${restrictionsFactor}s`);
     
     // Actualizar progreso cada segundo
     this.algorithmTimer = setInterval(() => {
@@ -551,8 +756,9 @@ export class CreateGroupsAlgorithmFormComponent {
 
   /**
    * Para el indicador de progreso del algoritmo
+   * MEJORADO: Mejor manejo de mensajes de error
    */
-  private stopAlgorithmProgress(success: boolean): void {
+  private stopAlgorithmProgress(success: boolean, errorMessage?: string): void {
     this.isAlgorithmRunning = false;
     
     if (this.algorithmTimer) {
@@ -563,31 +769,34 @@ export class CreateGroupsAlgorithmFormComponent {
     if (success) {
       this.algorithmProgress = '🎉 ¡Equipos creados exitosamente!';
     } else {
-      this.algorithmProgress = '❌ Error al crear equipos';
+      this.algorithmProgress = errorMessage || '❌ Error al crear equipos';
     }
     
-    // Limpiar mensaje después de 3 segundos
+    // Limpiar mensaje después de 5 segundos
     setTimeout(() => {
       this.algorithmProgress = '';
-    }, 3000);
+    }, 5000);
   }
 
   /**
    * Actualiza el mensaje de progreso basado en tiempo transcurrido
+   * MEJORADO: Fases más realistas del algoritmo
    */
   private updateAlgorithmProgress(): void {
     const progress = Math.min((this.elapsedTime / this.estimatedTime) * 100, 95);
     
-    if (this.elapsedTime <= 3) {
-      this.algorithmProgress = '🔍 Analizando perfiles BELBIN...';
-    } else if (this.elapsedTime <= 8) {
-      this.algorithmProgress = '⚙️ Aplicando restricciones...';
+    if (this.elapsedTime <= 5) {
+      this.algorithmProgress = '🔍 Analizando perfiles BELBIN de estudiantes...';
+    } else if (this.elapsedTime <= 10) {
+      this.algorithmProgress = '⚙️ Aplicando restricciones de agrupación...';
     } else if (this.elapsedTime <= 15) {
       this.algorithmProgress = '🧠 Ejecutando algoritmo de optimización...';
+    } else if (this.elapsedTime <= 25) {
+      this.algorithmProgress = '🔄 Validando soluciones encontradas...';
     } else if (this.elapsedTime <= this.estimatedTime) {
       this.algorithmProgress = '✨ Finalizando formación de equipos...';
     } else {
-      this.algorithmProgress = '🔄 Procesando resultados...';
+      this.algorithmProgress = '🔄 Completando proceso y creando grupos...';
     }
   }
 

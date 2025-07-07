@@ -522,23 +522,23 @@
                     </div>                                      
                 </div>
                 
-                <!-- Indicador de progreso del algoritmo -->
+                <!-- MEJORADO: Indicador de progreso del algoritmo con mejor diseño -->
                 <div *ngIf="isAlgorithmRunning" class="mt-4">
-                    <div class="bg-blue-50 border-round-lg border-1 border-blue-200 p-4">
-                        <div class="flex align-items-center gap-4">
+                    <div class="algorithm-progress-container">
+                        <div class="algorithm-progress-content">
                             <p-progressSpinner 
                                 [style]="{'width': '40px', 'height': '40px'}" 
                                 strokeWidth="4" 
                                 fill="transparent"
                                 animationDuration="1s">
                             </p-progressSpinner>
-                            <div class="flex-1">
-                                <h5 class="m-0 text-blue-900 font-semibold mb-1">🤖 Algoritmo en ejecución</h5>
-                                <p class="m-0 text-blue-800 mb-2">{{ algorithmProgress }}</p>
-                                <div class="flex align-items-center gap-2 text-sm text-blue-700">
+                            <div class="algorithm-progress-text">
+                                <h5>🤖 Algoritmo en ejecución</h5>
+                                <p>{{ algorithmProgress }}</p>
+                                <div class="algorithm-progress-info">
                                     <i class="pi pi-clock"></i>
                                     <span>{{ getEstimatedTimeRemaining() }}</span>
-                                    <span class="ml-2">•</span>
+                                    <span>•</span>
                                     <span>{{ elapsedTime }}s transcurridos</span>
                                 </div>
                             </div>
@@ -578,13 +578,50 @@
                               class="p-button-outlined"
                               [disabled]="isAlgorithmRunning"
                               (onClick)="prevCallback.emit()" />
-                    <p-button [label]="isAlgorithmRunning ? 'Creando grupos...' : 'Crear Grupos'" 
-                              [icon]="isAlgorithmRunning ? 'pi pi-spin pi-spinner' : 'pi pi-star-fill'" 
-                              class="p-button-lg"
-                              severity="success"
-                              [disabled]="isAlgorithmRunning"
-                              (onClick)="onCreateGroups()">
-                    </p-button>
+                    
+                    <!-- MEJORADO: Botón de crear grupos con indicadores de progreso -->
+                    <div class="flex flex-column align-items-end gap-2">
+                        <!-- Botón principal -->
+                        <p-button 
+                            [label]="isAlgorithmRunning ? 'Procesando...' : 'Crear Grupos'" 
+                            [icon]="isAlgorithmRunning ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+                            iconPos="right" 
+                            class="p-button-lg"
+                            [disabled]="!canCreateGroups() || isAlgorithmRunning"
+                            [loading]="isAlgorithmRunning"
+                            (onClick)="onCreateGroups()" />
+                        
+                        <!-- Indicadores de progreso -->
+                        <div *ngIf="isAlgorithmRunning" class="flex flex-column align-items-end gap-1">
+                            <!-- Mensaje de progreso principal -->
+                            <div class="flex align-items-center gap-2 text-sm">
+                                <p-progressSpinner 
+                                    [style]="{'width': '16px', 'height': '16px'}" 
+                                    strokeWidth="4"
+                                    fill="transparent">
+                                </p-progressSpinner>
+                                <span class="text-600 font-medium">{{ algorithmProgress }}</span>
+                            </div>
+                            
+                            <!-- Tiempo estimado -->
+                            <div *ngIf="getEstimatedTimeRemaining()" 
+                                 class="text-xs text-500">
+                                {{ getEstimatedTimeRemaining() }}
+                            </div>
+                            
+                            <!-- Información adicional del procesamiento -->
+                            <div class="text-xs text-500 text-right max-w-20rem">
+                                Procesando {{ selectedStudents.length }} estudiantes con 
+                                {{ restrictions.mustBeTogether.length + restrictions.mustNotBeTogether.length }} restricciones
+                            </div>
+                        </div>
+                        
+                        <!-- Mensaje informativo cuando no se puede crear -->
+                        <div *ngIf="!canCreateGroups() && !isAlgorithmRunning" 
+                             class="text-xs text-orange-600 max-w-15rem text-right">
+                            {{ getValidationMessage() }}
+                        </div>
+                    </div>
                 </div>
             </ng-template>
         </p-stepperPanel>
