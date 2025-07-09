@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { BehaviorSubject, Observable, map } from 'rxjs';
+import { BehaviorSubject, Observable, interval, timer } from 'rxjs';
+import { map, filter, distinctUntilChanged } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { INotification, IUser } from '../models/models';
+import { WebSocketService } from './websocket.service';
 
 /**
  * Configuración de paginación para el sistema de notificaciones
@@ -66,7 +68,16 @@ export interface NotificationState {
 export class NotificationsService {
 
   private http = inject(HttpClient);
+  private webSocketService = inject(WebSocketService);
   private readonly API_BASE = 'http://localhost:3000';
+
+  // Sistema de polling como respaldo
+  private readonly POLLING_INTERVAL = 30000; // 30 segundos
+  private readonly QUICK_CHECK_INTERVAL = 10000; // 10 segundos para verificaciones rápidas
+  
+  private pollingTimer: any;
+  private lastQuickCheckCount = 0;
+  private lastQuickCheckUnread = 0;
 
   // Estado central del sistema de notificaciones
   private readonly initialState: NotificationState = {
@@ -94,6 +105,7 @@ export class NotificationsService {
     
     // Log de inicialización para debugging
     console.log('🔔 NotificationsService: Servicio enterprise inicializado correctamente');
+    console.log('🌐 NotificationsService: Integrando WebSocket y sistema de polling');
   }
 
   /**
@@ -102,7 +114,256 @@ export class NotificationsService {
    */
   private initializeService(): void {
     console.log('🔔 NotificationsService: Inicializando sistema de notificaciones enterprise');
+    
+    // Cargar notificaciones iniciales
     this.loadInitialNotifications();
+    
+    // Configurar listeners WebSocket
+    this.setupWebSocketListeners();
+    
+    // Configurar polling como respaldo
+    this.setupPollingBackup();
+  }
+
+  /**
+   * Configura los listeners de eventos WebSocket para notificaciones en tiempo real
+   */
+  private setupWebSocketListeners(): void {
+    console.log('🌐 NotificationsService: Configurando listeners WebSocket');
+
+    // Escuchar eventos de notificaciones del WebSocket
+    this.webSocketService.notificationEvents$
+      .pipe(filter(event => event !== null))
+      .subscribe(event => {
+        console.log('🔔 NotificationsService: Evento WebSocket recibido:', event);
+        this.handleWebSocketEvent(event);
+      });
+
+    // Monitorear estado de conexión WebSocket
+    this.webSocketService.connected$
+      .pipe(distinctUntilChanged())
+      .subscribe(connected => {
+        if (connected) {
+          console.log('✅ NotificationsService: WebSocket conectado - desactivando polling');
+          this.stopPolling();
+        } else {
+          console.log('❌ NotificationsService: WebSocket desconectado - activando polling');
+          this.startPolling();
+        }
+      });
+  }
+
+  /**
+   * Maneja eventos recibidos por WebSocket
+   */
+  private handleWebSocketEvent(event: any): void {
+    switch (event.type) {
+      case 'new-notification':
+        this.handleNewNotificationEvent(event.data);
+        break;
+        
+      case 'notification-read':
+        this.handleNotificationReadEvent(event.data);
+        break;
+        
+      case 'notification-deleted':
+        this.handleNotificationDeletedEvent(event.data);
+        break;
+        
+      case 'all-notifications-read':
+        this.handleAllNotificationsReadEvent();
+        break;
+        
+      case 'high-priority-notification':
+        this.handleHighPriorityNotificationEvent(event.data);
+        break;
+        
+      case 'new-activity-assignment':
+        // Este evento puede generar una notificación visual adicional
+        this.handleActivityAssignmentEvent(event.data);
+        break;
+        
+      default:
+        console.log('ℹ️ NotificationsService: Evento WebSocket no manejado:', event.type);
+    }
+  }
+
+  /**
+   * Maneja nueva notificación recibida por WebSocket
+   */
+  private handleNewNotificationEvent(notificationData: any): void {
+    console.log('🔔 NotificationsService: Procesando nueva notificación:', notificationData);
+    
+    const currentState = this.getCurrentState();
+    const notificationDate = new Date(notificationData.timestamp);
+    const newNotification: INotification = {
+      _id: notificationData.notificationId,
+      title: notificationData.title,
+      description: notificationData.description,
+      type: notificationData.type,
+      priority: notificationData.priority,
+      icon: notificationData.icon,
+      link: notificationData.link,
+      read: false,
+      timestamp: notificationDate,
+      date: notificationDate,
+      actionRequired: notificationData.actionRequired || false
+    };
+
+    // Añadir al inicio de la lista
+    const updatedNotifications = [newNotification, ...currentState.notifications];
+    
+    this.updateState({
+      notifications: updatedNotifications,
+      unreadCount: this.calculateUnreadCount(updatedNotifications),
+      pagination: { 
+        ...currentState.pagination, 
+        total: currentState.pagination.total + 1 
+      }
+    });
+
+    // Mostrar notificación visual si es de alta prioridad
+    if (notificationData.priority === 'high') {
+      this.showHighPriorityToast(newNotification);
+    }
+  }
+
+  /**
+   * Maneja notificación marcada como leída por WebSocket
+   */
+  private handleNotificationReadEvent(eventData: any): void {
+    console.log('📖 NotificationsService: Notificación marcada como leída:', eventData.notificationId);
+    this.updateNotificationInState(eventData.notificationId, { read: true });
+  }
+
+  /**
+   * Maneja notificación eliminada por WebSocket
+   */
+  private handleNotificationDeletedEvent(eventData: any): void {
+    console.log('🗑️ NotificationsService: Notificación eliminada:', eventData.notificationId);
+    this.removeNotificationFromState(eventData.notificationId);
+  }
+
+  /**
+   * Maneja todas las notificaciones marcadas como leídas
+   */
+  private handleAllNotificationsReadEvent(): void {
+    console.log('📚 NotificationsService: Todas las notificaciones marcadas como leídas');
+    const currentState = this.getCurrentState();
+    const updatedNotifications = currentState.notifications.map(n => ({ ...n, read: true }));
+    
+    this.updateState({
+      notifications: updatedNotifications,
+      unreadCount: 0
+    });
+  }
+
+  /**
+   * Maneja notificación de alta prioridad
+   */
+  private handleHighPriorityNotificationEvent(notificationData: any): void {
+    console.log('🚨 NotificationsService: Notificación de ALTA PRIORIDAD recibida');
+    this.handleNewNotificationEvent(notificationData);
+    this.showHighPriorityToast(notificationData);
+  }
+
+  /**
+   * Maneja evento de nueva asignación de actividad
+   */
+  private handleActivityAssignmentEvent(eventData: any): void {
+    console.log('📋 NotificationsService: Nueva actividad asignada:', eventData);
+    // Este evento puede requerir recargar las notificaciones
+    this.refreshNotifications().subscribe();
+  }
+
+  /**
+   * Muestra una notificación toast para alta prioridad
+   */
+  private showHighPriorityToast(notification: any): void {
+    // Aquí se puede integrar con un servicio de toast/snackbar
+    console.log('🚨 TOAST: Notificación de alta prioridad:', notification.title);
+    
+    // Ejemplo con alert (reemplazar con toast real)
+    if (notification.priority === 'high') {
+      // Solo mostrar si no está en modo silencioso
+      setTimeout(() => {
+        console.log(`🚨 NOTIFICACIÓN URGENTE: ${notification.title}`);
+      }, 100);
+    }
+  }
+
+  /**
+   * Configura el sistema de polling como respaldo
+   */
+  private setupPollingBackup(): void {
+    console.log('🔄 NotificationsService: Configurando sistema de polling de respaldo');
+    
+    // Solo iniciar polling si WebSocket no está conectado
+    if (!this.webSocketService.isConnected()) {
+      this.startPolling();
+    }
+  }
+
+  /**
+   * Inicia el sistema de polling
+   */
+  private startPolling(): void {
+    if (this.pollingTimer) {
+      return; // Ya está activo
+    }
+
+    console.log('🔄 NotificationsService: Iniciando polling de respaldo');
+    
+    // Polling para verificaciones rápidas cada 10 segundos
+    this.pollingTimer = interval(this.QUICK_CHECK_INTERVAL).subscribe(() => {
+      this.performQuickCheck();
+    });
+
+    // Polling completo cada 30 segundos
+    interval(this.POLLING_INTERVAL).subscribe(() => {
+      if (!this.webSocketService.isConnected()) {
+        console.log('🔄 NotificationsService: Polling completo - WebSocket desconectado');
+        this.refreshNotifications().subscribe();
+      }
+    });
+  }
+
+  /**
+   * Detiene el sistema de polling
+   */
+  private stopPolling(): void {
+    if (this.pollingTimer) {
+      console.log('⏹️ NotificationsService: Deteniendo polling - WebSocket activo');
+      this.pollingTimer.unsubscribe();
+      this.pollingTimer = null;
+    }
+  }
+
+  /**
+   * Realiza verificación rápida de cambios
+   */
+  private performQuickCheck(): void {
+    const currentState = this.getCurrentState();
+    
+    this.http.get(`${this.API_BASE}/users/notifications/quick-check`, {
+      params: {
+        lastCount: this.lastQuickCheckCount.toString(),
+        lastUnread: this.lastQuickCheckUnread.toString()
+      }
+    }).subscribe({
+      next: (response: any) => {
+        if (response.hasChanges) {
+          console.log('🔄 NotificationsService: Cambios detectados via polling, refrescando...');
+          this.refreshNotifications().subscribe();
+        }
+        
+        this.lastQuickCheckCount = response.totalCount;
+        this.lastQuickCheckUnread = response.unreadCount;
+      },
+      error: (error) => {
+        console.error('❌ NotificationsService: Error en quick check:', error);
+      }
+    });
   }
 
   /**
@@ -400,5 +661,46 @@ export class NotificationsService {
       
       // Lógica de navegación se implementará en el componente
     }
+  }
+
+  /**
+   * Verifica el estado de conexión WebSocket
+   */
+  public isWebSocketConnected(): boolean {
+    return this.webSocketService.isConnected();
+  }
+
+  /**
+   * Fuerza reconexión WebSocket
+   */
+  public reconnectWebSocket(): void {
+    console.log('🔄 NotificationsService: Forzando reconexión WebSocket');
+    this.webSocketService.forceReconnect();
+  }
+
+  /**
+   * Obtiene estadísticas de conexión
+   */
+  public getConnectionStats(): any {
+    return {
+      websocketConnected: this.webSocketService.isConnected(),
+      pollingActive: !!this.pollingTimer,
+      connectionInfo: this.webSocketService.getConnectionInfo()
+    };
+  }
+
+  /**
+   * Método de limpieza para destruir el servicio
+   */
+  public destroy(): void {
+    console.log('🧹 NotificationsService: Limpiando recursos...');
+    
+    // Detener polling
+    this.stopPolling();
+    
+    // Limpiar estado
+    this.updateState(this.initialState);
+    
+    console.log('✅ NotificationsService: Recursos limpiados');
   }
 } 
