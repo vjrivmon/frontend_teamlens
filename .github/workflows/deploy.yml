@@ -1,0 +1,61 @@
+name: Deploy Frontend to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build production
+      run: npm run build -- --configuration=production
+    
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          echo "🚀 Iniciando deploy del frontend..."
+          cd ~/teamlens/frontend_teamlens
+          
+          # Backup actual
+          sudo cp -r /var/www/teamlens /var/www/teamlens_backup_$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
+          
+          # Actualizar código (preservando environment.prod.ts)
+          git stash push -m "backup-env" src/environments/environment.prod.ts 2>/dev/null || true
+          git pull origin main
+          git stash pop 2>/dev/null || true
+          
+          # Instalar dependencias
+          npm ci
+          
+          # Build de producción
+          npm run build -- --configuration=production
+          
+          # Desplegar
+          sudo rm -rf /var/www/teamlens/*
+          sudo cp -r dist/app17tb/browser/* /var/www/teamlens/
+          sudo chown -R www-data:www-data /var/www/teamlens/
+          
+          echo "✅ Frontend desplegado exitosamente"
+          
+          # Verificar
+          curl -I http://teamlens.gti-ia.dsic.upv.es || echo "⚠️ No se pudo verificar la web" 
