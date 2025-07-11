@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { BehaviorSubject, Observable, timer, interval } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 export interface WebSocketConnectionInfo {
   connected: boolean;
@@ -31,7 +32,7 @@ export interface WebSocketConnectionInfo {
 export class WebSocketService {
   
   private socket: Socket | null = null;
-  private readonly API_URL = 'http://localhost:3000';
+  private readonly API_URL = environment.apiUrl;
   private readonly MAX_RECONNECT_ATTEMPTS = 10;
   private readonly RECONNECT_DELAY = 3000; // 3 segundos
   private readonly HEARTBEAT_INTERVAL = 30000; // 30 segundos

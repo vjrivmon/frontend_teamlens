@@ -596,7 +596,7 @@ export class CreateGroupsAlgorithmFormComponent {
     console.log(`⏱️ Configurando timeout de ${timeoutDuration / 1000} segundos para el algoritmo`);
 
     // Enviar el algorithmData completo al backend junto con los IDs de estudiantes
-    this.http.post(`http://localhost:3000/activities/${this.activityId}/algorithm/execute`, {
+    this.http.post(`/activities/${this.activityId}/algorithm/execute`, {
       algorithmData: algorithmData.toDTO(),
       selectedStudentIds: this.selectedStudents.map(s => s._id),
       groupConfigurations: this.groupConfigurations,
@@ -716,7 +716,7 @@ export class CreateGroupsAlgorithmFormComponent {
       }
       
       // Verificar estado de la actividad
-      this.http.get(`http://localhost:3000/activities/${this.activityId}`).subscribe({
+      this.http.get(`/activities/${this.activityId}`).subscribe({
         next: (activity: any) => {
           console.log(`🔍 Polling ${pollingAttempts}/${maxPollingAttempts}: Estado = ${activity.algorithmStatus}`);
           

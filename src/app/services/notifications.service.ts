@@ -4,6 +4,7 @@ import { map, filter, distinctUntilChanged } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
 import { INotification, IUser } from '../models/models';
 import { WebSocketService } from './websocket.service';
+import { environment } from '../../environments/environment';
 
 /**
  * Configuración de paginación para el sistema de notificaciones
@@ -69,7 +70,7 @@ export class NotificationsService {
 
   private http = inject(HttpClient);
   private webSocketService = inject(WebSocketService);
-  private readonly API_BASE = 'http://localhost:3000';
+  private readonly API_BASE = '';
 
   // Sistema de polling como respaldo
   private readonly POLLING_INTERVAL = 30000; // 30 segundos
@@ -404,7 +405,7 @@ export class NotificationsService {
     const page = reset ? 1 : pagination.page;
     const params = this.buildQueryParams(page, pagination.limit, filters);
 
-    return this.http.get<NotificationPaginatedResponse>(`${this.API_BASE}/users/notifications`, { params })
+    return this.http.get<NotificationPaginatedResponse>(`${environment.apiUrl}/users/notifications`, { params })
       .pipe(
         map(response => {
           this.handleNotificationsResponse(response, reset);

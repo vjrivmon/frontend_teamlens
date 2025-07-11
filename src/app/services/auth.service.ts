@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { IUser } from '../models/models';
 import { HttpClient } from '@angular/common/http';
-
+import { environment } from '../../environments/environment';
 
 @Injectable()
 export class AuthService {
@@ -20,7 +20,7 @@ export class AuthService {
     //connect to api and get token
 
     let user: IUser | undefined;
-    this.http.post('http://localhost:3000/auth/login', { email, password }, { observe: 'response', withCredentials: true }).subscribe(({
+    this.http.post(`${environment.apiUrl}/auth/login`, { email, password }, { observe: 'response', withCredentials: true }).subscribe(({
 
       next: (data: any) => {
 
@@ -53,7 +53,7 @@ export class AuthService {
 
   register(email: string, name: string, password: string, role: string, { done, err }: any): void {
 
-    this.http.post('http://localhost:3000/auth/register', { email, name, password }, { observe: 'response', withCredentials: true }).subscribe(({
+    this.http.post(`${environment.apiUrl}/auth/register`, { email, name, password }, { observe: 'response', withCredentials: true }).subscribe(({
 
       next: (data: any) => {
         done();
@@ -70,7 +70,7 @@ export class AuthService {
 
   registerStudent(email: string, name: string, password: string, role: string, { done, err }: any): void {
 
-    this.http.post('http://localhost:3000/auth/register-student', { email, name, password }, { observe: 'response', withCredentials: true }).subscribe(({
+    this.http.post(`${environment.apiUrl}/auth/register-student`, { email, name, password }, { observe: 'response', withCredentials: true }).subscribe(({
 
       next: (data: any) => {
         done();
@@ -97,7 +97,7 @@ export class AuthService {
   }
 
   refreshUserData(): void {
-    this.http.get('http://localhost:3000/users/' + this.getUser()?._id).subscribe((data) =>{
+    this.http.get('${environment.apiUrl}/users/' + this.getUser()?._id).subscribe((data) =>{
 
       console.log('refreshUserData', data);
       sessionStorage.setItem('user', JSON.stringify(data));
@@ -112,7 +112,7 @@ export class AuthService {
 
   forgotPassword(email: string, { done, err }: any): void {
     console.log(email)
-    this.http.post('http://localhost:3000/auth/forgot-password', { email }).subscribe(({
+    this.http.post('${environment.apiUrl}/auth/forgot-password', { email }).subscribe(({
 
       next: (data: any) => {
         done();
@@ -127,7 +127,7 @@ export class AuthService {
 
   resetPassword(token: string, password: string, { done, err }: any): void {
     console.log(token)
-    this.http.post('http://localhost:3000/auth/reset-password', { token, password }).subscribe(({
+    this.http.post('${environment.apiUrl}/auth/reset-password', { token, password }).subscribe(({
 
       next: (data: any) => {
         done();
@@ -141,7 +141,7 @@ export class AuthService {
   }
 
   clearNotifications(): void {
-    this.http.post('http://localhost:3000/users/clear-notifications', {}).subscribe(({
+    this.http.post('${environment.apiUrl}/users/clear-notifications', {}).subscribe(({
 
       next: async (data: any) => {
         console.log("data not", data)
@@ -153,8 +153,4 @@ export class AuthService {
 
     }))
   }
-
-
-
-
 }
