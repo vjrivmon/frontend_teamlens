@@ -13,55 +13,55 @@ export class ActivitiesService {
   http = inject(HttpClient);
 
   getActivitiesByUserId(userId: string): Observable<IActivity[]> { 
-    return this.http.get<IActivity[]>('${environment.apiUrl}/users/' + userId + '${environment.apiUrl}/activities/');
+    return this.http.get<IActivity[]>(`${environment.apiUrl}/users/${userId}/activities/`);
   }
 
   getActivityById(activityId: string): Observable<IActivity | undefined> {
-    return this.http.get<IActivity>('${environment.apiUrl}/activities/' + activityId);
+    return this.http.get<IActivity>(`${environment.apiUrl}/activities/${activityId}`);
   }
 
   getStudentsByActivityById(activityId: string): Observable<IUser[] | undefined> {
-    return this.http.get<IUser[]>('${environment.apiUrl}/activities/' + activityId + "${environment.apiUrl}/students");
+    return this.http.get<IUser[]>(`${environment.apiUrl}/activities/${activityId}/students`);
   }
 
   getGroupsByActivityById(activityId: string): Observable<IGroup[] | undefined> {
-    return this.http.get<IGroup[]>('${environment.apiUrl}/activities/' + activityId + "${environment.apiUrl}/groups");
+    return this.http.get<IGroup[]>(`${environment.apiUrl}/activities/${activityId}/groups`);
   }
 
   createActivity(activityData: INewActivity): Observable<IActivity | undefined> {
-    return this.http.post<IActivity>('${environment.apiUrl}/activities/', activityData);
+    return this.http.post<IActivity>(`${environment.apiUrl}/activities/`, activityData);
   }
 
   createGroup(activityId: string, groupData: INewGroup): Observable<IGroup | undefined> {
-    return this.http.post<IGroup>('${environment.apiUrl}/activities/' + activityId + '${environment.apiUrl}/groups', groupData);
+    return this.http.post<IGroup>(`${environment.apiUrl}/activities/${activityId}/groups`, groupData);
   }
 
   createGroupsAlgorithm(activityId: string, algorithmData: {}): Observable<IGroup | undefined> {
-    return this.http.post<IGroup>('${environment.apiUrl}/activities/' + activityId + '${environment.apiUrl}/create-algorithm', algorithmData);
+    return this.http.post<IGroup>(`${environment.apiUrl}/activities/${activityId}/create-algorithm`, algorithmData);
   }
 
   getGroupById(activityId: string, groupId: string): Observable<IGroup | undefined> {
-    return this.http.get<IGroup>('${environment.apiUrl}/activities/' + activityId + '${environment.apiUrl}/groups/' + groupId);
+    return this.http.get<IGroup>(`${environment.apiUrl}/activities/${activityId}/groups/${groupId}`);
   }
 
   addStudentsToActivityByEmail(activityId: string, emails: string[]): Observable<IUser[] | undefined> {
-    return this.http.post<IUser[]>('${environment.apiUrl}/activities/' + activityId + '${environment.apiUrl}/students', { emails });
+    return this.http.post<IUser[]>(`${environment.apiUrl}/activities/${activityId}/students`, { emails });
   }
 
   deleteActivityById(activityId: string): Observable<any> {
-    return this.http.delete('${environment.apiUrl}/activities/' + activityId);
+    return this.http.delete(`${environment.apiUrl}/activities/${activityId}`);
   }
   
   deleteGroupById(activityId: string, groupId: string): Observable<any> {
-    return this.http.delete('${environment.apiUrl}/activities/' + activityId + "/groups/" + groupId);
+    return this.http.delete(`${environment.apiUrl}/activities/${activityId}/groups/${groupId}`);
   }
 
   addStudentToGroup(activityId: string, groupId: string, studentIds: string[]): Observable<any> {
-    return this.http.post('${environment.apiUrl}/activities/' + activityId + "/groups/" + groupId + "/students", { students: studentIds });
+    return this.http.post(`${environment.apiUrl}/activities/${activityId}/groups/${groupId}/students`, { students: studentIds });
   }
 
   removeStudentFromGroup(activityId: string, groupId: string, studentId: string): Observable<any> {
-    return this.http.delete('${environment.apiUrl}/activities/' + activityId + "/groups/" + groupId + "/students/" + studentId);
+    return this.http.delete(`${environment.apiUrl}/activities/${activityId}/groups/${groupId}/students/${studentId}`);
   }
 
   /**

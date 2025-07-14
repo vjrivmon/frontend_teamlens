@@ -18,15 +18,15 @@ export class QuestionnairesService {
   }
 
   getQuestionnairesByUserId(userId: string): Observable<IQuestionnaire[]> { 
-    return this.http.get<IQuestionnaire[]>('${environment.apiUrl}/users/' + userId + '${environment.apiUrl}/questionnaires/');
+    return this.http.get<IQuestionnaire[]>(`${environment.apiUrl}/users/${userId}/questionnaires/`);
   }
 
   getQuestionnaireById(questionnaireId: string): Observable<IQuestionnaire | undefined> {
-    return this.http.get<IQuestionnaire>('${environment.apiUrl}/questionnaires/' + questionnaireId);
+    return this.http.get<IQuestionnaire>(`${environment.apiUrl}/questionnaires/${questionnaireId}`);
   }
 
   getAskedQuestionnaires(): Observable<TQuestionnaireResult[]> {
-    return this.http.get<TQuestionnaireResult[]>('${environment.apiUrl}/questionnaires/asked');
+    return this.http.get<TQuestionnaireResult[]>(`${environment.apiUrl}/questionnaires/asked`);
   }
 
   /**
@@ -41,7 +41,7 @@ export class QuestionnairesService {
   //getQuestionnairesByActivityId(activityId: string): Observable<IQuestionnaire[]> {
 
   submitQuestionnaire(questionnaireId: string, value: any): Observable<any> {
-    return this.http.put<any>('${environment.apiUrl}/questionnaires/' + questionnaireId + '${environment.apiUrl}/submit', value);
+    return this.http.put<any>(`${environment.apiUrl}/questionnaires/${questionnaireId}/submit`, value);
   }
 
 }

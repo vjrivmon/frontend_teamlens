@@ -1,61 +1,194 @@
-name: Deploy Frontend to Production
+name: 🎨 Deploy Frontend TeamLens to Production v2.1
 
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:  # Permitir ejecución manual
 
 jobs:
+  # ============================================================================
+  # FRONTEND DEPLOYMENT
+  # ============================================================================
   deploy-frontend:
+    name: 🎨 Deploy Frontend
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     
     steps:
-    - name: Checkout code
+    - name: 📦 Checkout Repository
       uses: actions/checkout@v4
     
-    - name: Setup Node.js 20.x
+    - name: 🔧 Setup Node.js 20.x
       uses: actions/setup-node@v4
       with:
         node-version: '20.x'
         cache: 'npm'
     
-    - name: Install dependencies
+    - name: 📋 Install Frontend Dependencies
       run: npm ci
     
-    - name: Build production
+    - name: 🏗️ Build Production Angular App
       run: npm run build -- --configuration=production
     
-    - name: Deploy to server
+    - name: 🚀 Deploy Frontend to Server
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: ${{ secrets.PORT }}
+        timeout: 30s
+        command_timeout: 3m
         script: |
-          echo "🚀 Iniciando deploy del frontend..."
+          echo "🎨 [v2.1-$(date +%H%M%S)] Iniciando deploy del frontend TeamLens..."
+          echo "🔍 Verificando conectividad y configuración..."
+          whoami
+          pwd
           cd ~/teamlens/frontend_teamlens
           
-          # Backup actual
-          sudo cp -r /var/www/teamlens /var/www/teamlens_backup_$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
+          # Verificar directorios críticos
+          if [ ! -d "/var/www" ]; then
+            echo "❌ Error: Directorio /var/www no encontrado"
+            exit 1
+          fi
           
-          # Actualizar código (preservando environment.prod.ts)
-          git stash push -m "backup-env" src/environments/environment.prod.ts 2>/dev/null || true
-          git pull origin main
-          git stash pop 2>/dev/null || true
+          # Backup con timestamp y rotación inteligente
+          echo "💾 Creando backup del frontend actual..."
+          BACKUP_DIR="/var/www/teamlens_backup_$(date +%Y%m%d_%H%M%S)"
+          if [ -d "/var/www/teamlens" ]; then
+            sudo cp -r /var/www/teamlens "$BACKUP_DIR" 2>/dev/null || echo "⚠️ No se pudo crear backup completo"
+            
+            # Limpiar backups antiguos (mantener solo los últimos 5)
+            sudo find /var/www -maxdepth 1 -type d -name "teamlens_backup_*" -exec ls -td {} + | tail -n +6 | xargs -r sudo rm -rf
+          fi
           
-          # Instalar dependencias
-          npm ci
+          # Preservar configuraciones específicas de producción
+          echo "📥 Actualizando código desde repositorio..."
+          if [ -f "src/environments/environment.prod.ts" ]; then
+            git stash push -m "backup-prod-env-$(date +%Y%m%d_%H%M%S)" src/environments/environment.prod.ts 2>/dev/null || true
+          fi
           
-          # Build de producción
-          npm run build -- --configuration=production
+          git pull origin main || {
+            echo "❌ Error: No se pudo actualizar el código desde git"
+            exit 1
+          }
           
-          # Desplegar
-          sudo rm -rf /var/www/teamlens/*
-          sudo cp -r dist/app17tb/browser/* /var/www/teamlens/
-          sudo chown -R www-data:www-data /var/www/teamlens/
+          # Restaurar configuración de producción
+          git stash pop 2>/dev/null || echo "ℹ️ No había configuración en stash"
+          
+          # Verificar integridad del proyecto Angular
+          if [ ! -f "angular.json" ]; then
+            echo "❌ Error: angular.json no encontrado - No es un proyecto Angular válido"
+            exit 1
+          fi
+          
+          if [ ! -f "package.json" ]; then
+            echo "❌ Error: package.json no encontrado"
+            exit 1
+          fi
+          
+          # Instalar dependencias con timeout y verificación
+          echo "📦 Instalando dependencias de Angular..."
+          timeout 300 npm ci || {
+            echo "❌ Error: Timeout en instalación de dependencias"
+            echo "📋 Intentando diagnóstico..."
+            npm cache verify
+            exit 1
+          }
+          
+          # Build de producción con optimizaciones
+          echo "🏗️ Compilando aplicación Angular para producción..."
+          npm run build -- --configuration=production --optimization --aot --build-optimizer || {
+            echo "❌ Error: Falló la compilación de Angular"
+            echo "📋 Verificando configuración..."
+            if [ -f "angular.json" ]; then
+              echo "✅ angular.json existe"
+            fi
+            exit 1
+          }
+          
+          # Verificar que el build fue exitoso
+          if [ ! -d "dist/app17tb/browser" ]; then
+            echo "❌ Error: Directorio de build dist/app17tb/browser no fue generado"
+            echo "📋 Contenido de dist/:"
+            ls -la dist/ 2>/dev/null || echo "dist/ no existe"
+            exit 1
+          fi
+          
+          # Verificar archivos críticos del build
+          if [ ! -f "dist/app17tb/browser/index.html" ]; then
+            echo "❌ Error: index.html no fue generado en el build"
+            exit 1
+          fi
+          
+          echo "✅ Build de Angular completado exitosamente"
+          echo "📊 Archivos generados en dist/app17tb/browser/:"
+          ls -la dist/app17tb/browser/ | head -10
+          
+          # Despliegue con verificaciones de seguridad
+          echo "🚀 Desplegando archivos al servidor web..."
+          
+          # Crear directorio de destino si no existe
+          sudo mkdir -p /var/www/teamlens
+          
+          # Limpiar directorio destino con verificación
+          echo "🧹 Limpiando directorio de destino..."
+          sudo rm -rf /var/www/teamlens/* || {
+            echo "❌ Error: No se pudo limpiar el directorio de destino"
+            exit 1
+          }
+          
+          # Copiar archivos nuevos
+          echo "📁 Copiando archivos del build..."
+          sudo cp -r dist/app17tb/browser/* /var/www/teamlens/ || {
+            echo "❌ Error: No se pudieron copiar los archivos"
+            exit 1
+          }
+          
+          # Configurar permisos y propietario
+          echo "🔐 Configurando permisos..."
+          sudo chown -R www-data:www-data /var/www/teamlens/ || echo "⚠️ Advertencia: No se pudieron establecer propietarios"
+          sudo chmod -R 755 /var/www/teamlens/ || echo "⚠️ Advertencia: No se pudieron establecer permisos"
           
           echo "✅ Frontend desplegado exitosamente"
           
-          # Verificar
-          curl -I http://teamlens.gti-ia.dsic.upv.es || echo "⚠️ No se pudo verificar la web" 
+          # Verificaciones post-despliegue
+          echo "🩺 Verificando despliegue..."
+          
+          # Verificar archivos críticos en destino
+          if [ -f "/var/www/teamlens/index.html" ]; then
+            echo "✅ index.html desplegado correctamente"
+          else
+            echo "❌ Error: index.html no encontrado en destino"
+            exit 1
+          fi
+          
+          # Verificar conectividad web
+          echo "🌐 Verificando accesibilidad web..."
+          if curl -I http://teamlens.gti-ia.dsic.upv.es 2>/dev/null | grep -q "200\|301\|302"; then
+            echo "✅ Sitio web accesible"
+          else
+            echo "⚠️ Advertencia: No se pudo verificar accesibilidad web"
+            echo "📋 Respuesta del servidor:"
+            curl -I http://teamlens.gti-ia.dsic.upv.es 2>&1 | head -5
+          fi
+          
+          # Verificar tamaño del despliegue
+          DEPLOY_SIZE=$(sudo du -sh /var/www/teamlens | cut -f1)
+          echo "📊 Tamaño del despliegue: $DEPLOY_SIZE"
+          
+          # Verificar algunos archivos JavaScript críticos
+          JS_FILES=$(find /var/www/teamlens -name "*.js" | wc -l)
+          CSS_FILES=$(find /var/www/teamlens -name "*.css" | wc -l)
+          echo "📊 Archivos JavaScript: $JS_FILES"
+          echo "📊 Archivos CSS: $CSS_FILES"
+          
+          # Test básico de contenido
+          if grep -q "TeamLens" /var/www/teamlens/index.html 2>/dev/null; then
+            echo "✅ Contenido de la aplicación verificado"
+          else
+            echo "⚠️ Advertencia: No se pudo verificar contenido de TeamLens"
+          fi
+          
+          echo "🎉 Deploy del frontend completado - Timestamp: $(date)"
+          echo "🌐 URL: http://teamlens.gti-ia.dsic.upv.es" 

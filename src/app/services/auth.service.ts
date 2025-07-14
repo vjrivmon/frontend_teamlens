@@ -97,7 +97,7 @@ export class AuthService {
   }
 
   refreshUserData(): void {
-    this.http.get('${environment.apiUrl}/users/' + this.getUser()?._id).subscribe((data) =>{
+    this.http.get(`${environment.apiUrl}/users/${this.getUser()?._id}`).subscribe((data) =>{
 
       console.log('refreshUserData', data);
       sessionStorage.setItem('user', JSON.stringify(data));
@@ -112,7 +112,7 @@ export class AuthService {
 
   forgotPassword(email: string, { done, err }: any): void {
     console.log(email)
-    this.http.post('${environment.apiUrl}/auth/forgot-password', { email }).subscribe(({
+    this.http.post(`${environment.apiUrl}/auth/forgot-password`, { email }).subscribe(({
 
       next: (data: any) => {
         done();
@@ -127,7 +127,7 @@ export class AuthService {
 
   resetPassword(token: string, password: string, { done, err }: any): void {
     console.log(token)
-    this.http.post('${environment.apiUrl}/auth/reset-password', { token, password }).subscribe(({
+    this.http.post(`${environment.apiUrl}/auth/reset-password`, { token, password }).subscribe(({
 
       next: (data: any) => {
         done();
@@ -141,7 +141,7 @@ export class AuthService {
   }
 
   clearNotifications(): void {
-    this.http.post('${environment.apiUrl}/users/clear-notifications', {}).subscribe(({
+    this.http.post(`${environment.apiUrl}/users/clear-notifications`, {}).subscribe(({
 
       next: async (data: any) => {
         console.log("data not", data)
