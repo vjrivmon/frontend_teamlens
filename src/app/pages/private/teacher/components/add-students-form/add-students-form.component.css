@@ -89,56 +89,58 @@ input[type="text"]:focus {
     color: #64748b;
 }
 
-/* Contenedor de emails dentro del área */
-.email-items {
+/* Lista de emails */
+.email-list {
     padding: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
 }
 
-/* Email individual */
-.email-item {
+/* Fila de email individual */
+.email-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
     font-size: 0.875rem;
-    transition: all 0.2s ease;
 }
 
-.email-item:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+.email-row:last-child {
+    border-bottom: none;
 }
 
-.email-item .pi-user {
+.email-number {
+    color: #64748b;
+    font-weight: 500;
+    min-width: 1.5rem;
+}
+
+.email-icon {
     color: #64748b;
     font-size: 0.75rem;
 }
 
-.email-text {
+.email-address {
     flex-grow: 1;
+    color: #1e293b;
     font-weight: 500;
-    color: #475569;
 }
 
-.remove-btn {
-    color: #94a3b8;
-    cursor: pointer;
-    font-size: 0.75rem;
+.remove-email-btn {
+    background: none;
+    border: none;
     padding: 0.25rem;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s ease;
     border-radius: 3px;
-    transition: all 0.2s ease;
 }
 
-.remove-btn:hover {
+.remove-email-btn:hover {
     color: #ef4444;
     background: #fef2f2;
 }
+
+
 
 /* Botones de acción */
 .actions {

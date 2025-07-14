@@ -19,17 +19,21 @@
     <div class="field">
         <label class="email-list-label">Estudiantes a añadir:</label>
         <div class="email-list-container" [class.empty]="emailList.length === 0">
+            <!-- Estado vacío -->
             <div *ngIf="emailList.length === 0" class="empty-state">
                 <i class="pi pi-users text-muted"></i>
                 <span class="text-muted">Los emails aparecerán aquí cuando los agregues</span>
             </div>
-            <div *ngIf="emailList.length > 0" class="email-items">
-                <div *ngFor="let email of emailList" class="email-item">
-                    <i class="pi pi-user"></i>
-                    <span class="email-text">{{ email }}</span>
-                    <i class="pi pi-times remove-btn" 
-                       (click)="removeEmail(email)"
-                       title="Eliminar"></i>
+            
+            <!-- Lista de emails -->
+            <div *ngIf="emailList.length > 0" class="email-list">
+                <div *ngFor="let email of emailList; index as i" class="email-row">
+                    <span class="email-number">{{ i + 1 }}.</span>
+                    <i class="pi pi-user email-icon"></i>
+                    <span class="email-address">{{ email }}</span>
+                    <button type="button" class="remove-email-btn" (click)="removeEmail(email)">
+                        <i class="pi pi-times"></i>
+                    </button>
                 </div>
             </div>
         </div>
