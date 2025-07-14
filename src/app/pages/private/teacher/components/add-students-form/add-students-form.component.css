@@ -1,33 +1,4 @@
-/* Estilos para los chips de email */
-:host ::ng-deep .p-chips .p-chips-multiple-container .p-chips-token {
-    padding: 0.5rem 0.75rem;
-    margin: 0.25rem 0.5rem 0.25rem 0;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    color: #475569;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    transition: all 0.2s ease;
-}
 
-:host ::ng-deep .p-chips .p-chips-multiple-container .p-chips-token:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-}
-
-:host ::ng-deep .p-chips .p-chips-multiple-container {
-    margin: 0;
-    padding: 0.75rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    background: #ffffff;
-    min-height: 2.5rem;
-    cursor: text;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-}
 
 /* Contenedor principal */
 .card {
@@ -118,22 +89,41 @@ input[type="text"]:focus {
     color: #64748b;
 }
 
-/* Chip de email personalizado */
-.email-chip {
+/* Contenedor de emails dentro del área */
+.email-items {
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Email individual */
+.email-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    width: 100%;
+    padding: 0.5rem 0.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
 }
 
-.email-chip .pi-user {
+.email-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.email-item .pi-user {
     color: #64748b;
     font-size: 0.75rem;
 }
 
-.email-chip span {
+.email-text {
     flex-grow: 1;
     font-weight: 500;
+    color: #475569;
 }
 
 .remove-btn {

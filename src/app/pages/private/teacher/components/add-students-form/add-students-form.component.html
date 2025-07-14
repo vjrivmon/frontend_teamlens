@@ -1,5 +1,5 @@
 <div class="card p-fluid">
-    <p>Agregar estudiantes por email</p>
+    <p>Añadir estudiantes por email</p>
     
     <!-- Input principal para emails -->
     <div class="field">
@@ -17,28 +17,21 @@
 
     <!-- Lista de emails agregados -->
     <div class="field">
-        <label class="email-list-label">Estudiantes a agregar:</label>
+        <label class="email-list-label">Estudiantes a añadir:</label>
         <div class="email-list-container" [class.empty]="emailList.length === 0">
             <div *ngIf="emailList.length === 0" class="empty-state">
                 <i class="pi pi-users text-muted"></i>
                 <span class="text-muted">Los emails aparecerán aquí cuando los agregues</span>
             </div>
-            <p-chips 
-                *ngIf="emailList.length > 0"
-                [(ngModel)]="emailList" 
-                separator=","
-                [allowDuplicate]="false"
-                [disabled]="false">
-                <ng-template let-item pTemplate="item">
-                    <div class="email-chip">
-                        <i class="pi pi-user"></i>
-                        <span>{{ item }}</span>
-                        <i class="pi pi-times remove-btn" 
-                           (click)="removeEmail(item)"
-                           title="Eliminar"></i>
-                    </div>
-                </ng-template>
-            </p-chips>
+            <div *ngIf="emailList.length > 0" class="email-items">
+                <div *ngFor="let email of emailList" class="email-item">
+                    <i class="pi pi-user"></i>
+                    <span class="email-text">{{ email }}</span>
+                    <i class="pi pi-times remove-btn" 
+                       (click)="removeEmail(email)"
+                       title="Eliminar"></i>
+                </div>
+            </div>
         </div>
         <small class="help-text">Total: {{ emailList.length }} estudiante(s)</small>
     </div>
@@ -49,7 +42,7 @@
             severity="secondary" 
             (click)="addStudentsEvent([])" />
         <p-button 
-            label="Agregar estudiantes" 
+            label="Añadir estudiantes" 
             [disabled]="emailList.length === 0"
             (click)="addStudentsEvent(emailList)"/>
     </div>
