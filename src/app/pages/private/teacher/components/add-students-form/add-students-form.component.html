@@ -1,53 +1,37 @@
 <div class="card p-fluid">
     <p>Añadir estudiantes por email</p>
     
-    <!-- Input principal para emails -->
+    <!-- Input para emails -->
     <div class="field">
         <input 
             type="text" 
             pInputText 
             [(ngModel)]="emailInput"
-            (input)="onEmailInputChange($event)"
-            (keydown)="onEmailInputKeydown($event)"
-            (paste)="onEmailInputPaste($event)"
+            (input)="onInputChange()"
+            (keypress)="onKeyPress($event)"
             placeholder="Introduce emails separados por espacios o comas"
             class="w-full" />
         <small class="help-text">Ejemplo: user1&#64;mail.com user2&#64;mail.com</small>
     </div>
 
-    <!-- Lista de emails agregados -->
+    <!-- Lista de emails -->
     <div class="field">
-        <label class="email-list-label">Estudiantes a añadir:</label>
-        <div class="email-list-container" [class.empty]="emailList.length === 0">
-            <!-- Estado vacío -->
-            <div *ngIf="emailList.length === 0" class="empty-state">
-                <i class="pi pi-users text-muted"></i>
-                <span class="text-muted">Los emails aparecerán aquí cuando los agregues</span>
+        <label>Estudiantes a añadir:</label>
+        <div class="email-box">
+            <div *ngIf="emailList.length === 0" class="empty-message">
+                Los emails aparecerán aquí cuando los agregues
             </div>
-            
-            <!-- Lista de emails -->
-            <div *ngIf="emailList.length > 0" class="email-list">
-                <div *ngFor="let email of emailList; index as i" class="email-row">
-                    <span class="email-number">{{ i + 1 }}.</span>
-                    <i class="pi pi-user email-icon"></i>
-                    <span class="email-address">{{ email }}</span>
-                    <button type="button" class="remove-email-btn" (click)="removeEmail(email)">
-                        <i class="pi pi-times"></i>
-                    </button>
-                </div>
+            <div *ngFor="let email of emailList; let i = index" class="email-item">
+                {{ i + 1 }}. {{ email }}
+                <button (click)="removeEmail(email)" class="delete-btn">✕</button>
             </div>
         </div>
-        <small class="help-text">Total: {{ emailList.length }} estudiante(s)</small>
+        <small>Total: {{ emailList.length }} estudiante(s)</small>
     </div>
 
+    <!-- Botones -->
     <div class="actions">
-        <p-button 
-            label="Cancelar" 
-            severity="secondary" 
-            (click)="addStudentsEvent([])" />
-        <p-button 
-            label="Añadir estudiantes" 
-            [disabled]="emailList.length === 0"
-            (click)="addStudentsEvent(emailList)"/>
+        <p-button label="Cancelar" severity="secondary" (click)="addStudentsEvent([])"></p-button>
+        <p-button label="Añadir estudiantes" [disabled]="emailList.length === 0" (click)="addStudentsEvent(emailList)"></p-button>
     </div>
 </div>

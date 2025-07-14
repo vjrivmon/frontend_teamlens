@@ -2,8 +2,6 @@
 
 /* Contenedor principal */
 .card {
-    border: none;
-    box-shadow: none;
     padding: 0;
 }
 
@@ -12,162 +10,72 @@
     margin-bottom: 1.5rem;
 }
 
-.field:last-of-type {
-    margin-bottom: 2rem;
-}
-
-/* Input principal */
+/* Input */
 input[type="text"] {
-    padding: 0.75rem 1rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-input[type="text"]:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    outline: none;
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
 }
 
 /* Texto de ayuda */
 .help-text {
-    display: block;
+    color: #666;
+    font-size: 12px;
     margin-top: 0.5rem;
-    color: #64748b;
-    font-size: 0.75rem;
-    line-height: 1.4;
 }
 
-/* Label para lista de emails */
-.email-list-label {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-weight: 500;
-    color: #1e293b;
-    font-size: 0.875rem;
+/* Caja de emails */
+.email-box {
+    border: 2px dashed #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    min-height: 100px;
+    background: #fafafa;
 }
 
-/* Contenedor de lista de emails */
-.email-list-container {
-    min-height: 3rem;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    background: #ffffff;
-    transition: border-color 0.2s ease;
-}
-
-.email-list-container.empty {
-    border-style: dashed;
-    border-color: #cbd5e1;
-    background: #f8fafc;
-}
-
-/* Estado vacío */
-.empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    gap: 0.5rem;
+/* Mensaje cuando está vacío */
+.empty-message {
+    color: #999;
     text-align: center;
+    font-style: italic;
+    padding: 2rem 0;
 }
 
-.empty-state .pi-users {
-    font-size: 1.5rem;
-    color: #94a3b8;
-}
-
-.empty-state span {
-    font-size: 0.875rem;
-    color: #64748b;
-}
-
-.text-muted {
-    color: #64748b;
-}
-
-/* Lista de emails */
-.email-list {
-    padding: 0.75rem;
-}
-
-/* Fila de email individual */
-.email-row {
+/* Item de email */
+.email-item {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 0.875rem;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    background: white;
+    border: 1px solid #eee;
+    border-radius: 4px;
 }
 
-.email-row:last-child {
-    border-bottom: none;
-}
-
-.email-number {
-    color: #64748b;
-    font-weight: 500;
-    min-width: 1.5rem;
-}
-
-.email-icon {
-    color: #64748b;
-    font-size: 0.75rem;
-}
-
-.email-address {
-    flex-grow: 1;
-    color: #1e293b;
-    font-weight: 500;
-}
-
-.remove-email-btn {
+/* Botón de eliminar */
+.delete-btn {
     background: none;
     border: none;
-    padding: 0.25rem;
+    color: #999;
     cursor: pointer;
-    color: #94a3b8;
-    transition: color 0.2s ease;
+    padding: 0.25rem 0.5rem;
     border-radius: 3px;
 }
 
-.remove-email-btn:hover {
-    color: #ef4444;
-    background: #fef2f2;
+.delete-btn:hover {
+    background: #f0f0f0;
+    color: #d00;
 }
-
-
 
 /* Botones de acción */
 .actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #f1f5f9;
-}
-
-/* Título principal */
-p {
-    margin: 0 0 1.5rem 0;
-    color: #1e293b;
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-/* Responsividad */
-@media (max-width: 640px) {
-    .actions {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-    
-    .actions p-button {
-        width: 100%;
-    }
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
 }
