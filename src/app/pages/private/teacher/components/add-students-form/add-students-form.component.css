@@ -5,8 +5,13 @@
     color: #495057;
     border-radius: 2px;
     max-height: 40px;
+    position: relative;
+    transition: background-color 0.2s ease-in-out;
 }
 
+:host ::ng-deep .p-chips .p-chips-multiple-container .p-chips-token:hover {
+    background: #c7d8ea;
+}
 
 :host ::ng-deep .p-chips .p-chips-multiple-container {
     margin: 0;
@@ -17,4 +22,53 @@
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+}
+
+/* Estilos para el input de emails */
+.email-input-container {
+    margin-bottom: 1rem;
+}
+
+.email-input-container label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+/* Estilo para el cursor pointer en elementos clickeables */
+.cursor-pointer {
+    cursor: pointer !important;
+    opacity: 0.7;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.cursor-pointer:hover {
+    opacity: 1;
+    color: #dc2626;
+}
+
+/* Estilos para el texto de ayuda */
+.text-muted {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* Mejoras visuales para los chips */
+:host ::ng-deep .p-chips .p-chips-multiple-container .p-chips-token .flex {
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Estilo para el contenedor de campos */
+.field {
+    margin-bottom: 1rem;
+}
+
+.field label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.875rem;
 }
