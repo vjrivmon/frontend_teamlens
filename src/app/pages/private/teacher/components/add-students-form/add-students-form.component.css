@@ -1,74 +1,132 @@
+/* Estilos para los chips de email */
 :host ::ng-deep .p-chips .p-chips-multiple-container .p-chips-token {
-    padding: 0.25rem 0.5rem;
-    margin-right: 0.5rem;
-    background: #dde7f1;
-    color: #495057;
-    border-radius: 2px;
-    max-height: 40px;
-    position: relative;
-    transition: background-color 0.2s ease-in-out;
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem 0.5rem 0.25rem 0;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
 }
 
 :host ::ng-deep .p-chips .p-chips-multiple-container .p-chips-token:hover {
-    background: #c7d8ea;
+    background: #f1f5f9;
+    border-color: #cbd5e1;
 }
 
 :host ::ng-deep .p-chips .p-chips-multiple-container {
     margin: 0;
-    padding: 8px;
-    list-style-type: none;
+    padding: 0.75rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #ffffff;
+    min-height: 2.5rem;
     cursor: text;
-    overflow: hidden;
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-}
-
-/* Estilos para el input de emails */
-.email-input-container {
-    margin-bottom: 1rem;
-}
-
-.email-input-container label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #374151;
-}
-
-/* Estilo para el cursor pointer en elementos clickeables */
-.cursor-pointer {
-    cursor: pointer !important;
-    opacity: 0.7;
-    transition: opacity 0.2s ease-in-out;
-}
-
-.cursor-pointer:hover {
-    opacity: 1;
-    color: #dc2626;
-}
-
-/* Estilos para el texto de ayuda */
-.text-muted {
-    color: #6b7280;
-    font-size: 0.875rem;
-}
-
-/* Mejoras visuales para los chips */
-:host ::ng-deep .p-chips .p-chips-multiple-container .p-chips-token .flex {
-    align-items: center;
     gap: 0.25rem;
 }
 
-/* Estilo para el contenedor de campos */
-.field {
-    margin-bottom: 1rem;
+/* Contenedor principal */
+.card {
+    border: none;
+    box-shadow: none;
+    padding: 0;
 }
 
-.field label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #374151;
+/* Campos */
+.field {
+    margin-bottom: 1.5rem;
+}
+
+.field:last-of-type {
+    margin-bottom: 2rem;
+}
+
+/* Input principal */
+input[type="text"] {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
     font-size: 0.875rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="text"]:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+/* Texto de ayuda */
+.help-text {
+    display: block;
+    margin-top: 0.5rem;
+    color: #64748b;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+/* Chip de email personalizado */
+.email-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.email-chip .pi-user {
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+.email-chip span {
+    flex-grow: 1;
+    font-weight: 500;
+}
+
+.remove-btn {
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0.25rem;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+    color: #ef4444;
+    background: #fef2f2;
+}
+
+/* Botones de acción */
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #f1f5f9;
+}
+
+/* Título principal */
+p {
+    margin: 0 0 1.5rem 0;
+    color: #1e293b;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Responsividad */
+@media (max-width: 640px) {
+    .actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .actions p-button {
+        width: 100%;
+    }
 }

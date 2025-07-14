@@ -1,46 +1,46 @@
 <div class="card p-fluid">
-    <p>Agregar estudiantes por email. Puedes separarlos con espacios o comas.<br>
-       <small class="text-muted">Ejemplo: correo1&#64;mail.com correo2&#64;mail.com, correo3&#64;mail.com</small></p>
+    <p>Agregar estudiantes por email</p>
     
-    <!-- Input de texto para pegar múltiples emails -->
-    <div class="field mb-3">
-        <label for="emailInput" class="text-sm font-medium">Pegar emails aquí:</label>
+    <!-- Input principal para emails -->
+    <div class="field">
         <input 
             type="text" 
-            id="emailInput"
             pInputText 
             [(ngModel)]="emailInput"
             (input)="onEmailInputChange($event)"
             (keydown)="onEmailInputKeydown($event)"
             (paste)="onEmailInputPaste($event)"
-            placeholder="Pega tus emails aquí separados por espacios o comas..."
+            placeholder="Introduce emails separados por espacios o comas"
             class="w-full" />
+        <small class="help-text">Ejemplo: user1&#64;mail.com user2&#64;mail.com</small>
     </div>
 
-    <!-- Chips para mostrar emails agregados -->
-    <div class="field">
-        <label class="text-sm font-medium">Emails agregados:</label>
+    <!-- Lista de emails agregados -->
+    <div class="field" *ngIf="emailList.length > 0">
         <p-chips 
             [(ngModel)]="emailList" 
             separator=","
             [allowDuplicate]="false"
             [disabled]="false">
             <ng-template let-item pTemplate="item">
-                <div class="flex align-items-center">
-                    <i class="pi pi-user mr-2"></i>
+                <div class="email-chip">
+                    <i class="pi pi-user"></i>
                     <span>{{ item }}</span>
-                    <i class="pi pi-times ml-2 cursor-pointer" 
+                    <i class="pi pi-times remove-btn" 
                        (click)="removeEmail(item)"
-                       title="Remover email"></i>
+                       title="Eliminar"></i>
                 </div>
             </ng-template>
         </p-chips>
     </div>
 
-    <div class="flex justify-content-end gap-2 mt-4">
-        <p-button label="Cancelar" severity="secondary" (click)="addStudentsEvent([])" />
+    <div class="actions">
         <p-button 
-            label="Añadir estudiantes" 
+            label="Cancelar" 
+            severity="secondary" 
+            (click)="addStudentsEvent([])" />
+        <p-button 
+            label="Agregar estudiantes" 
             [disabled]="emailList.length === 0"
             (click)="addStudentsEvent(emailList)"/>
     </div>
