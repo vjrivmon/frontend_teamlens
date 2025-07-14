@@ -60,15 +60,14 @@ export class AddStudentsFormComponent {
 
   /**
    * Maneja la entrada de texto en el campo de emails
-   * Solo procesa cuando se detectan emails completos válidos
+   * Procesa automáticamente cuando hay emails válidos separados
    */
   onEmailInputChange(event: any): void {
     const inputValue = event.target.value;
     this.emailInput = inputValue;
     
-    // Solo procesar si hay espacios o comas (indicando múltiples emails)
-    // y el último caracter no es parte de un email en construcción
-    if (this.shouldProcessInput(inputValue)) {
+    // Procesar automáticamente cuando hay espacios o comas y emails válidos
+    if (inputValue.includes(' ') || inputValue.includes(',')) {
       const processedEmails = this.processEmailInput(inputValue);
       
       if (processedEmails.length > 0) {
@@ -83,50 +82,36 @@ export class AddStudentsFormComponent {
     }
   }
 
-  /**
-   * Determina si el input debe ser procesado automáticamente
-   * @param input Texto de entrada
-   * @returns boolean indicando si debe procesarse
-   */
-  private shouldProcessInput(input: string): boolean {
-    if (!input.trim()) return false;
-    
-    // Procesar solo si hay múltiples emails válidos separados
-    const emails = input.trim().split(/[,\s]+/).filter(email => email.length > 0);
-    
-    // Solo procesar si hay más de un elemento Y al menos uno es un email válido completo
-    if (emails.length <= 1) return false;
-    
-    // Verificar que al menos el primer email (o penúltimo si está escribiendo) sea válido
-    const emailsToCheck = emails.slice(0, -1); // Excluir el último que puede estar en construcción
-    return emailsToCheck.some(email => this.isValidEmail(email));
-  }
+
 
   /**
    * Maneja el evento de pegado específicamente
-   * @param event Evento de pegado
+   * Procesa automáticamente cuando se pega contenido
    */
   onEmailInputPaste(event: ClipboardEvent): void {
     setTimeout(() => {
       const target = event.target as HTMLInputElement;
       const inputValue = target.value;
-      const processedEmails = this.processEmailInput(inputValue);
       
-      if (processedEmails.length > 0) {
-        // Agregar emails procesados a la lista existente, evitando duplicados
-        const combinedEmails = [...new Set([...this.emailList, ...processedEmails])];
-        this.emailList = combinedEmails;
+      if (inputValue.trim()) {
+        const processedEmails = this.processEmailInput(inputValue);
         
-        // Limpiar el input después de procesar
-        this.emailInput = '';
-        target.value = '';
+        if (processedEmails.length > 0) {
+          // Agregar emails procesados a la lista existente, evitando duplicados
+          const combinedEmails = [...new Set([...this.emailList, ...processedEmails])];
+          this.emailList = combinedEmails;
+          
+          // Limpiar el input después de procesar
+          this.emailInput = '';
+          target.value = '';
+        }
       }
-    }, 10);
+    }, 50); // Tiempo ligeramente mayor para asegurar que el contenido se pegue completamente
   }
 
   /**
    * Maneja el evento de tecla presionada en el input
-   * Permite agregar emails con Enter cuando hay un email válido
+   * Permite agregar emails con Enter de forma intuitiva
    */
   onEmailInputKeydown(event: KeyboardEvent): void {
     if (event.key === 'Enter') {
@@ -134,18 +119,20 @@ export class AddStudentsFormComponent {
       const target = event.target as HTMLInputElement;
       const inputValue = target.value.trim();
       
-      if (this.isValidEmail(inputValue)) {
-        // Agregar email individual válido
-        const newEmails = [...new Set([...this.emailList, inputValue])];
-        this.emailList = newEmails;
-        this.emailInput = '';
-        target.value = '';
-      } else if (inputValue.includes(' ') || inputValue.includes(',')) {
-        // Procesar múltiples emails
+      if (inputValue) {
+        // Intentar procesar todo el contenido del input
         const processedEmails = this.processEmailInput(inputValue);
+        
         if (processedEmails.length > 0) {
+          // Agregar todos los emails válidos encontrados
           const combinedEmails = [...new Set([...this.emailList, ...processedEmails])];
           this.emailList = combinedEmails;
+          this.emailInput = '';
+          target.value = '';
+        } else if (this.isValidEmail(inputValue)) {
+          // Si no se procesó pero es un email válido individual, agregarlo
+          const newEmails = [...new Set([...this.emailList, inputValue])];
+          this.emailList = newEmails;
           this.emailInput = '';
           target.value = '';
         }

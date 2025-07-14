@@ -69,6 +69,55 @@ input[type="text"]:focus {
     line-height: 1.4;
 }
 
+/* Label para lista de emails */
+.email-list-label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+    color: #1e293b;
+    font-size: 0.875rem;
+}
+
+/* Contenedor de lista de emails */
+.email-list-container {
+    min-height: 3rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: #ffffff;
+    transition: border-color 0.2s ease;
+}
+
+.email-list-container.empty {
+    border-style: dashed;
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+/* Estado vacío */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.empty-state .pi-users {
+    font-size: 1.5rem;
+    color: #94a3b8;
+}
+
+.empty-state span {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.text-muted {
+    color: #64748b;
+}
+
 /* Chip de email personalizado */
 .email-chip {
     display: flex;

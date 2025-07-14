@@ -16,22 +16,31 @@
     </div>
 
     <!-- Lista de emails agregados -->
-    <div class="field" *ngIf="emailList.length > 0">
-        <p-chips 
-            [(ngModel)]="emailList" 
-            separator=","
-            [allowDuplicate]="false"
-            [disabled]="false">
-            <ng-template let-item pTemplate="item">
-                <div class="email-chip">
-                    <i class="pi pi-user"></i>
-                    <span>{{ item }}</span>
-                    <i class="pi pi-times remove-btn" 
-                       (click)="removeEmail(item)"
-                       title="Eliminar"></i>
-                </div>
-            </ng-template>
-        </p-chips>
+    <div class="field">
+        <label class="email-list-label">Estudiantes a agregar:</label>
+        <div class="email-list-container" [class.empty]="emailList.length === 0">
+            <div *ngIf="emailList.length === 0" class="empty-state">
+                <i class="pi pi-users text-muted"></i>
+                <span class="text-muted">Los emails aparecerán aquí cuando los agregues</span>
+            </div>
+            <p-chips 
+                *ngIf="emailList.length > 0"
+                [(ngModel)]="emailList" 
+                separator=","
+                [allowDuplicate]="false"
+                [disabled]="false">
+                <ng-template let-item pTemplate="item">
+                    <div class="email-chip">
+                        <i class="pi pi-user"></i>
+                        <span>{{ item }}</span>
+                        <i class="pi pi-times remove-btn" 
+                           (click)="removeEmail(item)"
+                           title="Eliminar"></i>
+                    </div>
+                </ng-template>
+            </p-chips>
+        </div>
+        <small class="help-text">Total: {{ emailList.length }} estudiante(s)</small>
     </div>
 
     <div class="actions">
