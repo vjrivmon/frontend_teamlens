@@ -18,6 +18,8 @@ import { FieldsetModule } from 'primeng/fieldset';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { SkeletonModule } from 'primeng/skeleton';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -30,10 +32,34 @@ import { StudentOnlyDirective } from '../../../../directives/student-only';
 import { AuthService } from '../../../../services/auth.service';
 
 
-import { concatMap, retry } from 'rxjs';
+import { concatMap, retry, catchError, finalize } from 'rxjs';
+import { of, timer } from 'rxjs';
 
 import { CreateGroupComponent, IGroupCreatedEvent } from "../create-group/create-group.component";
 import { QuestionnairesService } from '../../../../services/questionnaires.service';
+
+/**
+ * Interface para manejo de estados de carga
+ */
+interface LoadingState {
+  activity: boolean;
+  students: boolean;
+  groups: boolean;
+  questionnaires: boolean;
+  questionnaireStats: boolean;
+  overall: boolean;
+}
+
+/**
+ * Interface para manejo de errores
+ */
+interface ErrorState {
+  activity: string | null;
+  students: string | null;
+  groups: string | null;
+  questionnaires: string | null;
+  general: string | null;
+}
 
 @Component({
   selector: 'app-activity-detail',
@@ -60,17 +86,42 @@ import { QuestionnairesService } from '../../../../services/questionnaires.servi
     CreateGroupComponent,
     CreateGroupsAlgorithmFormComponent,
     ToastModule,
-    TooltipModule
+    TooltipModule,
+    SkeletonModule,
+    ProgressSpinnerModule
   ]
 })
 export class ActivityDetailComponent {
 
+  // === ESTADOS DE DATOS ===
   activity: IActivity | undefined;
   students: IUser[] = [];
   groups: IGroup[] = [];
-
   questionnaires: IQuestionnaire[] = [];
   questionnaireStats: IQuestionnaireStats[] = [];
+
+  // === ESTADOS DE LOADING ===
+  loadingState: LoadingState = {
+    activity: true,
+    students: true,
+    groups: true,
+    questionnaires: true,
+    questionnaireStats: true,
+    overall: true
+  };
+
+  // === ESTADOS DE ERROR ===
+  errorState: ErrorState = {
+    activity: null,
+    students: null,
+    groups: null,
+    questionnaires: null,
+    general: null
+  };
+
+  // === CONFIGURACIÓN DE REINTENTOS ===
+  private readonly maxRetries = 3;
+  private readonly retryDelay = 1000; // ms
 
   router = inject(Router);
 
@@ -95,6 +146,27 @@ export class ActivityDetailComponent {
     return this.students.filter(student => !student.invitationToken).length;
   }
 
+  /**
+   * Verifica si hay algún error crítico que impida la visualización
+   */
+  get hasCriticalError(): boolean {
+    return !!(this.errorState.activity || this.errorState.general);
+  }
+
+  /**
+   * Verifica si los datos principales están cargados
+   */
+  get isMainDataLoaded(): boolean {
+    return !this.loadingState.activity && !this.loadingState.students && !this.loadingState.groups;
+  }
+
+  /**
+   * Verifica si se debe mostrar el skeleton loader
+   */
+  get shouldShowSkeleton(): boolean {
+    return this.loadingState.overall || this.loadingState.activity;
+  }
+
   constructor(
     private activitiesService: ActivitiesService,
     private questionnairesService: QuestionnairesService,
@@ -103,53 +175,240 @@ export class ActivityDetailComponent {
     private authService: AuthService
   ) { }
 
-
   ngOnInit() {
+    console.log('🚀 [ActivityDetail] Inicializando componente para actividad:', this.activityId);
 
-    console.log('ActivityDetailComponent initialized', this.activityId);
-
+    // Validación temprana del ID de actividad
     if (!this.activityId) {
-      throw new Error('Activity ID is required');
+      this.handleCriticalError('ID de actividad no proporcionado');
+      return;
     }
 
-    this.activitiesService.getActivityById(this.activityId).pipe(
+    // Inicializar carga de datos con manejo robusto de errores
+    this.initializeDataLoading();
+  }
 
-      concatMap(activity => {
-        this.activity = activity;
-        this.loadingStudentsTable = false;
-        // console.log('activity', activity);
-        this.groupsLocked = activity?.algorithmStatus == 'running';
-        return this.activitiesService.getStudentsByActivityById(this.activity!._id);
-      }),
-      concatMap(students => {
-        this.students = students ?? []
-        return this.activitiesService.getGroupsByActivityById(this.activity!._id);
-      }),
-      concatMap(groups => {
-        return this.groups = groups ?? [];
+  /**
+   * Inicializa la carga de datos con manejo de errores y reintentos
+   */
+  private initializeDataLoading(): void {
+    console.log('📡 [ActivityDetail] Iniciando carga de datos...');
+    
+    // Resetear estados
+    this.resetErrorStates();
+    
+    // Cargar datos principales de forma secuencial para mejor UX
+    this.loadActivityData()
+      .then(() => this.loadStudentsData())
+      .then(() => this.loadGroupsData())
+      .then(() => this.loadQuestionnairesData())
+      .then(() => this.loadQuestionnaireStats())
+      .catch((error) => {
+        console.error('❌ [ActivityDetail] Error en carga de datos:', error);
+        this.handleCriticalError('Error cargando datos de la actividad');
       })
+      .finally(() => {
+        this.loadingState.overall = false;
+        console.log('✅ [ActivityDetail] Carga de datos completada');
+      });
+  }
 
-    ).subscribe({
-      next: (data: any) => {
-        //console.log(data)
-      },
-      error: (error) => {
-        //console.error('Error loading activity', error);
-        if (!this.activity) {
-          console.log('Activity not found', this.activityId);
-          this.router.navigate(['/NotFound']);
-        }
+  /**
+   * Carga los datos de la actividad con retry automático
+   */
+  private loadActivityData(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      console.log('📋 [ActivityDetail] Cargando datos de actividad...');
+      
+      this.loadingState.activity = true;
+      this.errorState.activity = null;
 
-      }
+      this.activitiesService.getActivityById(this.activityId)
+        .pipe(
+          retry(this.maxRetries),
+          catchError((error) => {
+            console.error('❌ [ActivityDetail] Error cargando actividad:', error);
+            this.errorState.activity = 'Error cargando información de la actividad';
+            return of(undefined);
+          }),
+          finalize(() => {
+            this.loadingState.activity = false;
+          })
+        )
+        .subscribe({
+          next: (activity) => {
+            if (activity) {
+              this.activity = activity;
+              this.groupsLocked = activity.algorithmStatus === 'running';
+              console.log('✅ [ActivityDetail] Actividad cargada:', activity.title);
+              resolve();
+            } else {
+              this.handleNotFound();
+              reject(new Error('Actividad no encontrada'));
+            }
+          },
+          error: (error) => {
+            console.error('❌ [ActivityDetail] Error final cargando actividad:', error);
+            reject(error);
+          }
+        });
     });
+  }
 
-    this.questionnairesService.getQuestionnaires().subscribe((questionnaires) => {
-      this.questionnaires = questionnaires || [];
+  /**
+   * Carga los datos de estudiantes
+   */
+  loadStudentsData(): Promise<void> {
+    return new Promise((resolve) => {
+      console.log('👥 [ActivityDetail] Cargando estudiantes...');
+      
+      this.loadingState.students = true;
+      this.errorState.students = null;
+
+      this.activitiesService.getStudentsByActivityById(this.activityId)
+        .pipe(
+          retry(this.maxRetries),
+          catchError((error) => {
+            console.error('❌ [ActivityDetail] Error cargando estudiantes:', error);
+            this.errorState.students = 'Error cargando estudiantes';
+            return of([]);
+          }),
+          finalize(() => {
+            this.loadingState.students = false;
+            this.loadingStudentsTable = false;
+          })
+        )
+        .subscribe({
+          next: (students) => {
+            this.students = students || [];
+            console.log(`✅ [ActivityDetail] ${this.students.length} estudiantes cargados`);
+            resolve();
+          }
+        });
     });
+  }
 
-    // Cargar estadísticas de cuestionarios para esta actividad
-    this.loadQuestionnaireStats();
+  /**
+   * Carga los datos de grupos
+   */
+  loadGroupsData(): Promise<void> {
+    return new Promise((resolve) => {
+      console.log('👨‍👩‍👧‍👦 [ActivityDetail] Cargando grupos...');
+      
+      this.loadingState.groups = true;
+      this.errorState.groups = null;
 
+      this.activitiesService.getGroupsByActivityById(this.activityId)
+        .pipe(
+          retry(this.maxRetries),
+          catchError((error) => {
+            console.error('❌ [ActivityDetail] Error cargando grupos:', error);
+            this.errorState.groups = 'Error cargando grupos';
+            return of([]);
+          }),
+          finalize(() => {
+            this.loadingState.groups = false;
+          })
+        )
+        .subscribe({
+          next: (groups) => {
+            this.groups = groups || [];
+            console.log(`✅ [ActivityDetail] ${this.groups.length} grupos cargados`);
+            resolve();
+          }
+        });
+    });
+  }
+
+  /**
+   * Carga los cuestionarios disponibles
+   */
+  loadQuestionnairesData(): Promise<void> {
+    return new Promise((resolve) => {
+      console.log('📝 [ActivityDetail] Cargando cuestionarios...');
+      
+      this.loadingState.questionnaires = true;
+      this.errorState.questionnaires = null;
+
+      this.questionnairesService.getQuestionnaires()
+        .pipe(
+          retry(this.maxRetries),
+          catchError((error) => {
+            console.error('❌ [ActivityDetail] Error cargando cuestionarios:', error);
+            this.errorState.questionnaires = 'Error cargando cuestionarios';
+            return of([]);
+          }),
+          finalize(() => {
+            this.loadingState.questionnaires = false;
+          })
+        )
+        .subscribe({
+          next: (questionnaires) => {
+            this.questionnaires = questionnaires || [];
+            console.log(`✅ [ActivityDetail] ${this.questionnaires.length} cuestionarios cargados`);
+            resolve();
+          }
+        });
+    });
+  }
+
+  /**
+   * Maneja errores críticos que impiden la funcionalidad
+   */
+  private handleCriticalError(message: string): void {
+    console.error('💥 [ActivityDetail] Error crítico:', message);
+    
+    this.errorState.general = message;
+    this.loadingState.overall = false;
+    
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error Crítico',
+      detail: message,
+      life: 8000
+    });
+  }
+
+  /**
+   * Maneja el caso de actividad no encontrada
+   */
+  private handleNotFound(): void {
+    console.log('🔍 [ActivityDetail] Actividad no encontrada:', this.activityId);
+    
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Actividad No Encontrada',
+      detail: 'La actividad solicitada no existe o no tienes permisos para verla',
+      life: 5000
+    });
+    
+    // Navegar después de un breve delay para que el usuario vea el mensaje
+    timer(2000).subscribe(() => {
+      this.router.navigate(['/dashboard']);
+    });
+  }
+
+  /**
+   * Resetea todos los estados de error
+   */
+  private resetErrorStates(): void {
+    this.errorState = {
+      activity: null,
+      students: null,
+      groups: null,
+      questionnaires: null,
+      general: null
+    };
+  }
+
+  /**
+   * Reinicia la carga de datos (útil para botón de reintento)
+   */
+  retryDataLoading(): void {
+    console.log('🔄 [ActivityDetail] Reintentando carga de datos...');
+    
+    this.loadingState.overall = true;
+    this.initializeDataLoading();
   }
 
   addStudentsButton() {
@@ -675,6 +934,8 @@ export class ActivityDetailComponent {
    * Carga las estadísticas de completitud de cuestionarios para la actividad actual
    */
   private loadQuestionnaireStats() {
+    this.loadingState.questionnaireStats = true;
+    
     this.questionnairesService.getQuestionnaireStatsByActivity(this.activityId).subscribe({
       next: (stats) => {
         this.questionnaireStats = stats || [];
@@ -683,6 +944,9 @@ export class ActivityDetailComponent {
       error: (error) => {
         console.error('❌ Error cargando estadísticas de cuestionarios:', error);
         this.questionnaireStats = [];
+      },
+      complete: () => {
+        this.loadingState.questionnaireStats = false;
       }
     });
   }

@@ -1,449 +1,620 @@
-<div class="layout">
-    <header class="container">
-        <div class="flex justify-content-between h-full">
-            <div>
-                <h1 class="text-5xl">{{ activity?.title }}</h1>
-                <p>{{ activity?.description }}</p>
-                <p>{{ activity?.startDate | date: 'dd/MM/yyyy' }}</p>
-                <p>{{ activity?.finishDate | date: 'dd/MM/yyyy' }}</p>
+<!-- SKELETON LOADER: Mostrar mientras se cargan los datos principales -->
+@if (shouldShowSkeleton) {
+    <div class="layout">
+        <header class="container">
+            <div class="flex justify-content-between h-full">
+                <div class="flex-1">
+                    <p-skeleton width="60%" height="3rem" styleClass="mb-3"></p-skeleton>
+                    <p-skeleton width="80%" height="1.2rem" styleClass="mb-2"></p-skeleton>
+                    <p-skeleton width="40%" height="1rem" styleClass="mb-2"></p-skeleton>
+                    <p-skeleton width="40%" height="1rem"></p-skeleton>
+                </div>
+                <p-skeleton width="3rem" height="3rem" styleClass="border-round"></p-skeleton>
             </div>
-            <p-button teacherOnly severity="danger" [outlined]="true" (click)="confirmDeleteActivity()" class="h-fit">
-                <i class="pi pi-trash"></i>
-            </p-button>
-        </div>
-    </header>
+        </header>
 
-    <div class="container flex flex-column gap-4">
-        <section teacherOnly>
-            <h2>Students</h2>
-            <p>These are the students who participate in this activity.</p>
-            <div class="flex align-items-start gap-1">
-                <div class="member-count p-2 bg-gray-100">Total <span>{{ students.length }}</span></div>
-                <div class="member-count p-2 bg-green-100">Active <span>{{ activeMembers }}</span></div>
-                <div class="member-count p-2 bg-blue-100">Remaining <span>{{ students.length - activeMembers }}</span>
-                </div>
-            </div>
-            @if (students.length > 0) {
-            <p-table #dt1 [value]="students" dataKey="_id" [rows]="10" [loading]="loadingStudentsTable"
-                [globalFilterFields]="['_id', 'name', 'email']" [paginator]="true">
-                <ng-template pTemplate="caption">
-                    <div class="flex fluid w-full justify-content-start">
-                        <span class="p-input-icon-left fluid">
-                            <i class="pi pi-search"></i>
-                            <input pInputText type="text" [(ngModel)]="studentsTableSearchValue"
-                                (input)="dt1.filterGlobal(studentsTableSearchValue, 'contains')"
-                                placeholder="Search keyword" class="h-full" />
-                        </span>
-                        <button teacherOnly (click)="addStudentsButton()" class="ui button primary ml-auto">
-                            <i class="pi pi-user-plus mr-2"></i>
-                            Add students
-                        </button>
-                    </div>
-                </ng-template>
-                <ng-template pTemplate="header">
-                    <tr>
-                        <!-- <th class="w-2">
-                            <div class="flex align-items-center">
-                                ID (debug)
-                                <p-columnFilter type="text" field="id" display="menu" />
-                            </div>
-                        </th> -->
-                        <th class="w-auto">
-                            <div class="flex align-items-center">
-                                Name
-                                <p-columnFilter type="text" field="name" display="menu" />
-                            </div>
-                        </th>
-                        <th class="w-auto">
-                            <div class="flex align-items-center">
-                                Email
-                                <p-columnFilter type="text" field="email" display="menu" />
-                            </div>
-                        </th>
-                        <th class="w-2">
-                            Status
-                        </th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-student>
-                    <tr>
-                        <!-- <td>
-                            {{ student._id }}
-                        </td> -->
-                        <td>
-                            {{ student.name }}
-                        </td>
-                        <td>
-                            {{ student.email }}
-                        </td>
-                        <td>
-                            @if (student.invitationToken) {
-                            <p-tag severity="secondary">Pending</p-tag>
-                            } @else {
-                            <p-tag severity="success">Active</p-tag>
-                            }
-                        </td>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                    <tr>
-                        <td colspan="7">No student matches that search!</td>
-                    </tr>
-                </ng-template>
-            </p-table>
-            } @else {
-            <div>
-                <p class="p-info">No students registered in this activity.</p>
-                <button teacherOnly (click)="addStudentsButton()" class="ui button primary">
-                    <i class="pi pi-user-plus mr-2"></i>
-                    Add students to the activity
-                </button>
-            </div>
-            }
-        </section>
-        <section> 
-            <div studentOnly>
-                <div class="flex align-items-center">
-                    <div>
-                        <h2>Groups</h2>
-                        <p>Here you can see all the groups.</p>
-                    </div>
-                </div>
-            </div>
-            <div teacherOnly [hidden]="groupsLocked">
-                <div class="flex align-items-center">
-                    <div>
-                        <h2>Groups</h2>
-                        <p>Here you can create the groups manually or through our algorithm.</p>
-                    </div>
-                    <div class="flex gap-2 ml-auto">
-                        <button pButton 
-                                icon="pi pi-plus" 
-                                label="Nuevo Grupo"
-                                class="p-button-sm"
-                                (click)="onCreateGroupButton()">
-                        </button>
-                        <button (click)="onCreateAlgGroupsButton()" class="w-fit ui button teal">
-                            <i class="pi pi-sparkles mr-2"></i>
-                            Create groups
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- INTERFAZ DE GRUPOS SIMPLIFICADA -->
-            <div class="groups-dashboard" [hidden]="groupsLocked">
+        <div class="container flex flex-column gap-4">
+            <!-- Skeleton para Students Section -->
+            <section>
+                <p-skeleton width="30%" height="2rem" styleClass="mb-3"></p-skeleton>
+                <p-skeleton width="70%" height="1rem" styleClass="mb-4"></p-skeleton>
                 
-                <!-- Estadísticas simples cuando hay grupos -->
-                @if (groups.length > 0) {
-                    <div class="dashboard-header">
-                        <div class="header-stats">
-                            <div class="stat-card">
-                                <div class="stat-number">{{ groups.length }}</div>
-                                <div class="stat-label">Grupos</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number">{{ getTotalAssignedStudents() }}</div>
-                                <div class="stat-label">Asignados</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-number">{{ getUnassignedStudents().length }}</div>
-                                <div class="stat-label">Disponibles</div>
+                <div class="flex align-items-start gap-1 mb-4">
+                    <p-skeleton width="80px" height="2.5rem"></p-skeleton>
+                    <p-skeleton width="80px" height="2.5rem"></p-skeleton>
+                    <p-skeleton width="80px" height="2.5rem"></p-skeleton>
+                </div>
+
+                <!-- Skeleton Table -->
+                <div class="border border-1 border-round">
+                    <div class="p-3">
+                        <p-skeleton width="100%" height="2.5rem" styleClass="mb-3"></p-skeleton>
+                    </div>
+                    @for (item of [1,2,3,4,5]; track $index) {
+                        <div class="p-3 border-top-1 border-gray-200">
+                            <div class="flex align-items-center gap-3">
+                                <p-skeleton width="40%" height="1.2rem"></p-skeleton>
+                                <p-skeleton width="35%" height="1.2rem"></p-skeleton>
+                                <p-skeleton width="80px" height="1.5rem" styleClass="border-round"></p-skeleton>
                             </div>
                         </div>
-                    </div>
-                }
+                    }
+                </div>
+            </section>
 
-                <!-- Contenido Principal -->
-                @if (groups.length > 0) {
-                    <!-- Vista de Grupos Existentes -->
-                    <div class="groups-grid">
-                        @for (group of groups; track group._id) {
-                            <div class="group-panel" 
-                                 (drop)="isTeacher() ? onDrop($event, group) : null" 
-                                 (dragover)="isTeacher() ? onDragOver($event) : null" 
-                                 (dragenter)="isTeacher() ? onDragEnter($event) : null"
-                                 (dragleave)="isTeacher() ? onDragLeave($event) : null">
-                                
-                                <!-- Header del Grupo -->
-                                <div class="group-panel-header">
-                                    <div class="group-meta">
-                                        <h4 class="group-name">{{ group.name }}</h4>
-                                        <span class="group-count">{{ group.students.length }} miembros</span>
-                                    </div>
-                                    <div class="group-controls">
-                                        <button pButton 
-                                                icon="pi pi-eye" 
-                                                class="p-button-text p-button-sm control-btn"
-                                                (click)="goGroupDetail(group._id)"
-                                                pTooltip="Ver detalles">
-                                        </button>
-                                        <button pButton 
-                                                teacherOnly
-                                                icon="pi pi-trash" 
-                                                severity="danger"
-                                                class="p-button-text p-button-sm control-btn"
-                                                (click)="confirmDeleteGroup(group._id)"
-                                                pTooltip="Eliminar grupo">
-                                        </button>
+            <!-- Skeleton para Groups Section -->
+            <section>
+                <p-skeleton width="25%" height="2rem" styleClass="mb-3"></p-skeleton>
+                <div class="grid gap-3">
+                    @for (item of [1,2,3]; track $index) {
+                        <div class="col-12 md:col-6 lg:col-4">
+                            <div class="border border-1 border-round p-4">
+                                <div class="flex justify-content-between align-items-center mb-3">
+                                    <p-skeleton width="60%" height="1.5rem"></p-skeleton>
+                                    <div class="flex gap-2">
+                                        <p-skeleton width="2rem" height="2rem" styleClass="border-round"></p-skeleton>
+                                        <p-skeleton width="2rem" height="2rem" styleClass="border-round"></p-skeleton>
                                     </div>
                                 </div>
-
-                                <!-- Lista de Estudiantes -->
-                                <div class="students-list">
-                                    @if (group.students.length > 0) {
-                                        @for (student of group.students; track student._id) {
-                                            <div class="student-item" 
-                                                 [attr.draggable]="isTeacher()"
-                                                 (dragstart)="isTeacher() ? onDragStart($event, student, group) : null"
-                                                 (dragend)="isTeacher() ? onDragEnd($event) : null">
-                                                
-                                                <div class="student-info-compact">
-                                                    <div class="student-initial">
-                                                        {{ getStudentInitial(student) }}
-                                                    </div>
-                                                    <div class="student-details">
-                                                        <div class="student-name-compact">{{ student.name || 'Sin nombre' }}</div>
-                                                        <div class="student-email-compact">{{ student.email }}</div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="student-actions">
-                                                    <button pButton 
-                                                            teacherOnly
-                                                            icon="pi pi-times" 
-                                                            severity="danger"
-                                                            class="p-button-text p-button-sm student-remove-btn"
-                                                            (click)="quickRemoveStudent(student, group)"
-                                                            pTooltip="Eliminar del grupo">
-                                                    </button>
-                                                    <div teacherOnly class="drag-indicator">
-                                                        <i class="pi pi-arrows-alt"></i>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                    } @else {
-                                        <div class="empty-group-state">
-                                            <i class="pi pi-user-plus"></i>
-                                            <span>Arrastra estudiantes aquí</span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Panel de Estudiantes Disponibles -->
-                    @if (getUnassignedStudents().length > 0) {
-                        <div class="available-panel">
-                            <div class="available-header">
-                                <h4 class="available-title">
-                                    <i class="pi pi-users mr-2"></i>
-                                    Estudiantes Disponibles
-                                </h4>
-                                <span class="available-count">{{ getUnassignedStudents().length }}</span>
-                            </div>
-                            
-                            <div class="available-students" 
-                                 (drop)="isTeacher() ? onDropToUnassigned($event) : null" 
-                                 (dragover)="isTeacher() ? onDragOver($event) : null" 
-                                 (dragenter)="isTeacher() ? onDragEnter($event) : null"
-                                 (dragleave)="isTeacher() ? onDragLeave($event) : null">
-                                @for (student of getUnassignedStudents(); track student._id) {
-                                    <div class="available-student" 
-                                         [attr.draggable]="isTeacher()"
-                                         (dragstart)="isTeacher() ? onDragStart($event, student, null) : null"
-                                         (dragend)="isTeacher() ? onDragEnd($event) : null">
-                                        
-                                        <div class="student-initial available">
-                                            {{ getStudentInitial(student) }}
-                                        </div>
-                                        <div class="student-details">
-                                            <div class="student-name-compact">{{ student.name || 'Sin nombre' }}</div>
-                                            <div class="student-email-compact">{{ student.email }}</div>
-                                        </div>
-                                        <div teacherOnly class="drag-indicator">
-                                            <i class="pi pi-arrows-alt"></i>
-                                        </div>
+                                @for (student of [1,2,3]; track $index) {
+                                    <div class="flex align-items-center gap-2 mb-2">
+                                        <p-skeleton width="2rem" height="2rem" styleClass="border-round"></p-skeleton>
+                                        <p-skeleton width="70%" height="1rem"></p-skeleton>
                                     </div>
                                 }
                             </div>
                         </div>
                     }
-
-                }
+                </div>
+            </section>
+        </div>
+    </div>
+} @else if (hasCriticalError) {
+    <!-- ERROR STATE: Mostrar cuando hay errores críticos -->
+    <div class="layout">
+        <div class="container flex flex-column align-items-center justify-content-center" style="min-height: 60vh;">
+            <div class="text-center p-6 bg-red-50 border-round-lg shadow-2">
+                <i class="pi pi-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+                <h2 class="text-red-700 mb-3">¡Oops! Algo salió mal</h2>
+                <p class="text-red-600 mb-4 max-w-30rem">
+                    {{ errorState.general || errorState.activity || 'Ha ocurrido un error inesperado al cargar la actividad.' }}
+                </p>
+                <div class="flex gap-3 justify-content-center">
+                    <button pButton 
+                            label="Reintentar" 
+                            icon="pi pi-refresh" 
+                            class="p-button-outlined"
+                            (click)="retryDataLoading()"
+                            [loading]="loadingState.overall">
+                    </button>
+                    <button pButton 
+                            label="Volver al Dashboard" 
+                            icon="pi pi-home" 
+                            (click)="router.navigate(['/dashboard'])">
+                    </button>
+                </div>
             </div>
+        </div>
+    </div>
+} @else {
+    <!-- MAIN CONTENT: Mostrar cuando los datos están cargados -->
+    <div class="layout">
+        <header class="container">
+            <div class="flex justify-content-between h-full">
+                <div>
+                    <h1 class="text-5xl">{{ activity?.title }}</h1>
+                    <p>{{ activity?.description }}</p>
+                    <p>{{ activity?.startDate | date: 'dd/MM/yyyy' }}</p>
+                    <p>{{ activity?.finishDate | date: 'dd/MM/yyyy' }}</p>
+                </div>
+                <p-button teacherOnly severity="danger" [outlined]="true" (click)="confirmDeleteActivity()" class="h-fit">
+                    <i class="pi pi-trash"></i>
+                </p-button>
+            </div>
+        </header>
 
-        </section>
-
-        <!-- Sección de Questionnaires: Siempre visible -->
-        <section teacherOnly>
-            <p-divider />
-            <h2>Questionnaires</h2>
-            <div class="flex gap-3 flex-wrap">
-                @for (questionnaire of questionnaires; track $index) {
-
-                <div class="ui card p-4 m-0 questionnaire-card-enhanced">
-                    <div class="questionnaire-header">
-                        <h3>{{ questionnaire.title }}</h3>
-                        
-                        <!-- Indicador de estadísticas -->
-                        @if (getQuestionnaireStats(questionnaire._id); as stats) {
-                            <div class="completion-stats">
-                                <div class="stats-badge" 
-                                     [class.stats-complete]="stats.completionPercentage === 100"
-                                     [class.stats-partial]="stats.completionPercentage > 0 && stats.completionPercentage < 100"
-                                     [class.stats-none]="stats.completionPercentage === 0">
-                                    <span class="completion-text">
-                                        {{ stats.completedCount }}/{{ stats.totalStudents }}
-                                    </span>
-                                    <span class="completion-percentage">
-                                        ({{ stats.completionPercentage }}%)
-                                    </span>
-                                </div>
-                                
-                                <!-- Barra de progreso visual -->
-                                <div class="progress-bar-container">
-                                    <div class="progress-bar" 
-                                         [style.width.%]="stats.completionPercentage"
-                                         [class.progress-complete]="stats.completionPercentage === 100"
-                                         [class.progress-partial]="stats.completionPercentage > 0 && stats.completionPercentage < 100"
-                                         [class.progress-none]="stats.completionPercentage === 0">
-                                    </div>
-                                </div>
-                            </div>
-                        } @else {
-                            <!-- Estado de carga o sin datos -->
-                            <div class="completion-stats">
-                                <div class="stats-badge stats-loading">
-                                    <span class="completion-text">Cargando...</span>
-                                </div>
-                            </div>
-                        }
+        <div class="container flex flex-column gap-4">
+            <!-- STUDENTS SECTION -->
+            <section teacherOnly>
+                <h2>Students</h2>
+                <p>These are the students who participate in this activity.</p>
+                
+                <!-- Loading state para la sección de estudiantes -->
+                @if (loadingState.students) {
+                    <div class="flex align-items-center gap-2 mb-4">
+                        <p-progressSpinner [style]="{ width: '20px', height: '20px' }"></p-progressSpinner>
+                        <span class="text-sm text-gray-600">Cargando estudiantes...</span>
                     </div>
-                    
-                    <div class="questionnaire-content">
-                        <p>{{ questionnaire.description | slice:0:60 }}
-                            @if(questionnaire.description.length > 50) {
-                            ...
-                            }
-                        </p>
-                        <p class="questions-count">{{ questionnaire.questions.length }} preguntas.</p>
+                } @else {
+                    <div class="flex align-items-start gap-1">
+                        <div class="member-count p-2 bg-gray-100">Total <span>{{ students.length }}</span></div>
+                        <div class="member-count p-2 bg-green-100">Active <span>{{ activeMembers }}</span></div>
+                        <div class="member-count p-2 bg-blue-100">Remaining <span>{{ students.length - activeMembers }}</span></div>
                     </div>
-                    
-                    <div studentOnly>
-                        <div class="flex justify-content-between gap-2">
-                            <button class="ui button primary flex-grow-1">
-                                Ask
+                }
+
+                <!-- Error state para estudiantes -->
+                @if (errorState.students) {
+                    <div class="bg-red-50 border-left-3 border-red-500 p-4 mb-4">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-exclamation-triangle text-red-500 mr-2"></i>
+                            <span class="text-red-700">{{ errorState.students }}</span>
+                            <button pButton 
+                                    icon="pi pi-refresh" 
+                                    class="p-button-text p-button-sm ml-auto" 
+                                    (click)="loadStudentsData()"
+                                    [loading]="loadingState.students">
                             </button>
                         </div>
                     </div>
-                    <div teacherOnly>
-                        <div class="flex justify-content-between gap-2">
-                            <button [disabled]="students.length <= 0" 
-                                    (click)="onSendQuestionnaireToStudents(questionnaire._id)" 
-                                    class="ui button primary flex-grow-1"
-                                    [class.button-complete]="getQuestionnaireStats(questionnaire._id)?.completionPercentage === 100">
-                                @if (getQuestionnaireStats(questionnaire._id)?.completionPercentage === 100) {
-                                    <i class="pi pi-check mr-2"></i>
-                                    Reenviar cuestionario
-                                } @else {
-                                    <i class="pi pi-send mr-2"></i>
-                                    Send to students
-                                }
+                }
+
+                <!-- Students Table: Solo mostrar si no hay errores y no está cargando -->
+                @if (!loadingState.students && !errorState.students) {
+                    @if (students.length > 0) {
+                        <p-table #dt1 [value]="students" dataKey="_id" [rows]="10" [loading]="loadingStudentsTable"
+                            [globalFilterFields]="['_id', 'name', 'email']" [paginator]="true">
+                            <ng-template pTemplate="caption">
+                                <div class="flex fluid w-full justify-content-start">
+                                    <span class="p-input-icon-left fluid">
+                                        <i class="pi pi-search"></i>
+                                        <input pInputText type="text" [(ngModel)]="studentsTableSearchValue"
+                                            (input)="dt1.filterGlobal(studentsTableSearchValue, 'contains')"
+                                            placeholder="Search keyword" class="h-full" />
+                                    </span>
+                                    <button teacherOnly (click)="addStudentsButton()" class="ui button primary ml-auto">
+                                        <i class="pi pi-user-plus mr-2"></i>
+                                        Add students
+                                    </button>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th class="w-auto">
+                                        <div class="flex align-items-center">
+                                            Name
+                                            <p-columnFilter type="text" field="name" display="menu" />
+                                        </div>
+                                    </th>
+                                    <th class="w-auto">
+                                        <div class="flex align-items-center">
+                                            Email
+                                            <p-columnFilter type="text" field="email" display="menu" />
+                                        </div>
+                                    </th>
+                                    <th class="w-2">Status</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-student>
+                                <tr>
+                                    <td>{{ student.name }}</td>
+                                    <td>{{ student.email }}</td>
+                                    <td>
+                                        @if (student.invitationToken) {
+                                            <p-tag severity="secondary">Pending</p-tag>
+                                        } @else {
+                                            <p-tag severity="success">Active</p-tag>
+                                        }
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="7">No student matches that search!</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    } @else {
+                        <div>
+                            <p class="p-info">No students registered in this activity.</p>
+                            <button teacherOnly (click)="addStudentsButton()" class="ui button primary">
+                                <i class="pi pi-user-plus mr-2"></i>
+                                Add students to the activity
+                            </button>
+                        </div>
+                    }
+                }
+            </section>
+
+            <!-- GROUPS SECTION -->
+            <section> 
+                <div studentOnly>
+                    <div class="flex align-items-center">
+                        <div>
+                            <h2>Groups</h2>
+                            <p>Here you can see all the groups.</p>
+                        </div>
+                    </div>
+                </div>
+                <div teacherOnly [hidden]="groupsLocked">
+                    <div class="flex align-items-center">
+                        <div>
+                            <h2>Groups</h2>
+                            <p>Here you can create the groups manually or through our algorithm.</p>
+                        </div>
+                        <div class="flex gap-2 ml-auto">
+                            <button pButton 
+                                    icon="pi pi-plus" 
+                                    label="Nuevo Grupo"
+                                    class="p-button-sm"
+                                    (click)="onCreateGroupButton()"
+                                    [disabled]="loadingState.groups">
+                            </button>
+                            <button (click)="onCreateAlgGroupsButton()" 
+                                    class="w-fit ui button teal"
+                                    [disabled]="loadingState.groups || loadingState.students">
+                                <i class="pi pi-sparkles mr-2"></i>
+                                Create groups
                             </button>
                         </div>
                     </div>
                 </div>
+
+                <!-- Loading state para grupos -->
+                @if (loadingState.groups) {
+                    <div class="flex align-items-center gap-2 mb-4">
+                        <p-progressSpinner [style]="{ width: '20px', height: '20px' }"></p-progressSpinner>
+                        <span class="text-sm text-gray-600">Cargando grupos...</span>
+                    </div>
                 }
 
-            </div>
-        </section>
+                <!-- Error state para grupos -->
+                @if (errorState.groups) {
+                    <div class="bg-red-50 border-left-3 border-red-500 p-4 mb-4">
+                        <div class="flex align-items-center">
+                            <i class="pi pi-exclamation-triangle text-red-500 mr-2"></i>
+                            <span class="text-red-700">{{ errorState.groups }}</span>
+                            <button pButton 
+                                    icon="pi pi-refresh" 
+                                    class="p-button-text p-button-sm ml-auto" 
+                                    (click)="loadGroupsData()"
+                                    [loading]="loadingState.groups">
+                            </button>
+                        </div>
+                    </div>
+                }
 
+                <!-- INTERFAZ DE GRUPOS: Solo mostrar cuando los datos están listos -->
+                @if (!loadingState.groups && !errorState.groups) {
+                    <div class="groups-dashboard" [hidden]="groupsLocked">
+                        
+                        <!-- Estadísticas simples cuando hay grupos -->
+                        @if (groups.length > 0) {
+                            <div class="dashboard-header">
+                                <div class="header-stats">
+                                    <div class="stat-card">
+                                        <div class="stat-number">{{ groups.length }}</div>
+                                        <div class="stat-label">Grupos</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-number">{{ getTotalAssignedStudents() }}</div>
+                                        <div class="stat-label">Asignados</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-number">{{ getUnassignedStudents().length }}</div>
+                                        <div class="stat-label">Disponibles</div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Contenido Principal -->
+                        @if (groups.length > 0) {
+                            <!-- Vista de Grupos Existentes -->
+                            <div class="groups-grid">
+                                @for (group of groups; track group._id) {
+                                    <div class="group-panel" 
+                                         (drop)="isTeacher() ? onDrop($event, group) : null" 
+                                         (dragover)="isTeacher() ? onDragOver($event) : null" 
+                                         (dragenter)="isTeacher() ? onDragEnter($event) : null"
+                                         (dragleave)="isTeacher() ? onDragLeave($event) : null">
+                                        
+                                        <!-- Header del Grupo -->
+                                        <div class="group-panel-header">
+                                            <div class="group-meta">
+                                                <h4 class="group-name">{{ group.name }}</h4>
+                                                <span class="group-count">{{ group.students.length }} miembros</span>
+                                            </div>
+                                            <div class="group-controls">
+                                                <button pButton 
+                                                        icon="pi pi-eye" 
+                                                        class="p-button-text p-button-sm control-btn"
+                                                        (click)="goGroupDetail(group._id)"
+                                                        pTooltip="Ver detalles">
+                                                </button>
+                                                <button pButton 
+                                                        teacherOnly
+                                                        icon="pi pi-trash" 
+                                                        severity="danger"
+                                                        class="p-button-text p-button-sm control-btn"
+                                                        (click)="confirmDeleteGroup(group._id)"
+                                                        pTooltip="Eliminar grupo">
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Lista de Estudiantes -->
+                                        <div class="students-list">
+                                            @if (group.students.length > 0) {
+                                                @for (student of group.students; track student._id) {
+                                                    <div class="student-item" 
+                                                         [attr.draggable]="isTeacher()"
+                                                         (dragstart)="isTeacher() ? onDragStart($event, student, group) : null"
+                                                         (dragend)="isTeacher() ? onDragEnd($event) : null">
+                                                        
+                                                        <div class="student-info-compact">
+                                                            <div class="student-initial">
+                                                                {{ getStudentInitial(student) }}
+                                                            </div>
+                                                            <div class="student-details">
+                                                                <div class="student-name-compact">{{ student.name || 'Sin nombre' }}</div>
+                                                                <div class="student-email-compact">{{ student.email }}</div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="student-actions">
+                                                            <button pButton 
+                                                                    teacherOnly
+                                                                    icon="pi pi-times" 
+                                                                    severity="danger"
+                                                                    class="p-button-text p-button-sm student-remove-btn"
+                                                                    (click)="quickRemoveStudent(student, group)"
+                                                                    pTooltip="Eliminar del grupo">
+                                                            </button>
+                                                            <div teacherOnly class="drag-indicator">
+                                                                <i class="pi pi-arrows-alt"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            } @else {
+                                                <div class="empty-group-state">
+                                                    <i class="pi pi-user-plus"></i>
+                                                    <span>Arrastra estudiantes aquí</span>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Panel de Estudiantes Disponibles -->
+                            @if (getUnassignedStudents().length > 0) {
+                                <div class="available-panel">
+                                    <div class="available-header">
+                                        <h4 class="available-title">
+                                            <i class="pi pi-users mr-2"></i>
+                                            Estudiantes Disponibles
+                                        </h4>
+                                        <span class="available-count">{{ getUnassignedStudents().length }}</span>
+                                    </div>
+                                    
+                                    <div class="available-students" 
+                                         (drop)="isTeacher() ? onDropToUnassigned($event) : null" 
+                                         (dragover)="isTeacher() ? onDragOver($event) : null" 
+                                         (dragenter)="isTeacher() ? onDragEnter($event) : null"
+                                         (dragleave)="isTeacher() ? onDragLeave($event) : null">
+                                        @for (student of getUnassignedStudents(); track student._id) {
+                                            <div class="available-student" 
+                                                 [attr.draggable]="isTeacher()"
+                                                 (dragstart)="isTeacher() ? onDragStart($event, student, null) : null"
+                                                 (dragend)="isTeacher() ? onDragEnd($event) : null">
+                                                
+                                                <div class="student-initial available">
+                                                    {{ getStudentInitial(student) }}
+                                                </div>
+                                                <div class="student-details">
+                                                    <div class="student-name-compact">{{ student.name || 'Sin nombre' }}</div>
+                                                    <div class="student-email-compact">{{ student.email }}</div>
+                                                </div>
+                                                <div teacherOnly class="drag-indicator">
+                                                    <i class="pi pi-arrows-alt"></i>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </section>
+
+            <!-- QUESTIONNAIRES SECTION -->
+            <section teacherOnly>
+                <p-divider />
+                <h2>Questionnaires</h2>
+                
+                <!-- Loading state para cuestionarios -->
+                @if (loadingState.questionnaires) {
+                    <div class="flex align-items-center gap-2 mb-4">
+                        <p-progressSpinner [style]="{ width: '20px', height: '20px' }"></p-progressSpinner>
+                        <span class="text-sm text-gray-600">Cargando cuestionarios...</span>
+                    </div>
+                } @else {
+                    <!-- Error state para cuestionarios -->
+                    @if (errorState.questionnaires) {
+                        <div class="bg-red-50 border-left-3 border-red-500 p-4 mb-4">
+                            <div class="flex align-items-center">
+                                <i class="pi pi-exclamation-triangle text-red-500 mr-2"></i>
+                                <span class="text-red-700">{{ errorState.questionnaires }}</span>
+                                <button pButton 
+                                        icon="pi pi-refresh" 
+                                        class="p-button-text p-button-sm ml-auto" 
+                                        (click)="loadQuestionnairesData()"
+                                        [loading]="loadingState.questionnaires">
+                                </button>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Questionnaires List -->
+                    <div class="flex gap-3 flex-wrap">
+                        @for (questionnaire of questionnaires; track $index) {
+                            <div class="ui card p-4 m-0 questionnaire-card-enhanced">
+                                <div class="questionnaire-header">
+                                    <h3>{{ questionnaire.title }}</h3>
+                                    
+                                    <!-- Indicador de estadísticas -->
+                                    @if (loadingState.questionnaireStats) {
+                                        <div class="completion-stats">
+                                            <p-skeleton width="80px" height="1.5rem"></p-skeleton>
+                                        </div>
+                                    } @else {
+                                        @if (getQuestionnaireStats(questionnaire._id); as stats) {
+                                            <div class="completion-stats">
+                                                <div class="stats-badge" 
+                                                     [class.stats-complete]="stats.completionPercentage === 100"
+                                                     [class.stats-partial]="stats.completionPercentage > 0 && stats.completionPercentage < 100"
+                                                     [class.stats-none]="stats.completionPercentage === 0">
+                                                    <span class="completion-text">
+                                                        {{ stats.completedCount }}/{{ stats.totalStudents }}
+                                                    </span>
+                                                    <span class="completion-percentage">
+                                                        ({{ stats.completionPercentage }}%)
+                                                    </span>
+                                                </div>
+                                                
+                                                <!-- Barra de progreso visual -->
+                                                <div class="progress-bar-container">
+                                                    <div class="progress-bar" 
+                                                         [style.width.%]="stats.completionPercentage"
+                                                         [class.progress-complete]="stats.completionPercentage === 100"
+                                                         [class.progress-partial]="stats.completionPercentage > 0 && stats.completionPercentage < 100"
+                                                         [class.progress-none]="stats.completionPercentage === 0">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        } @else {
+                                            <!-- Estado de carga o sin datos -->
+                                            <div class="completion-stats">
+                                                <div class="stats-badge stats-loading">
+                                                    <span class="completion-text">Cargando...</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                                
+                                <div class="questionnaire-content">
+                                    <p>{{ questionnaire.description | slice:0:60 }}
+                                        @if(questionnaire.description.length > 50) {
+                                        ...
+                                        }
+                                    </p>
+                                    <p class="questions-count">{{ questionnaire.questions.length }} preguntas.</p>
+                                </div>
+                                
+                                <div studentOnly>
+                                    <div class="flex justify-content-between gap-2">
+                                        <button class="ui button primary flex-grow-1">
+                                            Ask
+                                        </button>
+                                    </div>
+                                </div>
+                                <div teacherOnly>
+                                    <div class="flex justify-content-between gap-2">
+                                        <button [disabled]="students.length <= 0" 
+                                                (click)="onSendQuestionnaireToStudents(questionnaire._id)" 
+                                                class="ui button primary flex-grow-1"
+                                                [class.button-complete]="getQuestionnaireStats(questionnaire._id)?.completionPercentage === 100">
+                                            @if (getQuestionnaireStats(questionnaire._id)?.completionPercentage === 100) {
+                                                <i class="pi pi-check mr-2"></i>
+                                                Reenviar cuestionario
+                                            } @else {
+                                                <i class="pi pi-send mr-2"></i>
+                                                Send to students
+                                            }
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+
+        <!-- DIALOGS -->
+        <p-dialog header="Add students" [modal]="true" [(visible)]="addStudentDialogVisible" [style]="{ width: '35rem' }">
+            <app-add-students-form (onAddStudents)="onAddStudents($event)"></app-add-students-form>
+        </p-dialog>
+
+        <p-dialog 
+            header="Crear Nuevo Grupo"
+            [modal]="true" 
+            [(visible)]="createGroupDialogVisible"
+            [style]="{ width: '90vw', maxWidth: '700px', minWidth: '500px' }"
+            [breakpoints]="{ '1024px': '95vw', '768px': '98vw' }"
+            [closable]="true"
+            [resizable]="false">
+            
+            <app-create-group 
+                [activity]="activity" 
+                [groups]="groups" 
+                [students]="students"
+                (onGroupCreated)="onGroupCreated($event)">
+            </app-create-group>
+        </p-dialog>
+
+        <p-dialog 
+            header="Create Groups" 
+            [modal]="true" 
+            [(visible)]="createAlgGroupsDialogVisible"
+            [style]="{ 
+                width: '95vw', 
+                maxWidth: '1400px', 
+                minWidth: '800px',
+                height: 'auto',
+                maxHeight: '88vh'
+            }" 
+            [breakpoints]="{ 
+                '1600px': '85vw', 
+                '1200px': '90vw', 
+                '1024px': '95vw', 
+                '768px': '98vw',
+                '480px': '100vw'
+            }"
+            [contentStyle]="{
+                'padding': '0',
+                'overflow': 'hidden',
+                'display': 'flex',
+                'flex-direction': 'column',
+                'max-height': 'calc(88vh - 60px)',
+                'min-height': '60vh'
+            }"
+            [closable]="true"
+            [resizable]="false"
+            [draggable]="false">
+            
+            <app-create-groups-algorithm-form 
+                [activity]="activityId" 
+                [students]="students" 
+                (onRequestSent)="onAlgorithmRequestSent($event)">
+            </app-create-groups-algorithm-form>
+        </p-dialog>
     </div>
 
-
-
-    <p-dialog header="Add students" [modal]="true" [(visible)]="addStudentDialogVisible" [style]="{ width: '35rem' }">
-        <app-add-students-form (onAddStudents)="onAddStudents($event)"></app-add-students-form>
-    </p-dialog>
-
-    <p-dialog 
-        header="Crear Nuevo Grupo"
-        [modal]="true" 
-        [(visible)]="createGroupDialogVisible"
-        [style]="{ width: '90vw', maxWidth: '700px', minWidth: '500px' }"
-        [breakpoints]="{ '1024px': '95vw', '768px': '98vw' }"
-        [closable]="true"
-        [resizable]="false">
-        
-        <app-create-group 
-            [activity]="activity" 
-            [groups]="groups" 
-            [students]="students"
-            (onGroupCreated)="onGroupCreated($event)">
-        </app-create-group>
-    </p-dialog>
-
-    <p-dialog 
-        header="Create Groups" 
-        [modal]="true" 
-        [(visible)]="createAlgGroupsDialogVisible"
-        [style]="{ 
-            width: '95vw', 
-            maxWidth: '1400px', 
-            minWidth: '800px',
-            height: 'auto',
-            maxHeight: '88vh'
-        }" 
-        [breakpoints]="{ 
-            '1600px': '85vw', 
-            '1200px': '90vw', 
-            '1024px': '95vw', 
-            '768px': '98vw',
-            '480px': '100vw'
-        }"
-        [contentStyle]="{
-            'padding': '0',
-            'overflow': 'hidden',
-            'display': 'flex',
-            'flex-direction': 'column',
-            'max-height': 'calc(88vh - 60px)',
-            'min-height': '60vh'
-        }"
-        [closable]="true"
-        [resizable]="false"
-        [draggable]="false">
-        
-        <app-create-groups-algorithm-form 
-            [activity]="activityId" 
-            [students]="students" 
-            (onRequestSent)="onAlgorithmRequestSent($event)">
-        </app-create-groups-algorithm-form>
-    </p-dialog>
-
-</div>
-
-<p-confirmDialog #cd key="dd">
-    <ng-template pTemplate="headless" let-message>
-        <div class="flex flex-column align-items-center p-5 surface-overlay border-round">
-            <div class="border-circle inline-flex justify-content-center align-items-center h-6rem w-6rem">
-                <i class="pi pi-exclamation-triangle text-5xl"></i>
+    <p-confirmDialog #cd key="dd">
+        <ng-template pTemplate="headless" let-message>
+            <div class="flex flex-column align-items-center p-5 surface-overlay border-round">
+                <div class="border-circle inline-flex justify-content-center align-items-center h-6rem w-6rem">
+                    <i class="pi pi-exclamation-triangle text-5xl"></i>
+                </div>
+                <span class="font-bold text-2xl block mb-4">
+                    {{ message.header }}
+                </span>
+                <p class="mb-0">{{ message.message }}</p>
+                <div class="flex align-items-center gap-2 mt-4">
+                    <button pButton label="Delete" (click)="cd.accept()" class="w-8rem" severity="danger">
+                    </button>
+                    <button pButton label="Cancel" (click)="cd.reject()" class="p-button-outlined w-8rem ">
+                    </button>
+                </div>
             </div>
-            <span class="font-bold text-2xl block mb-4">
-                {{ message.header }}
-            </span>
-            <p class="mb-0">{{ message.message }}</p>
-            <div class="flex align-items-center gap-2 mt-4">
-                <button pButton label="Delete" (click)="cd.accept()" class="w-8rem" severity="danger">
-                </button>
-                <button pButton label="Cancel" (click)="cd.reject()" class="p-button-outlined w-8rem ">
-                </button>
-            </div>
-        </div>
-    </ng-template>
-</p-confirmDialog>
+        </ng-template>
+    </p-confirmDialog>
 
-<!-- Toast para mostrar notificaciones -->
-<p-toast position="top-right" [life]="5000"></p-toast>
+    <!-- Toast para mostrar notificaciones -->
+    <p-toast position="top-right" [life]="5000"></p-toast>
+}
