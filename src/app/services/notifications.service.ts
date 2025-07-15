@@ -73,12 +73,16 @@ export class NotificationsService {
   private readonly API_BASE = '';
 
   // Sistema de polling como respaldo
-  private readonly POLLING_INTERVAL = 30000; // 30 segundos
-  private readonly QUICK_CHECK_INTERVAL = 10000; // 10 segundos para verificaciones rápidas
+  private readonly POLLING_INTERVAL = 60000; // 60 segundos (aumentado)
+  private readonly QUICK_CHECK_INTERVAL = 30000; // 30 segundos (aumentado)
+  private readonly MAX_CONSECUTIVE_ERRORS = 3;
   
   private pollingTimer: any;
+  private fullPollingTimer: any;
   private lastQuickCheckCount = 0;
   private lastQuickCheckUnread = 0;
+  private consecutiveErrors = 0;
+  private isPollingDisabled = false;
 
   // Estado central del sistema de notificaciones
   private readonly initialState: NotificationState = {
@@ -306,7 +310,7 @@ export class NotificationsService {
   }
 
   /**
-   * Inicia el sistema de polling
+   * Inicia el sistema de polling mejorado
    */
   private startPolling(): void {
     if (this.pollingTimer) {
@@ -315,54 +319,97 @@ export class NotificationsService {
 
     console.log('🔄 NotificationsService: Iniciando polling de respaldo');
     
-    // Polling para verificaciones rápidas cada 10 segundos
+    // Polling para verificaciones rápidas
     this.pollingTimer = interval(this.QUICK_CHECK_INTERVAL).subscribe(() => {
-      this.performQuickCheck();
+      if (!this.isPollingDisabled) {
+        this.performQuickCheck();
+      }
     });
 
-    // Polling completo cada 30 segundos
-    interval(this.POLLING_INTERVAL).subscribe(() => {
-      if (!this.webSocketService.isConnected()) {
+    // Polling completo menos frecuente
+    this.fullPollingTimer = interval(this.POLLING_INTERVAL).subscribe(() => {
+      if (!this.webSocketService.isConnected() && !this.isPollingDisabled) {
         console.log('🔄 NotificationsService: Polling completo - WebSocket desconectado');
-        this.refreshNotifications().subscribe();
+        this.refreshNotifications().subscribe({
+          error: (error) => {
+            console.warn('⚠️ NotificationsService: Error en polling completo:', error.message || error);
+          }
+        });
       }
     });
   }
 
   /**
-   * Detiene el sistema de polling
+   * Detiene el sistema de polling y limpia recursos
    */
   private stopPolling(): void {
     if (this.pollingTimer) {
-      console.log('⏹️ NotificationsService: Deteniendo polling - WebSocket activo');
+      console.log('⏹️ NotificationsService: Deteniendo polling rápido');
       this.pollingTimer.unsubscribe();
       this.pollingTimer = null;
     }
+    
+    if (this.fullPollingTimer) {
+      console.log('⏹️ NotificationsService: Deteniendo polling completo');
+      this.fullPollingTimer.unsubscribe();
+      this.fullPollingTimer = null;
+    }
+    
+    // Reset estado de errores al detener polling
+    this.consecutiveErrors = 0;
+    this.isPollingDisabled = false;
   }
 
   /**
-   * Realiza verificación rápida de cambios
+   * Realiza verificación rápida de cambios con manejo robusto de errores
    */
   private performQuickCheck(): void {
+    if (this.isPollingDisabled) {
+      return; // Polling deshabilitado por errores consecutivos
+    }
+
     const currentState = this.getCurrentState();
     
-    this.http.get(`${this.API_BASE}/users/notifications/quick-check`, {
+    this.http.get(`${environment.apiUrl}/users/notifications/quick-check`, {
       params: {
         lastCount: this.lastQuickCheckCount.toString(),
         lastUnread: this.lastQuickCheckUnread.toString()
       }
     }).subscribe({
       next: (response: any) => {
+        // Reset contador de errores en caso de éxito
+        this.consecutiveErrors = 0;
+        this.isPollingDisabled = false;
+        
         if (response.hasChanges) {
           console.log('🔄 NotificationsService: Cambios detectados via polling, refrescando...');
-          this.refreshNotifications().subscribe();
+          this.refreshNotifications().subscribe({
+            error: (refreshError) => {
+              console.warn('⚠️ NotificationsService: Error refrescando notificaciones:', refreshError);
+            }
+          });
         }
         
         this.lastQuickCheckCount = response.totalCount;
         this.lastQuickCheckUnread = response.unreadCount;
       },
       error: (error) => {
-        console.error('❌ NotificationsService: Error en quick check:', error);
+        this.consecutiveErrors++;
+        
+        // Solo mostrar errores las primeras veces para evitar spam
+        if (this.consecutiveErrors <= 2) {
+          console.error('❌ NotificationsService: Error en quick check:', error.message || error);
+        } else if (this.consecutiveErrors === this.MAX_CONSECUTIVE_ERRORS) {
+          console.warn('🛑 NotificationsService: Múltiples errores consecutivos - pausando polling por 5 minutos');
+          this.isPollingDisabled = true;
+          
+          // Reactivar polling después de 5 minutos
+          setTimeout(() => {
+            console.log('🔄 NotificationsService: Reactivando polling tras pausa');
+            this.consecutiveErrors = 0;
+            this.isPollingDisabled = false;
+          }, 300000); // 5 minutos
+        }
       }
     });
   }

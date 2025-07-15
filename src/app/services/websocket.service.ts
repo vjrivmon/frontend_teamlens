@@ -33,9 +33,15 @@ export class WebSocketService {
   
   private socket: Socket | null = null;
   private readonly API_URL = environment.apiUrl;
-  private readonly MAX_RECONNECT_ATTEMPTS = 10;
-  private readonly RECONNECT_DELAY = 3000; // 3 segundos
-  private readonly HEARTBEAT_INTERVAL = 30000; // 30 segundos
+  private readonly MAX_RECONNECT_ATTEMPTS = 5;
+  private readonly RECONNECT_DELAY = 5000; // 5 segundos
+  private readonly HEARTBEAT_INTERVAL = 60000; // 60 segundos
+  private readonly MAX_BACKOFF_DELAY = 30000; // 30 segundos máximo
+  
+  // Estado interno para controlar reconexiones
+  private isReconnecting = false;
+  private connectionTimeout: any;
+  private isDestroyed = false;
   
   private authService = inject(AuthService);
   
@@ -145,7 +151,16 @@ export class WebSocketService {
 
     // Evento de error de conexión
     this.socket.on('connect_error', (error: any) => {
-      console.error('❌ WebSocketService: Error de conexión:', error);
+      const currentInfo = this.connectionInfoSubject.value;
+      const attempts = currentInfo.reconnectAttempts || 0;
+      
+      // Solo imprimir errores críticos para evitar spam en consola
+      if (attempts <= 2) {
+        console.error('❌ WebSocketService: Error de conexión:', error.message || error);
+      } else if (attempts === this.MAX_RECONNECT_ATTEMPTS) {
+        console.error('❌ WebSocketService: Error persistente después de múltiples intentos');
+      }
+      
       this.updateConnectionInfo({ connected: false });
     });
 
@@ -238,24 +253,51 @@ export class WebSocketService {
   }
 
   /**
-   * Intenta reconexión automática
+   * Intenta reconexión automática con backoff exponencial
    */
   private attemptReconnection(): void {
+    if (this.isReconnecting || this.isDestroyed) {
+      return; // Evitar múltiples intentos simultáneos
+    }
+
     const currentInfo = this.connectionInfoSubject.value;
     const attempts = (currentInfo.reconnectAttempts || 0) + 1;
 
     if (attempts <= this.MAX_RECONNECT_ATTEMPTS) {
-      console.log(`🔄 WebSocketService: Intento de reconexión ${attempts}/${this.MAX_RECONNECT_ATTEMPTS}`);
+      this.isReconnecting = true;
+      
+      // Backoff exponencial con máximo
+      const backoffDelay = Math.min(
+        this.RECONNECT_DELAY * Math.pow(2, attempts - 1),
+        this.MAX_BACKOFF_DELAY
+      );
+      
+      console.log(`🔄 WebSocketService: Reconexión en ${backoffDelay/1000}s (intento ${attempts}/${this.MAX_RECONNECT_ATTEMPTS})`);
       
       this.updateConnectionInfo({ reconnectAttempts: attempts });
       
-      timer(this.RECONNECT_DELAY * attempts).subscribe(() => {
-        if (this.socket && !this.socket.connected) {
-          this.socket.connect();
+      this.connectionTimeout = setTimeout(() => {
+        if (!this.isDestroyed && (!this.socket || !this.socket.connected)) {
+          console.log(`🔄 WebSocketService: Ejecutando intento de reconexión ${attempts}`);
+          
+          // Verificar si aún tenemos credenciales válidas
+          const token = sessionStorage.getItem('token');
+          const user = this.authService.getUser();
+          
+          if (token && user) {
+            this.connect(token);
+          } else {
+            console.log('⚠️ WebSocketService: Sin credenciales para reconexión');
+            this.isReconnecting = false;
+            return;
+          }
         }
-      });
+        this.isReconnecting = false;
+      }, backoffDelay);
+      
     } else {
-      console.error('❌ WebSocketService: Máximo de intentos de reconexión alcanzado');
+      console.log('🛑 WebSocketService: Máximo de intentos alcanzado - deteniendo reconexiones');
+      this.isReconnecting = false;
     }
   }
 
@@ -283,18 +325,45 @@ export class WebSocketService {
   }
 
   /**
-   * Desconecta del servidor WebSocket
+   * Desconecta del servidor WebSocket y limpia recursos
    */
   public disconnect(): void {
+    console.log('📤 WebSocketService: Desconectando y limpiando recursos...');
+    
+    this.isDestroyed = true;
+    this.isReconnecting = false;
+    
+    // Limpiar timeouts
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
+    }
+    
+    // Desconectar socket
     if (this.socket) {
-      console.log('📤 WebSocketService: Desconectando...');
+      this.socket.removeAllListeners();
       this.socket.disconnect();
       this.socket = null;
-      this.updateConnectionInfo({ 
-        connected: false, 
-        reconnectAttempts: 0 
-      });
     }
+    
+    this.updateConnectionInfo({ 
+      connected: false, 
+      reconnectAttempts: 0 
+    });
+  }
+
+  /**
+   * Reinicia el servicio WebSocket
+   */
+  public restart(): void {
+    console.log('🔄 WebSocketService: Reiniciando servicio...');
+    this.disconnect();
+    this.isDestroyed = false;
+    
+    // Esperar un momento antes de reinicializar
+    setTimeout(() => {
+      this.initializeConnection();
+    }, 1000);
   }
 
   /**
