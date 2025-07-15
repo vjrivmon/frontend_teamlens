@@ -7,6 +7,44 @@
 
     <form class="container flex-column gap-3" [formGroup]="questionnaireFormGroup">
 
+        <!-- Campo de email para usuarios anónimos -->
+        @if (isAnonymousUser) {
+            <div class="field-container">
+                <h3 class="text-lg font-bold">📧 Información del Estudiante</h3>
+                <p class="text-sm text-gray-600 mb-2">Para procesar tu cuestionario, necesitamos tu email académico:</p>
+                
+                <div class="flex flex-column gap-2">
+                    <label for="student-email" class="text-base font-medium">Email del estudiante:</label>
+                    <input 
+                        id="student-email"
+                        type="email" 
+                        class="w-full p-2 border rounded"
+                        [formControl]="emailFormControl"
+                        placeholder="tu.email@estudiantil.upv.es"
+                        [readonly]="!!studentEmail">
+                        
+                    @if (submitted && emailFormControl.errors) {
+                        <div class="invalid-feedback text-red-600">
+                            @if (emailFormControl.errors!['required']) {
+                                <div>El email es requerido.</div>
+                            }
+                            @if (emailFormControl.errors!['email']) {
+                                <div>Por favor, introduce un email válido.</div>
+                            }
+                        </div>
+                    }
+                </div>
+                
+                <div class="info-box mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                    <p class="text-sm text-blue-800">
+                        💡 <strong>Privacidad:</strong> Tu email solo se usa para asociar tus respuestas con la actividad académica. No se compartirá con terceros.
+                    </p>
+                </div>
+            </div>
+            
+            <p-divider />
+        }
+
         @for (question of questionnaire?.questions; let questionIndex = $index; track questionIndex) {
             
             <p class="text-xl font-bold">{{ question.question }}</p>

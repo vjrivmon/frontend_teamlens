@@ -6,15 +6,16 @@ import { CommonModule } from '@angular/common';
 
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { DividerModule } from 'primeng/divider';
+import { InputTextModule } from 'primeng/inputtext';
 
 import { QuestionnairesService } from '../../../../../services/questionnaires.service';
 import { AuthService } from '../../../../../services/auth.service';
-import { Route, Router } from '@angular/router';
+import { Route, Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-questionnaire-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RadioButtonModule, DividerModule],
+  imports: [CommonModule, ReactiveFormsModule, RadioButtonModule, DividerModule, InputTextModule],
   templateUrl: './questionnaire-form.component.html',
   styleUrl: './questionnaire-form.component.css'
 })
@@ -23,58 +24,100 @@ export class QuestionnaireFormComponent {
   @Input('questionnaire_id') questionnaireId!: string;
 
   questionnaire: IQuestionnaire | undefined;
-
   questionnaireFormGroup: FormGroup = new FormGroup({});
+  emailFormControl: FormControl = new FormControl('', [Validators.required, Validators.email]);
   submitted = false;
 
+  // Estado del usuario
   loggedUser: IUser | undefined;
+  isAnonymousUser: boolean = false;
+  studentEmail: string = '';
 
-  constructor(private questionnaireService: QuestionnairesService, private authService: AuthService, private router: Router) { }
+  constructor(
+    private questionnaireService: QuestionnairesService, 
+    private authService: AuthService, 
+    private router: Router,
+    private route: ActivatedRoute
+  ) { }
 
   ngOnInit() {
+    console.log('🎯 [QuestionnaireForm] Inicializando formulario de cuestionario');
 
+    // Detectar tipo de usuario
     this.loggedUser = this.authService.getUser();
+    this.isAnonymousUser = !this.loggedUser;
 
+    console.log(`👤 [QuestionnaireForm] Tipo de usuario: ${this.isAnonymousUser ? 'Anónimo' : 'Autenticado'}`);
+
+    // Extraer email de query parameters si viene de enlace de correo
+    this.route.queryParams.subscribe(params => {
+      if (params['email']) {
+        this.studentEmail = params['email'];
+        this.emailFormControl.setValue(this.studentEmail);
+        console.log(`📧 [QuestionnaireForm] Email detectado en URL: ${this.studentEmail}`);
+      }
+    });
+
+    // Obtener ID del cuestionario desde la ruta
+    this.route.params.subscribe(params => {
+      this.questionnaireId = params['questionnaire_id'];
+      console.log(`📋 [QuestionnaireForm] ID del cuestionario: ${this.questionnaireId}`);
+      this.loadQuestionnaire();
+    });
+  }
+
+  /**
+   * Carga los datos del cuestionario y construye el formulario
+   */
+  private loadQuestionnaire(): void {
     this.questionnaireService.getQuestionnaireById(this.questionnaireId).subscribe({
       next: (data: any) => {
-
+        console.log('📋 [QuestionnaireForm] Cuestionario cargado:', data);
         this.questionnaire = data;
-
-        this.questionnaire?.questions.forEach((question, index) => {
-
-          switch (question.type) {
-            case 'MultipleChoice':
-              this.questionnaireFormGroup.addControl(index.toString(), new FormControl('', Validators.required));
-              break;
-            case 'OpenText':
-              this.questionnaireFormGroup.addControl(index.toString(), new FormControl('', Validators.required));
-              break;
-            case 'Rating':
-              this.questionnaireFormGroup.addControl(index.toString(), new FormControl('', Validators.required));
-              break;
-            case 'Distribution':
-              const dfg = new FormGroup({}, { validators: [this.sumaExactaValidator(10), this.maximoExcedidoValidator(10)] });
-              for (let i = 0; i < (question?.options?.length ?? 0); i++) {
-                dfg.addControl(i.toString(), new FormControl(0, Validators.required));
-              }
-              this.questionnaireFormGroup.addControl(index.toString(), dfg);
-              break;
-          }
-        })
-
-        console.log(this.questionnaireFormGroup)
-
+        this.buildQuestionnaireForm();
+      },
+      error: (error) => {
+        console.error('❌ [QuestionnaireForm] Error cargando cuestionario:', error);
       }
-    })
+    });
+  }
+
+  /**
+   * Construye el formulario dinámico basado en las preguntas
+   */
+  private buildQuestionnaireForm(): void {
+    this.questionnaire?.questions.forEach((question, index) => {
+      switch (question.type) {
+        case 'MultipleChoice':
+          this.questionnaireFormGroup.addControl(index.toString(), new FormControl('', Validators.required));
+          break;
+        case 'OpenText':
+          this.questionnaireFormGroup.addControl(index.toString(), new FormControl('', Validators.required));
+          break;
+        case 'Rating':
+          this.questionnaireFormGroup.addControl(index.toString(), new FormControl('', Validators.required));
+          break;
+        case 'Distribution':
+          const dfg = new FormGroup({}, { validators: [this.sumaExactaValidator(10), this.maximoExcedidoValidator(10)] });
+          for (let i = 0; i < (question?.options?.length ?? 0); i++) {
+            dfg.addControl(i.toString(), new FormControl(0, Validators.required));
+          }
+          this.questionnaireFormGroup.addControl(index.toString(), dfg);
+          break;
+      }
+    });
+
+    console.log('📝 [QuestionnaireForm] Formulario construido:', this.questionnaireFormGroup);
   }
 
   onSubmitQuiestionnaire() {
-
+    console.log('🚀 [QuestionnaireForm] Iniciando envío del cuestionario');
     this.submitted = true;
 
+    // Validar formulario principal
     if (this.questionnaireFormGroup.invalid) {
-      console.log('Form is invalid');
-      console.log('Errors:', this.questionnaireFormGroup.errors);
+      console.log('❌ [QuestionnaireForm] Formulario inválido');
+      console.log('Errores:', this.questionnaireFormGroup.errors);
       
       // Mostrar errores específicos para Debug
       Object.keys(this.questionnaireFormGroup.controls).forEach(key => {
@@ -87,17 +130,100 @@ export class QuestionnaireFormComponent {
       return;
     }
 
-    // console.log(this.questionnaireFormGroup.value);
+    // Para usuarios anónimos, validar email
+    if (this.isAnonymousUser && this.emailFormControl.invalid) {
+      console.log('❌ [QuestionnaireForm] Email requerido para usuarios anónimos');
+      return;
+    }
 
-    this.questionnaireService.submitQuestionnaire(this.questionnaireId, this.questionnaireFormGroup.value).subscribe((data: any) => {
-      console.log('Questionnaire submitted', data);
-      this.loggedUser!['askedQuestionnaires'].push(data.data);
-      console.log('loggedUser', this.loggedUser);
+    const formData = this.questionnaireFormGroup.value;
+    console.log('📝 [QuestionnaireForm] Datos del formulario:', formData);
 
+    if (this.isAnonymousUser) {
+      // Submit anónimo - necesitaré crear este método
+      this.submitAnonymousQuestionnaire(formData);
+    } else {
+      // Submit para usuario autenticado
+      this.submitAuthenticatedQuestionnaire(formData);
+    }
+  }
+
+  /**
+   * Envía cuestionario para usuario autenticado
+   */
+  private submitAuthenticatedQuestionnaire(formData: any): void {
+    console.log('👤 [QuestionnaireForm] Enviando cuestionario para usuario autenticado');
+    
+    this.questionnaireService.submitQuestionnaire(this.questionnaireId, formData).subscribe({
+      next: (data: any) => {
+        console.log('✅ [QuestionnaireForm] Cuestionario enviado exitosamente:', data);
+        
+        // Actualizar datos del usuario si están disponibles
+        if (this.loggedUser && data.data) {
+          this.loggedUser['askedQuestionnaires'].push(data.data);
+        }
+        
+        // Redirigir al dashboard
+        this.router.navigateByUrl('/dashboard');
+      },
+      error: (error) => {
+        console.error('❌ [QuestionnaireForm] Error enviando cuestionario:', error);
+        alert('Error al enviar el cuestionario. Por favor, inténtalo de nuevo.');
+      }
     });
+  }
 
-    this.router.navigateByUrl('/dashboard');
+  /**
+   * Envía cuestionario para usuario anónimo
+   */
+  private submitAnonymousQuestionnaire(formData: any): void {
+    console.log('👥 [QuestionnaireForm] Enviando cuestionario para usuario anónimo');
+    
+    const studentEmail = this.emailFormControl.value || this.studentEmail;
+    
+    if (!studentEmail) {
+      console.error('❌ [QuestionnaireForm] Email no proporcionado para submit anónimo');
+      alert('Por favor, proporciona tu email para continuar.');
+      return;
+    }
 
+    console.log('📧 [QuestionnaireForm] Email del estudiante:', studentEmail);
+
+    // Usar el método específico para anónimos
+    this.questionnaireService.submitAnonymousQuestionnaire(this.questionnaireId, formData, studentEmail).subscribe({
+      next: (data: any) => {
+        console.log('✅ [QuestionnaireForm] Cuestionario anónimo enviado exitosamente:', data);
+        
+        // Mostrar mensaje de éxito personalizado con resultado
+        let message = '¡Gracias por completar el cuestionario! Tus respuestas han sido enviadas exitosamente.';
+        
+        if (data.data?.result) {
+          message += `\n\nTu perfil Belbin es: ${data.data.result}`;
+        }
+        
+        if (data.data?.isNewUser) {
+          message += '\n\nSe ha creado automáticamente tu perfil en el sistema.';
+        }
+        
+        alert(message);
+        this.router.navigateByUrl('/home');
+      },
+      error: (error) => {
+        console.error('❌ [QuestionnaireForm] Error enviando cuestionario anónimo:', error);
+        
+        let errorMessage = 'Error al enviar el cuestionario.';
+        
+        if (error.status === 400) {
+          errorMessage += ' Por favor, verifica que tu email sea válido.';
+        } else if (error.status === 404) {
+          errorMessage += ' El cuestionario no está disponible.';
+        } else {
+          errorMessage += ' Por favor, inténtalo de nuevo más tarde.';
+        }
+        
+        alert(errorMessage);
+      }
+    });
   }
 
   /**

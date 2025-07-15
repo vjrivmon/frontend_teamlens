@@ -53,7 +53,7 @@ export const routes: Routes = [
     {
         path: 'questionnaire/:questionnaire_id',
         component: QuestionnaireFormComponent,
-        canActivate: [AuthGuard],
+        // Acceso anónimo permitido para estudiantes desde correos
 
     },
     {

@@ -97,13 +97,26 @@ export class AuthService {
   }
 
   refreshUserData(): void {
-    this.http.get(`${environment.apiUrl}/users/${this.getUser()?._id}`).subscribe((data) =>{
+    const currentUser = this.getUser();
+    
+    // Solo actualizar datos si hay un usuario autenticado con ID válido
+    if (!currentUser || !currentUser._id) {
+      console.log('⚠️ [AuthService] No hay usuario autenticado - omitiendo refreshUserData');
+      return;
+    }
 
-      console.log('refreshUserData', data);
-      sessionStorage.setItem('user', JSON.stringify(data));
-      this.loggedUserSubject.next(data as IUser);
-
-    })
+    console.log('🔄 [AuthService] Actualizando datos del usuario:', currentUser._id);
+    this.http.get(`${environment.apiUrl}/users/${currentUser._id}`).subscribe({
+      next: (data) => {
+        console.log('✅ [AuthService] Datos de usuario actualizados:', data);
+        sessionStorage.setItem('user', JSON.stringify(data));
+        this.loggedUserSubject.next(data as IUser);
+      },
+      error: (error) => {
+        console.error('❌ [AuthService] Error actualizando datos de usuario:', error);
+        // En caso de error, no limpiar la sesión para evitar loops de redirect
+      }
+    });
   }
 
   private hasToken(): boolean {

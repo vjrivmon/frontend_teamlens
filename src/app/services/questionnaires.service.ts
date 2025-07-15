@@ -44,4 +44,26 @@ export class QuestionnairesService {
     return this.http.put<any>(`${environment.apiUrl}/questionnaires/${questionnaireId}/submit`, value);
   }
 
+  /**
+   * Envía un cuestionario de forma anónima (sin autenticación)
+   * @param questionnaireId ID del cuestionario
+   * @param value Respuestas del cuestionario
+   * @param email Email del estudiante
+   * @returns Observable con la respuesta del servidor
+   */
+  submitAnonymousQuestionnaire(questionnaireId: string, value: any, email: string): Observable<any> {
+    const submissionData = {
+      ...value,
+      email: email
+    };
+    
+    console.log('🎯 [QuestionnairesService] Enviando cuestionario anónimo:', {
+      questionnaireId,
+      email,
+      hasData: !!value
+    });
+
+    return this.http.put<any>(`${environment.apiUrl}/questionnaires/${questionnaireId}/submit-anonymous`, submissionData);
+  }
+
 }
