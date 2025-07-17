@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../../../environments/environment';
 
 import { FormBuilder, Validators } from '@angular/forms';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -596,7 +597,7 @@ export class CreateGroupsAlgorithmFormComponent {
     console.log(`⏱️ Configurando timeout de ${timeoutDuration / 1000} segundos para el algoritmo`);
 
     // Enviar el algorithmData completo al backend junto con los IDs de estudiantes
-    this.http.post(`/activities/${this.activityId}/algorithm/execute`, {
+    this.http.post(`${environment.apiUrl}/activities/${this.activityId}/algorithm/execute`, {
       algorithmData: algorithmData.toDTO(),
       selectedStudentIds: this.selectedStudents.map(s => s._id),
       groupConfigurations: this.groupConfigurations,
