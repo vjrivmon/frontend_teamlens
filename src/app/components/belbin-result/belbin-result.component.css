@@ -35,17 +35,17 @@
 
 /* Iconos de roles */
 .role-icon-large {
-  width: 80px;
-  height: 100px;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
+  font-size: 4rem;
+  display: block;
+  text-align: center;
+  margin: 0 auto;
 }
 
 .role-icon-small {
-  width: 50px;
-  height: 62px;
-  object-fit: contain;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.1));
+  font-size: 2.5rem;
+  display: block;
+  text-align: center;
+  margin: 0 auto;
 }
 
 /* Card del rol principal - Estilo más simple y profesional */

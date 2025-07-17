@@ -100,7 +100,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       description: 'Dinámico, enérgico y desafiante. Prospera bajo presión y tiene el impulso y coraje para superar obstáculos.',
       strengths: 'Competitivo, decidido, orientado a objetivos. Mantiene al equipo enfocado y en movimiento hacia las metas.',
       weaknesses: 'Puede ser impaciente, provocativo y a veces herir los sentimientos de otros en su afán de conseguir resultados.',
-      icon: 'https://www.belbin.com/media/3289/sh-icon.png?width=83&height=106&mode=crop&format=webp&quality=80',
+      icon: 'pi pi-bolt',
       color: '#e74c3c'
     },
     'CO': {
@@ -109,7 +109,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       description: 'Maduro, confiado, identifica el talento. Clarifica objetivos y delega efectivamente.',
       strengths: 'Excelente para dirigir equipos diversos, facilita reuniones y discusiones, promueve el consenso.',
       weaknesses: 'Puede ser visto como manipulador y podría delegar demasiado su propia carga de trabajo.',
-      icon: 'https://www.belbin.com/media/3284/co-icon.png?width=83&height=106&mode=crop&format=webp&quality=80',
+      icon: 'pi pi-users',
       color: '#3498db'
     },
     'PL': {
@@ -118,7 +118,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       description: 'Creativo, imaginativo, pensador libre. Genera ideas y resuelve problemas difíciles de manera poco convencional.',
       strengths: 'Altamente innovador, encuentra soluciones originales a problemas complejos, piensa fuera de la caja.',
       weaknesses: 'Puede ignorar detalles importantes y estar demasiado absorto para comunicarse efectivamente.',
-      icon: 'https://www.belbin.com/media/3287/pl-icon.png?width=83&height=106&mode=crop&format=webp&quality=80',
+      icon: 'pi pi-lightbulb',
       color: '#9b59b6'
     },
     'RI': {
@@ -127,7 +127,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       description: 'Extrovertido, entusiasta. Explora oportunidades y desarrolla contactos externos.',
       strengths: 'Excelente comunicador, natural negociador, mantiene buenas relaciones externas y encuentra nuevas oportunidades.',
       weaknesses: 'Puede ser demasiado optimista y perder interés una vez que pasa el entusiasmo inicial.',
-      icon: 'https://www.belbin.com/media/3288/ri-icon.png?width=83&height=106&mode=crop&format=webp&quality=80',
+      icon: 'pi pi-search',
       color: '#f39c12'
     },
     'ME': {
@@ -136,7 +136,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       description: 'Sobrio, estratégico y perspicaz. Ve todas las opciones y juzga con precisión.',
       strengths: 'Excelente capacidad analítica, toma decisiones objetivas e imparciales, evalúa pros y contras cuidadosamente.',
       weaknesses: 'Puede carecer de impulso para inspirar a otros y ser demasiado crítico, lento en la toma de decisiones.',
-      icon: 'https://www.belbin.com/media/3285/me-icon.png?width=83&height=106&mode=crop&format=webp&quality=80',
+      icon: 'pi pi-chart-line',
       color: '#34495e'
     },
     'IM': {
@@ -145,7 +145,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       description: 'Práctico, confiable, eficiente. Convierte las ideas en acciones y organiza el trabajo que necesita hacerse.',
       strengths: 'Altamente organizado, leal, trabaja sistemáticamente, convierte planes en acciones concretas.',
       weaknesses: 'Puede ser algo inflexible y lento para responder a nuevas posibilidades o cambios.',
-      icon: 'https://www.belbin.com/media/3286/im-icon.png?width=83&height=106&mode=crop&format=webp&quality=80',
+      icon: 'pi pi-cog',
       color: '#27ae60'
     },
     'TW': {
@@ -154,7 +154,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       description: 'Cooperativo, perceptivo y diplomático. Escucha y evita la fricción en el equipo.',
       strengths: 'Excelente mediador, mantiene la armonía del equipo, flexible y adaptable, gran capacidad de escucha.',
       weaknesses: 'Puede ser indeciso en situaciones críticas y tiende a evitar la confrontación necesaria.',
-      icon: 'https://www.belbin.com/media/3290/tw-icon.png?width=83&height=106&mode=crop&format=webp&quality=80',
+      icon: 'pi pi-heart',
       color: '#1abc9c'
     },
     'CF': {
@@ -163,7 +163,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       description: 'Meticuloso, concienzudo, ansioso. Busca errores y los pulir hasta la perfección.',
       strengths: 'Atención excepcional al detalle, asegura la calidad y precisión, cumple con los plazos establecidos.',
       weaknesses: 'Puede preocuparse excesivamente y ser reacio a delegar, perfeccionista hasta el extremo.',
-      icon: 'https://www.belbin.com/media/3283/cf-icon.png?width=83&height=106&mode=crop&format=webp&quality=80',
+      icon: 'pi pi-check-circle',
       color: '#e67e22'
     },
     'SP': {
@@ -172,7 +172,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       description: 'Decidido, autónomo y dedicado. Aporta conocimientos y habilidades especializadas.',
       strengths: 'Experto en conocimiento técnico, se dedica a dominar su área de especialización, mentor técnico.',
       weaknesses: 'Solo contribuye en un frente específico y tiende a centrarse demasiado en aspectos técnicos.',
-      icon: 'https://www.belbin.com/media/3291/sp-icon.png?width=83&height=106&mode=crop&format=webp&quality=80',
+      icon: 'pi pi-star',
       color: '#8e44ad'
     }
   };

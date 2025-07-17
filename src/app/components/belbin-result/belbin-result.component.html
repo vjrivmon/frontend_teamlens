@@ -29,10 +29,11 @@
                 <ng-template pTemplate="header">
                     <div class="text-center py-3">
                         <h4 class="text-primary mb-2">Tu Perfil Principal es:</h4>
-                        <img 
-                            [src]="processedData.primaryRole.icon" 
-                            [alt]="processedData.primaryRole.name"
-                            class="role-icon-large mb-2">
+                        <i 
+                            [class]="processedData.primaryRole.icon" 
+                            class="role-icon-large mb-2"
+                            [style.color]="processedData.primaryRole.color">
+                        </i>
                         <h2 class="text-2xl font-bold m-0" [style.color]="processedData.primaryRole.color">
                             {{ processedData.primaryRole.name }}
                         </h2>
@@ -81,16 +82,17 @@
                     class="col-12 md:col-6 lg:col-4" 
                     *ngFor="let secondaryRole of processedData.secondaryRoles">
                     <p-card styleClass="secondary-role-card h-full">
-                        <div class="text-center mb-3">
-                            <img 
-                                [src]="secondaryRole.role.icon" 
-                                [alt]="secondaryRole.role.name"
-                                class="role-icon-small mb-2">
-                            <h6 class="font-semibold m-0" [style.color]="secondaryRole.role.color">
-                                {{ secondaryRole.role.name }}
-                            </h6>
-                            <small class="text-600">{{ secondaryRole.role.category }}</small>
-                        </div>
+                                                 <div class="text-center mb-3">
+                             <i 
+                                 [class]="secondaryRole.role.icon" 
+                                 class="role-icon-small mb-2"
+                                 [style.color]="secondaryRole.role.color">
+                             </i>
+                             <h6 class="font-semibold m-0" [style.color]="secondaryRole.role.color">
+                                 {{ secondaryRole.role.name }}
+                             </h6>
+                             <small class="text-600">{{ secondaryRole.role.category }}</small>
+                         </div>
                         
                         <!-- Barra de progreso -->
                         <div class="mb-2">
@@ -98,11 +100,12 @@
                                 <small class="text-600">Fortaleza relativa:</small>
                                 <small class="font-semibold">{{ secondaryRole.percentage }}%</small>
                             </div>
-                            <p-progressBar 
-                                [value]="secondaryRole.percentage" 
-                                [style]="{'height': '8px'}"
-                                [color]="secondaryRole.role.color">
-                            </p-progressBar>
+                                                         <p-progressBar 
+                                 [value]="secondaryRole.percentage" 
+                                 [style]="{'height': '8px'}"
+                                 [color]="secondaryRole.role.color"
+                                 [showValue]="false">
+                             </p-progressBar>
                         </div>
                         
                         <p class="text-sm text-700 line-height-3 m-0">
