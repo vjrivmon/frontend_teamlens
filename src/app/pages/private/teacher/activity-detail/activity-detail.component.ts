@@ -417,19 +417,76 @@ export class ActivityDetailComponent {
 
   onAddStudents(emails: string[]) {
     if (emails.length > 0) {
+      console.log(`📧 [ActivityDetail] Enviando invitaciones a ${emails.length} estudiantes:`, emails);
+      
       this.activitiesService.addStudentsToActivityByEmail(this.activity!._id, emails).pipe(
         concatMap(() => {
+          console.log(`✅ [ActivityDetail] Estudiantes añadidos exitosamente, recargando lista...`);
           return this.activitiesService.getStudentsByActivityById(this.activity!._id);
+        }),
+        catchError((error) => {
+          console.error('❌ [ActivityDetail] Error añadiendo estudiantes:', error);
+          
+          // Mostrar error específico al usuario
+          let errorMessage = 'Error añadiendo estudiantes.';
+          
+          if (error.status === 400) {
+            errorMessage = 'Error en los datos enviados. Verifica que los emails sean válidos.';
+          } else if (error.status === 401) {
+            errorMessage = 'No tienes permisos para añadir estudiantes.';
+          } else if (error.status === 404) {
+            errorMessage = 'Actividad no encontrada.';
+          } else if (error.status === 500) {
+            errorMessage = 'Error del servidor. Es posible que los emails no se hayan enviado correctamente.';
+          } else if (error.error?.message) {
+            errorMessage = `Error: ${error.error.message}`;
+          }
+          
+          // Mostrar toast de error
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: errorMessage,
+            life: 5000
+          });
+          
+          // No cerrar el modal para que el usuario pueda intentar de nuevo
+          return of(null);
         })
       ).subscribe({
         next: (students) => {
           if (students) {
             this.students = students;
+            console.log(`✅ [ActivityDetail] Lista de estudiantes actualizada: ${students.length} estudiantes`);
+            
+            // Mostrar mensaje de éxito
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Éxito',
+              detail: `${emails.length} estudiante(s) añadido(s) exitosamente. Los emails de invitación han sido enviados.`,
+              life: 4000
+            });
+            
+            // Solo cerrar el modal si todo fue exitoso
+            this.addStudentDialogVisible = false;
           }
+          // Si students es null (error), el modal permanece abierto
+        },
+        error: (error) => {
+          // Manejo adicional de errores que no fueron capturados por catchError
+          console.error('❌ [ActivityDetail] Error no capturado:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error Inesperado',
+            detail: 'Ocurrió un error inesperado. Inténtalo de nuevo.',
+            life: 5000
+          });
         }
       });
+    } else {
+      // Si no hay emails, simplemente cerrar el modal
+      this.addStudentDialogVisible = false;
     }
-    this.addStudentDialogVisible = false;
   }
 
   goGroupDetail(groupId: string) {
