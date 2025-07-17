@@ -471,11 +471,11 @@ export class QuestionnaireFormComponent {
     this.belbinAllRoles = [];
     this.belbinUserEmail = '';
     
-    // CORRECCIÓN: Siempre redirigir al dashboard de teacher
+    // CORRECCIÓN: Siempre redirigir al dashboard correcto
     // (tanto para usuarios anónimos como autenticados, ya que están completando 
     // un cuestionario de una actividad de profesor)
-    console.log('🎯 [QuestionnaireForm] Redirigiendo al dashboard del teacher...');
-    this.router.navigateByUrl('/teacher/dashboard');
+    console.log('🎯 [QuestionnaireForm] Redirigiendo al dashboard...');
+    this.router.navigateByUrl('/dashboard');
   }
 
 }

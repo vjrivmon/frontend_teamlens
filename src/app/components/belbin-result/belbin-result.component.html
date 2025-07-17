@@ -36,11 +36,11 @@
                         <h2 class="text-2xl font-bold m-0" [style.color]="processedData.primaryRole.color">
                             {{ processedData.primaryRole.name }}
                         </h2>
-                        <p-tag 
-                            [value]="processedData.primaryRole.category" 
-                            [style.background]="processedData.primaryRole.color"
-                            styleClass="mt-2">
-                        </p-tag>
+                        <span 
+                            class="category-tag mt-2"
+                            [ngClass]="getCategoryClass(processedData.primaryRole.category)">
+                            {{ processedData.primaryRole.category }}
+                        </span>
                     </div>
                 </ng-template>
                 
@@ -161,13 +161,19 @@
     <!-- Footer con acciones -->
     <ng-template pTemplate="footer">
         <div class="text-center">
-            <p class="text-sm text-600 mb-3">
-                En unos segundos serás redirigido automáticamente a tu dashboard...
-            </p>
+            <div class="mb-3">
+                <div class="countdown-display mb-2">
+                    <i class="pi pi-clock mr-2"></i>
+                    <span class="countdown-number">{{ redirectCountdown }}</span>
+                </div>
+                <p class="text-sm text-600 m-0">
+                    Redirección automática al dashboard en {{ redirectCountdown }} segundos...
+                </p>
+            </div>
             <p-button 
-                label="Continuar al Dashboard" 
+                label="Ir al Dashboard Ahora" 
                 icon="pi pi-arrow-right" 
-                severity="success"
+                severity="primary"
                 size="large"
                 styleClass="continue-button"
                 (onClick)="onCloseModal()">

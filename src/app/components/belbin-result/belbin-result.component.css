@@ -99,19 +99,29 @@
   transition: all 0.8s ease;
 }
 
-/* Categorías de roles */
+/* Tags de categorías mejorados */
+.category-tag {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .category-action {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  background: #dc3545;
   color: white;
 }
 
 .category-social {
-  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  background: #198754;
   color: white;
 }
 
 .category-thinking {
-  background: linear-gradient(135deg, #a55eea, #778beb);
+  background: #6f42c1;
   color: white;
 }
 
@@ -138,6 +148,26 @@
 :host ::ng-deep .continue-button:hover {
   background: #0056b3;
   border-color: #0056b3;
+}
+
+/* Estilos del contador de redirección */
+.countdown-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.countdown-number {
+  background: #007bff;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  min-width: 2rem;
+  text-align: center;
 }
 
 /* Contenido principal */

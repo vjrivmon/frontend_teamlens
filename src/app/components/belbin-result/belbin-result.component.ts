@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, OnDestroy, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -48,7 +48,7 @@ interface RoleInfo {
   templateUrl: './belbin-result.component.html',
   styleUrl: './belbin-result.component.css'
 })
-export class BelbinResultComponent implements OnInit, OnChanges {
+export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * Visibilidad del modal de resultados
    */
@@ -73,6 +73,12 @@ export class BelbinResultComponent implements OnInit, OnChanges {
    * Evento emitido cuando se cierra el modal
    */
   @Output() onClose = new EventEmitter<void>();
+
+  /**
+   * Contador para redirección automática
+   */
+  redirectCountdown: number = 30;
+  private countdownInterval: any;
 
   /**
    * Datos calculados para mostrar
@@ -185,6 +191,9 @@ export class BelbinResultComponent implements OnInit, OnChanges {
       if (this.visible && this.allRoles && this.allRoles.length > 0) {
         console.log('✅ [BelbinResult] Procesando datos de roles...');
         this.processRoleData();
+        this.startCountdown();
+      } else if (!this.visible) {
+        this.stopCountdown();
       }
     }
   }
@@ -255,12 +264,58 @@ export class BelbinResultComponent implements OnInit, OnChanges {
   }
 
   /**
-   * Maneja el cierre del modal y redirección
+   * Inicia el contador de redirección automática
+   */
+  private startCountdown(): void {
+    this.redirectCountdown = 30;
+    console.log('⏰ [BelbinResult] Iniciando contador de 30 segundos...');
+    
+    this.countdownInterval = setInterval(() => {
+      this.redirectCountdown--;
+      console.log('⏱️ [BelbinResult] Countdown:', this.redirectCountdown);
+      
+      if (this.redirectCountdown <= 0) {
+        console.log('⏰ [BelbinResult] Tiempo agotado, redirigiendo automáticamente...');
+        this.performRedirect();
+      }
+    }, 1000);
+  }
+
+  /**
+   * Detiene el contador de redirección
+   */
+  private stopCountdown(): void {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+      console.log('⏹️ [BelbinResult] Contador detenido');
+    }
+  }
+
+  /**
+   * Realiza la redirección al dashboard
+   */
+  private performRedirect(): void {
+    this.stopCountdown();
+    this.onClose.emit();
+    
+    // CORRECCIÓN: Redirigir al dashboard correcto (no /teacher/dashboard)
+    console.log('🎯 [BelbinResult] Redirigiendo al dashboard...');
+    this.router.navigateByUrl('/dashboard');
+  }
+
+  /**
+   * Maneja el cierre manual del modal
    */
   onCloseModal(): void {
-    console.log('🚪 [BelbinResult] Cerrando modal y redirigiendo...');
-    this.onClose.emit();
-    // Redirección inmediata al dashboard - no necesita delay
-    this.router.navigateByUrl('/teacher/dashboard');
+    console.log('🚪 [BelbinResult] Cierre manual del modal...');
+    this.performRedirect();
+  }
+
+  /**
+   * Limpia recursos al destruir el componente
+   */
+  ngOnDestroy(): void {
+    this.stopCountdown();
   }
 } 
