@@ -177,17 +177,43 @@ export class QuestionnaireFormComponent {
           this.loggedUser['askedQuestionnaires'].push(data.data);
         }
         
+        // DEBUGGING: Mostrar todos los datos recibidos
+        console.log('🔍 [DEBUG] Objeto data completo:', JSON.stringify(data, null, 2));
+        console.log('🔍 [DEBUG] Tipo de data.data:', typeof data.data);
+        console.log('🔍 [DEBUG] data.data.result:', data.data?.result);
+        console.log('🔍 [DEBUG] data.data.allRoles:', data.data?.allRoles);
+        console.log('🔍 [DEBUG] Array.isArray(data.data.allRoles):', Array.isArray(data.data?.allRoles));
+        
         // Mostrar modal de resultados de Belbin si están disponibles
-        if (data.data?.result && data.data?.allRoles) {
-          console.log('🎯 [QuestionnaireForm] Mostrando resultados detallados de Belbin para usuario autenticado');
+        if (data.data?.result && data.data?.allRoles && Array.isArray(data.data.allRoles)) {
+          console.log('🎯 [QuestionnaireForm] ✅ CONDICIONES CUMPLIDAS - Mostrando resultados detallados de Belbin');
           this.belbinResult = data.data.result;
           this.belbinAllRoles = data.data.allRoles;
           this.belbinUserEmail = this.loggedUser?.email || '';
           this.showBelbinModal = true;
+          
+          // DEBUGGING: Verificar que el modal se ha activado
+          console.log('🔍 [DEBUG] showBelbinModal establecido a:', this.showBelbinModal);
+          console.log('🔍 [DEBUG] belbinResult:', this.belbinResult);
+          console.log('🔍 [DEBUG] belbinAllRoles length:', this.belbinAllRoles?.length);
         } else {
-          console.log('⚠️ [QuestionnaireForm] No hay datos de Belbin, redirigiendo al dashboard');
-          // Redirigir al dashboard para cuestionarios que no sean Belbin
-          this.router.navigateByUrl('/dashboard');
+          console.log('⚠️ [QuestionnaireForm] ❌ CONDICIONES NO CUMPLIDAS - No hay datos válidos de Belbin');
+          console.log('🔍 [DEBUG] Razones:');
+          console.log('  - data.data?.result:', !!data.data?.result);
+          console.log('  - data.data?.allRoles:', !!data.data?.allRoles);
+          console.log('  - Array.isArray(allRoles):', Array.isArray(data.data?.allRoles));
+          
+          // TEMPORAL: Forzar modal para testing si hay al menos result
+          if (data.data?.result) {
+            console.log('🧪 [TESTING] Forzando modal con datos parciales para debugging');
+            this.belbinResult = data.data.result;
+            this.belbinAllRoles = data.data?.allRoles || [];
+            this.belbinUserEmail = this.loggedUser?.email || '';
+            this.showBelbinModal = true;
+          } else {
+            // Redirigir al dashboard para cuestionarios que no sean Belbin
+            this.router.navigateByUrl('/dashboard');
+          }
         }
       },
       error: (error) => {
