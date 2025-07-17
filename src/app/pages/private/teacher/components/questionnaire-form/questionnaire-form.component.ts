@@ -471,12 +471,11 @@ export class QuestionnaireFormComponent {
     this.belbinAllRoles = [];
     this.belbinUserEmail = '';
     
-    // Redirigir según el tipo de usuario
-    if (this.isAnonymousUser) {
-      this.router.navigateByUrl('/home');
-    } else {
-      this.router.navigateByUrl('/teacher/dashboard');
-    }
+    // CORRECCIÓN: Siempre redirigir al dashboard de teacher
+    // (tanto para usuarios anónimos como autenticados, ya que están completando 
+    // un cuestionario de una actividad de profesor)
+    console.log('🎯 [QuestionnaireForm] Redirigiendo al dashboard del teacher...');
+    this.router.navigateByUrl('/teacher/dashboard');
   }
 
 }

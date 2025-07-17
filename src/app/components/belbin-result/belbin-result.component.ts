@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -48,7 +48,7 @@ interface RoleInfo {
   templateUrl: './belbin-result.component.html',
   styleUrl: './belbin-result.component.css'
 })
-export class BelbinResultComponent implements OnInit {
+export class BelbinResultComponent implements OnInit, OnChanges {
   /**
    * Visibilidad del modal de resultados
    */
@@ -174,8 +174,18 @@ export class BelbinResultComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit() {
-    if (this.allRoles && this.allRoles.length > 0) {
-      this.processRoleData();
+    console.log('🔧 [BelbinResult] ngOnInit - visible:', this.visible, 'allRoles:', this.allRoles?.length);
+    this.processRoleData();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    console.log('🔄 [BelbinResult] ngOnChanges detectado:', changes);
+    if (changes['allRoles'] || changes['visible']) {
+      console.log('🔧 [BelbinResult] Cambios detectados - visible:', this.visible, 'allRoles:', this.allRoles?.length);
+      if (this.visible && this.allRoles && this.allRoles.length > 0) {
+        console.log('✅ [BelbinResult] Procesando datos de roles...');
+        this.processRoleData();
+      }
     }
   }
 
@@ -183,7 +193,11 @@ export class BelbinResultComponent implements OnInit {
    * Procesa los datos de roles para generar información detallada
    */
   private processRoleData(): void {
-    if (!this.allRoles || this.allRoles.length === 0) return;
+    console.log('🔧 [BelbinResult] processRoleData llamado con:', this.allRoles);
+    if (!this.allRoles || this.allRoles.length === 0) {
+      console.log('❌ [BelbinResult] No hay roles para procesar');
+      return;
+    }
 
     // Encontrar el rol principal y el puntaje máximo
     const primaryRoleData = this.allRoles[0]; // Ya está ordenado por puntaje
@@ -216,6 +230,8 @@ export class BelbinResultComponent implements OnInit {
       secondaryRoles,
       maxScore
     };
+
+    console.log('✅ [BelbinResult] Datos procesados exitosamente:', this.processedData);
   }
 
   /**
@@ -242,10 +258,9 @@ export class BelbinResultComponent implements OnInit {
    * Maneja el cierre del modal y redirección
    */
   onCloseModal(): void {
+    console.log('🚪 [BelbinResult] Cerrando modal y redirigiendo...');
     this.onClose.emit();
-    // Redirección automática al dashboard después de un breve delay
-    setTimeout(() => {
-      this.router.navigateByUrl('/teacher/dashboard');
-    }, 500);
+    // Redirección inmediata al dashboard - no necesita delay
+    this.router.navigateByUrl('/teacher/dashboard');
   }
 } 

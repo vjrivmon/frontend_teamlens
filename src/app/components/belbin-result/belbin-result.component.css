@@ -1,20 +1,23 @@
 /* Estilos para el componente de resultados de Belbin */
 
-/* Estilos del diálogo principal */
+/* Estilos del diálogo principal - Consistente con la aplicación */
 :host ::ng-deep .belbin-results-dialog .p-dialog {
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
 }
 
 :host ::ng-deep .belbin-results-dialog .p-dialog-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 12px 12px 0 0;
-  padding: 1.5rem;
+  background: #f8f9fa;
+  color: #333;
+  border-radius: 8px 8px 0 0;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 :host ::ng-deep .belbin-results-dialog .p-dialog-header .p-dialog-title {
-  color: white;
+  color: #333;
+  font-weight: 600;
 }
 
 :host ::ng-deep .belbin-results-dialog .p-dialog-content {
@@ -25,8 +28,9 @@
 
 :host ::ng-deep .belbin-results-dialog .p-dialog-footer {
   background: #f8f9fa;
-  border-radius: 0 0 12px 12px;
-  padding: 1.5rem;
+  border-radius: 0 0 8px 8px;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e0e0e0;
 }
 
 /* Iconos de roles */
@@ -44,24 +48,18 @@
   filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.1));
 }
 
-/* Card del rol principal */
+/* Card del rol principal - Estilo más simple y profesional */
 :host ::ng-deep .primary-role-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f8f9fa 100%);
-  border: 2px solid #e9ecef;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-:host ::ng-deep .primary-role-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 :host ::ng-deep .primary-role-card .p-card-header {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 14px 14px 0 0;
-  border-bottom: 1px solid #dee2e6;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 :host ::ng-deep .primary-role-card .p-card-body {
@@ -70,17 +68,16 @@
 
 /* Cards de roles secundarios */
 :host ::ng-deep .secondary-role-card {
-  border: 1px solid #e9ecef;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
   background: white;
   height: 100%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 :host ::ng-deep .secondary-role-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-  border-color: #c3d4f7;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
 }
 
 :host ::ng-deep .secondary-role-card .p-card-body {
@@ -128,21 +125,19 @@
   font-size: 0.75rem;
 }
 
-/* Botón de continuar */
+/* Botón de continuar - Estilo consistente con la aplicación */
 :host ::ng-deep .continue-button {
-  border-radius: 25px;
-  padding: 0.75rem 2rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
-  background: linear-gradient(135deg, #28a745, #20c997);
-  border: none;
+  border-radius: 4px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  background: #007bff;
+  border: 1px solid #007bff;
+  color: white;
 }
 
 :host ::ng-deep .continue-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+  background: #0056b3;
+  border-color: #0056b3;
 }
 
 /* Contenido principal */
