@@ -164,9 +164,16 @@ export class QuestionnaireFormComponent {
     this.questionnaireService.submitQuestionnaire(this.questionnaireId, formData).subscribe({
       next: (data: any) => {
         console.log('✅ [QuestionnaireForm] Cuestionario enviado exitosamente:', data);
+        console.log('📊 [QuestionnaireForm] Datos específicos recibidos:', data.data);
+        console.log('🔍 [QuestionnaireForm] ¿Incluye allRoles?', !!data.data?.allRoles);
+        console.log('🔍 [QuestionnaireForm] ¿Incluye result?', !!data.data?.result);
         
         // Actualizar datos del usuario si están disponibles
         if (this.loggedUser && data.data) {
+          // Asegurar que askedQuestionnaires existe
+          if (!this.loggedUser['askedQuestionnaires']) {
+            this.loggedUser['askedQuestionnaires'] = [];
+          }
           this.loggedUser['askedQuestionnaires'].push(data.data);
         }
         
@@ -178,6 +185,7 @@ export class QuestionnaireFormComponent {
           this.belbinUserEmail = this.loggedUser?.email || '';
           this.showBelbinModal = true;
         } else {
+          console.log('⚠️ [QuestionnaireForm] No hay datos de Belbin, redirigiendo al dashboard');
           // Redirigir al dashboard para cuestionarios que no sean Belbin
           this.router.navigateByUrl('/dashboard');
         }
@@ -209,6 +217,9 @@ export class QuestionnaireFormComponent {
     this.questionnaireService.submitAnonymousQuestionnaire(this.questionnaireId, formData, studentEmail).subscribe({
       next: (data: any) => {
         console.log('✅ [QuestionnaireForm] Cuestionario anónimo enviado exitosamente:', data);
+        console.log('📊 [QuestionnaireForm] Datos específicos recibidos (anónimo):', data.data);
+        console.log('🔍 [QuestionnaireForm] ¿Incluye allRoles? (anónimo)', !!data.data?.allRoles);
+        console.log('🔍 [QuestionnaireForm] ¿Incluye result? (anónimo)', !!data.data?.result);
         
         // Mostrar modal de resultados de Belbin si están disponibles
         if (data.data?.result && data.data?.allRoles) {
