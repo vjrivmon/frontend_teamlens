@@ -181,4 +181,13 @@
         <button type="submit" class="ui button primary" (click)="onSubmitQuiestionnaire()">Submit questionnaire</button>
 
     </form>
+
+    <!-- Modal de resultados de Belbin -->
+    <app-belbin-result
+        [visible]="showBelbinModal"
+        [primaryRole]="belbinResult"
+        [allRoles]="belbinAllRoles"
+        [userEmail]="belbinUserEmail"
+        (onClose)="onBelbinModalClose()">
+    </app-belbin-result>
 </div>

@@ -1,0 +1,177 @@
+<!-- Modal de Resultados del Test de Belbin -->
+<p-dialog 
+    [visible]="visible" 
+    [modal]="true" 
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{'width': '95vw', 'max-width': '900px', 'max-height': '90vh'}"
+    styleClass="belbin-results-dialog"
+    (onHide)="onCloseModal()">
+    
+    <!-- Header personalizado -->
+    <ng-template pTemplate="header">
+        <div class="flex align-items-center gap-3 w-full">
+            <i class="pi pi-trophy text-primary" style="font-size: 1.8rem;"></i>
+            <div>
+                <h3 class="m-0 font-bold text-primary">¡Resultados de tu Test Belbin!</h3>
+                <p class="m-0 text-sm text-600">Descubre tu perfil de trabajo en equipo</p>
+            </div>
+        </div>
+    </ng-template>
+    
+    <!-- Contenido principal -->
+    <div class="belbin-content" *ngIf="processedData">
+        
+        <!-- Rol Principal -->
+        <div class="primary-role-section mb-4">
+            <p-card styleClass="primary-role-card">
+                <ng-template pTemplate="header">
+                    <div class="text-center py-3">
+                        <h4 class="text-primary mb-2">Tu Perfil Principal es:</h4>
+                        <img 
+                            [src]="processedData.primaryRole.icon" 
+                            [alt]="processedData.primaryRole.name"
+                            class="role-icon-large mb-2">
+                        <h2 class="text-2xl font-bold m-0" [style.color]="processedData.primaryRole.color">
+                            {{ processedData.primaryRole.name }}
+                        </h2>
+                        <p-tag 
+                            [value]="processedData.primaryRole.category" 
+                            [style.background]="processedData.primaryRole.color"
+                            styleClass="mt-2">
+                        </p-tag>
+                    </div>
+                </ng-template>
+                
+                <div class="role-description">
+                    <div class="mb-3">
+                        <h5 class="font-semibold text-900 mb-2">¿Qué significa esto?</h5>
+                        <p class="text-700 line-height-3">{{ processedData.primaryRole.description }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5 class="font-semibold text-900 mb-2">🌟 Tus fortalezas principales:</h5>
+                        <p class="text-700 line-height-3">{{ processedData.primaryRole.strengths }}</p>
+                    </div>
+                    
+                    <div>
+                        <h5 class="font-semibold text-900 mb-2">⚠️ Debilidades permitidas:</h5>
+                        <p class="text-600 line-height-3 text-sm">{{ processedData.primaryRole.weaknesses }}</p>
+                        <small class="text-500">
+                            <i>Nota: Las "debilidades permitidas" son el precio que se paga por tener ciertas fortalezas. 
+                            Son naturales y esperadas en tu perfil.</i>
+                        </small>
+                    </div>
+                </div>
+            </p-card>
+        </div>
+
+        <p-divider></p-divider>
+
+        <!-- Roles Secundarios -->
+        <div class="secondary-roles-section mb-4">
+            <h4 class="text-primary mb-3">
+                <i class="pi pi-chart-bar mr-2"></i>
+                También tienes fortaleza en estos roles:
+            </h4>
+            
+            <div class="grid" *ngIf="processedData.secondaryRoles.length > 0">
+                <div 
+                    class="col-12 md:col-6 lg:col-4" 
+                    *ngFor="let secondaryRole of processedData.secondaryRoles">
+                    <p-card styleClass="secondary-role-card h-full">
+                        <div class="text-center mb-3">
+                            <img 
+                                [src]="secondaryRole.role.icon" 
+                                [alt]="secondaryRole.role.name"
+                                class="role-icon-small mb-2">
+                            <h6 class="font-semibold m-0" [style.color]="secondaryRole.role.color">
+                                {{ secondaryRole.role.name }}
+                            </h6>
+                            <small class="text-600">{{ secondaryRole.role.category }}</small>
+                        </div>
+                        
+                        <!-- Barra de progreso -->
+                        <div class="mb-2">
+                            <div class="flex justify-content-between align-items-center mb-1">
+                                <small class="text-600">Fortaleza relativa:</small>
+                                <small class="font-semibold">{{ secondaryRole.percentage }}%</small>
+                            </div>
+                            <p-progressBar 
+                                [value]="secondaryRole.percentage" 
+                                [style]="{'height': '8px'}"
+                                [color]="secondaryRole.role.color">
+                            </p-progressBar>
+                        </div>
+                        
+                        <p class="text-sm text-700 line-height-3 m-0">
+                            {{ secondaryRole.role.description }}
+                        </p>
+                    </p-card>
+                </div>
+            </div>
+        </div>
+
+        <p-divider></p-divider>
+
+        <!-- Información adicional -->
+        <div class="additional-info mb-4">
+            <h4 class="text-primary mb-3">
+                <i class="pi pi-info-circle mr-2"></i>
+                ¿De dónde salen estos resultados?
+            </h4>
+            
+            <div class="bg-blue-50 p-3 border-round mb-3">
+                <p class="text-sm text-700 line-height-3 m-0">
+                    <strong>Investigación científica:</strong> Estos resultados se basan en la investigación del Dr. Meredith Belbin 
+                    realizada durante 9 años en el Henley Management College. Se estudiaron equipos reales trabajando en 
+                    simulaciones empresariales para identificar qué comportamientos llevan al éxito.
+                </p>
+            </div>
+            
+            <div class="bg-green-50 p-3 border-round mb-3">
+                <p class="text-sm text-700 line-height-3 m-0">
+                    <strong>Validez mundial:</strong> Los 9 Roles de Equipo de Belbin son utilizados por más del 40% de las 
+                    empresas del top 100 en Reino Unido, las Naciones Unidas, el Banco Mundial y miles de organizaciones 
+                    en todo el mundo.
+                </p>
+            </div>
+            
+            <div class="bg-orange-50 p-3 border-round">
+                <p class="text-sm text-700 line-height-3 m-0">
+                    <strong>¿Qué hacer ahora?</strong> Conocer tu perfil te ayuda a entender tus fortalezas naturales y 
+                    encontrar el lugar adecuado en un equipo. Trabaja con compañeros que complementen tus habilidades 
+                    y aprovecha al máximo lo que aportas de forma única.
+                </p>
+            </div>
+        </div>
+
+        <!-- Mensaje personalizado si hay email -->
+        <div *ngIf="userEmail" class="user-message mb-4">
+            <div class="bg-purple-50 p-3 border-round text-center">
+                <p class="text-sm text-700 m-0">
+                    <i class="pi pi-user mr-2"></i>
+                    <strong>{{ userEmail }}</strong> - Este perfil ha sido guardado en tu cuenta para futuras referencias.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer con acciones -->
+    <ng-template pTemplate="footer">
+        <div class="text-center">
+            <p class="text-sm text-600 mb-3">
+                En unos segundos serás redirigido automáticamente a tu dashboard...
+            </p>
+            <p-button 
+                label="Continuar al Dashboard" 
+                icon="pi pi-arrow-right" 
+                severity="success"
+                size="large"
+                styleClass="continue-button"
+                (onClick)="onCloseModal()">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog> 

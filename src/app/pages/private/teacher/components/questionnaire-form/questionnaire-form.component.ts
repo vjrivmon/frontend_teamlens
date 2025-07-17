@@ -11,11 +11,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { QuestionnairesService } from '../../../../../services/questionnaires.service';
 import { AuthService } from '../../../../../services/auth.service';
 import { Route, Router, ActivatedRoute } from '@angular/router';
+import { BelbinResultComponent } from '../../../../../components/belbin-result/belbin-result.component';
 
 @Component({
   selector: 'app-questionnaire-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RadioButtonModule, DividerModule, InputTextModule],
+  imports: [CommonModule, ReactiveFormsModule, RadioButtonModule, DividerModule, InputTextModule, BelbinResultComponent],
   templateUrl: './questionnaire-form.component.html',
   styleUrl: './questionnaire-form.component.css'
 })
@@ -32,6 +33,12 @@ export class QuestionnaireFormComponent {
   loggedUser: IUser | undefined;
   isAnonymousUser: boolean = false;
   studentEmail: string = '';
+
+  // Modal de resultados de Belbin
+  showBelbinModal: boolean = false;
+  belbinResult: string = '';
+  belbinAllRoles: any[] = [];
+  belbinUserEmail: string = '';
 
   constructor(
     private questionnaireService: QuestionnairesService, 
@@ -163,8 +170,17 @@ export class QuestionnaireFormComponent {
           this.loggedUser['askedQuestionnaires'].push(data.data);
         }
         
-        // Redirigir al dashboard
-        this.router.navigateByUrl('/dashboard');
+        // Mostrar modal de resultados de Belbin si están disponibles
+        if (data.data?.result && data.data?.allRoles) {
+          console.log('🎯 [QuestionnaireForm] Mostrando resultados detallados de Belbin para usuario autenticado');
+          this.belbinResult = data.data.result;
+          this.belbinAllRoles = data.data.allRoles;
+          this.belbinUserEmail = this.loggedUser?.email || '';
+          this.showBelbinModal = true;
+        } else {
+          // Redirigir al dashboard para cuestionarios que no sean Belbin
+          this.router.navigateByUrl('/dashboard');
+        }
       },
       error: (error) => {
         console.error('❌ [QuestionnaireForm] Error enviando cuestionario:', error);
@@ -194,19 +210,28 @@ export class QuestionnaireFormComponent {
       next: (data: any) => {
         console.log('✅ [QuestionnaireForm] Cuestionario anónimo enviado exitosamente:', data);
         
-        // Mostrar mensaje de éxito personalizado con resultado
-        let message = '¡Gracias por completar el cuestionario! Tus respuestas han sido enviadas exitosamente.';
-        
-        if (data.data?.result) {
-          message += `\n\nTu perfil Belbin es: ${data.data.result}`;
+        // Mostrar modal de resultados de Belbin si están disponibles
+        if (data.data?.result && data.data?.allRoles) {
+          console.log('🎯 [QuestionnaireForm] Mostrando resultados detallados de Belbin');
+          this.belbinResult = data.data.result;
+          this.belbinAllRoles = data.data.allRoles;
+          this.belbinUserEmail = studentEmail;
+          this.showBelbinModal = true;
+        } else {
+          // Fallback para cuestionarios que no sean Belbin
+          let message = '¡Gracias por completar el cuestionario! Tus respuestas han sido enviadas exitosamente.';
+          
+          if (data.data?.result) {
+            message += `\n\nTu resultado es: ${data.data.result}`;
+          }
+          
+          if (data.data?.isNewUser) {
+            message += '\n\nSe ha creado automáticamente tu perfil en el sistema.';
+          }
+          
+          alert(message);
+          this.router.navigateByUrl('/home');
         }
-        
-        if (data.data?.isNewUser) {
-          message += '\n\nSe ha creado automáticamente tu perfil en el sistema.';
-        }
-        
-        alert(message);
-        this.router.navigateByUrl('/home');
       },
       error: (error) => {
         console.error('❌ [QuestionnaireForm] Error enviando cuestionario anónimo:', error);
@@ -395,6 +420,26 @@ export class QuestionnaireFormComponent {
   isOptionDisabled(questionIndex: number, optionIndex: number): boolean {
     // No deshabilitar inputs, permitir entrada manual
     return false;
+  }
+
+  /**
+   * Maneja el cierre del modal de resultados de Belbin
+   */
+  onBelbinModalClose(): void {
+    console.log('🔒 [QuestionnaireForm] Cerrando modal de resultados de Belbin');
+    this.showBelbinModal = false;
+    
+    // Limpiar datos del modal
+    this.belbinResult = '';
+    this.belbinAllRoles = [];
+    this.belbinUserEmail = '';
+    
+    // Redirigir según el tipo de usuario
+    if (this.isAnonymousUser) {
+      this.router.navigateByUrl('/home');
+    } else {
+      this.router.navigateByUrl('/teacher/dashboard');
+    }
   }
 
 }
