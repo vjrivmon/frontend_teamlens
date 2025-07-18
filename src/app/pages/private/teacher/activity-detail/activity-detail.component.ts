@@ -128,6 +128,9 @@ export class ActivityDetailComponent {
   @Input('id') activityId!: string;
 
   addStudentDialogVisible: boolean = false;
+  
+  // 🚀 NUEVO: Estado para confirmación de grupos
+  confirmingGroups: boolean = false;
 
   loadingStudentsTable: boolean = true;
   studentsTableSearchValue: string | undefined;
@@ -1024,6 +1027,78 @@ export class ActivityDetailComponent {
   isTeacher(): boolean {
     const user = this.authService.getUser();
     return user?.role === 'teacher';
+  }
+
+  // 🚀 NUEVAS FUNCIONES: Gestión de grupos draft/confirmed
+
+  /**
+   * Verifica si hay grupos en estado draft
+   */
+  hasDraftGroups(): boolean {
+    return this.groups.some(group => group.status === 'draft');
+  }
+
+  /**
+   * Cuenta los grupos en estado draft
+   */
+  getDraftGroupsCount(): number {
+    return this.groups.filter(group => group.status === 'draft').length;
+  }
+
+  /**
+   * Confirma todos los grupos draft y envía notificaciones
+   */
+  onConfirmGroupsButton(): void {
+    console.log('🚀 [ActivityDetail] Iniciando confirmación de grupos...');
+    
+    if (!this.hasDraftGroups()) {
+      console.warn('⚠️ [ActivityDetail] No hay grupos draft para confirmar');
+      return;
+    }
+
+    this.confirmingGroups = true;
+
+    // Obtener IDs de grupos draft
+    const draftGroupIds = this.groups
+      .filter(group => group.status === 'draft')
+      .map(group => group._id);
+
+    console.log(`✅ [ActivityDetail] Confirmando ${draftGroupIds.length} grupos draft`);
+
+    this.activitiesService.confirmGroups(this.activityId, draftGroupIds).subscribe({
+      next: (response) => {
+        console.log('🎉 [ActivityDetail] Grupos confirmados exitosamente:', response);
+        
+        this.messageService.add({
+          severity: 'success',
+          summary: '✅ Grupos Confirmados',
+          detail: `Se confirmaron ${response.data.confirmedCount} grupos y se notificó a ${response.data.notifiedStudents} estudiantes.`,
+          life: 6000
+        });
+
+        // Actualizar estado local de los grupos
+        this.groups.forEach(group => {
+          if (group.status === 'draft') {
+            group.status = 'confirmed';
+            group.confirmedAt = new Date().toISOString();
+          }
+        });
+
+        this.confirmingGroups = false;
+      },
+      error: (error) => {
+        console.error('❌ [ActivityDetail] Error confirmando grupos:', error);
+        
+        this.messageService.add({
+          severity: 'error',
+          summary: '❌ Error Confirmando',
+          detail: 'Hubo un problema confirmando los grupos. Inténtalo de nuevo.',
+          life: 6000
+        });
+
+        this.confirmingGroups = false;
+      }
+    });
   }
 
 }

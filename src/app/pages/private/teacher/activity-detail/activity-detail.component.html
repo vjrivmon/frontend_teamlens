@@ -233,21 +233,51 @@
                             <p>Here you can create the groups manually or through our algorithm.</p>
                         </div>
                         <div class="flex gap-2 ml-auto">
+                            <!-- 🚀 NUEVO: Botón confirmar grupos (solo si hay grupos draft) -->
+                            @if (hasDraftGroups()) {
+                                <button pButton 
+                                        icon="pi pi-check" 
+                                        label="Confirmar Grupos"
+                                        class="p-button-success p-button-sm"
+                                        (click)="onConfirmGroupsButton()"
+                                        [disabled]="loadingState.groups || confirmingGroups"
+                                        [loading]="confirmingGroups">
+                                </button>
+                            }
+                            
                             <button pButton 
                                     icon="pi pi-plus" 
                                     label="Nuevo Grupo"
                                     class="p-button-sm"
                                     (click)="onCreateGroupButton()"
-                                    [disabled]="loadingState.groups">
+                                    [disabled]="loadingState.groups || hasDraftGroups()">
                             </button>
                             <button (click)="onCreateAlgGroupsButton()" 
                                     class="w-fit ui button teal"
-                                    [disabled]="loadingState.groups || loadingState.students">
+                                    [disabled]="loadingState.groups || loadingState.students || hasDraftGroups()">
                                 <i class="pi pi-sparkles mr-2"></i>
                                 Create groups
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- 📋 NUEVO: Mensaje de revisión para grupos draft -->
+                    @if (hasDraftGroups()) {
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="pi pi-exclamation-triangle text-yellow-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-yellow-700">
+                                        <strong>Grupos pendientes de revisión:</strong> 
+                                        El algoritmo ha creado {{ getDraftGroupsCount() }} grupos. 
+                                        Revisa la formación y confirma para notificar a los estudiantes.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
 
                 <!-- Loading state para grupos -->
@@ -304,15 +334,29 @@
                             <div class="groups-grid">
                                 @for (group of groups; track group._id) {
                                     <div class="group-panel" 
+                                         [ngClass]="{ 
+                                           'group-draft': group.status === 'draft', 
+                                           'group-confirmed': group.status === 'confirmed' || !group.status 
+                                         }"
                                          (drop)="isTeacher() ? onDrop($event, group) : null" 
                                          (dragover)="isTeacher() ? onDragOver($event) : null" 
                                          (dragenter)="isTeacher() ? onDragEnter($event) : null"
                                          (dragleave)="isTeacher() ? onDragLeave($event) : null">
                                         
-                                        <!-- Header del Grupo -->
+                                        <!-- Header del Grupo con Estado -->
                                         <div class="group-panel-header">
                                             <div class="group-meta">
-                                                <h4 class="group-name">{{ group.name }}</h4>
+                                                <div class="flex align-items-center gap-2">
+                                                    <h4 class="group-name">{{ group.name }}</h4>
+                                                    <!-- 🚀 NUEVO: Badge de estado del grupo -->
+                                                    @if (group.status === 'draft') {
+                                                        <p-badge value="BORRADOR" severity="warning" class="text-xs"></p-badge>
+                                                    } @else if (group.status === 'confirmed') {
+                                                        <p-badge value="CONFIRMADO" severity="success" class="text-xs"></p-badge>
+                                                    } @else if (group.creationMethod === 'algorithm') {
+                                                        <p-badge value="ALGORITMO" severity="info" class="text-xs"></p-badge>
+                                                    }
+                                                </div>
                                                 <span class="group-count">{{ group.students.length }} miembros</span>
                                             </div>
                                             <div class="group-controls">

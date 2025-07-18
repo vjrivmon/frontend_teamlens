@@ -74,4 +74,15 @@ export class ActivitiesService {
     return this.http.post(`${environment.apiUrl}/activities/${activityId}/send-questionnaire-remaining/${questionnaireId}`, {});
   }
 
+  /**
+   * 🚀 NUEVA FUNCIÓN: Confirma grupos en estado 'draft' y envía notificaciones a estudiantes
+   * @param activityId ID de la actividad
+   * @param groupIds (Opcional) IDs específicos de grupos a confirmar. Si no se proporciona, confirma todos los draft
+   * @returns Observable con la respuesta del servidor
+   */
+  confirmGroups(activityId: string, groupIds?: string[]): Observable<any> {
+    const body = groupIds ? { groupIds } : {};
+    return this.http.post(`${environment.apiUrl}/activities/${activityId}/groups/confirm`, body);
+  }
+
 }

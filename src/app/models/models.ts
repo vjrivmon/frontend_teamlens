@@ -70,6 +70,17 @@ export interface IGroup {
     _id: string;
     name: string;
     students: IUser[];
+    status?: 'draft' | 'confirmed'; // Estado del grupo
+    creationMethod?: 'manual' | 'algorithm'; // Método de creación
+    createdAt?: string;
+    confirmedAt?: string;
+    confirmedBy?: string;
+    metadata?: {
+        algorithmVersion?: string;
+        taskId?: string;
+        teamSize?: number;
+        [key: string]: any;
+    };
 }
 
 export interface INewActivity extends Omit<IActivity, '_id'  | 'teacher' | 'students' | 'groups'> {
