@@ -581,10 +581,10 @@
                                 <span class="text-600 font-medium">{{ algorithmProgress }}</span>
                             </div>
                             
-                            <!-- Tiempo estimado -->
-                            <div *ngIf="getEstimatedTimeRemaining()" 
+                            <!-- Tiempo transcurrido -->
+                            <div *ngIf="getElapsedTime()" 
                                  class="text-xs text-500">
-                                {{ getEstimatedTimeRemaining() }}
+                                {{ getElapsedTime() }}
                             </div>
                             
                             <!-- Información adicional del procesamiento -->
@@ -610,7 +610,7 @@
         [visible]="showProgressModal"
         [progressMessage]="algorithmProgress"
         [elapsedTime]="elapsedTime"
-        [estimatedTimeRemaining]="getEstimatedTimeRemaining()"
+        [estimatedTimeRemaining]="''"
         [isCompleted]="algorithmCompleted"
         [isSuccess]="algorithmSuccess"
         [groupsCreated]="algorithmsGroupsCreated"

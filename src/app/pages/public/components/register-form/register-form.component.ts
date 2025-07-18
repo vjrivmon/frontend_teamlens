@@ -3,21 +3,37 @@ import { AuthService } from '../../../../services/auth.service';
 import { Router } from '@angular/router';
 import { AbstractControl, FormBuilder, ValidationErrors, Validators } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 
 import * as jwt from "jwt-decode";
 
+/**
+ * Componente de formulario de registro
+ * Permite el registro de profesores y estudiantes con campos completos incluyendo sexo
+ */
 @Component({
   selector: 'app-register-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './register-form.component.html',
   styleUrl: './register-form.component.css'
 })
 export class RegisterFormComponent {
 
+  /**
+   * Opciones disponibles para el campo de sexo
+   */
+  genderOptions = [
+    { label: 'Hombre', value: 'male' },
+    { label: 'Mujer', value: 'female' },
+    { label: 'Otro', value: 'other' },
+    { label: 'Prefiero no decirlo', value: 'prefer_not_to_say' }
+  ];
+
   registerForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email]],
     name: ['', [Validators.required]],
+    gender: ['', [Validators.required]], // Nuevo campo de sexo obligatorio
     password: ['', [Validators.required]],
     confirmPassword: ['', [Validators.required]]
   }, {
@@ -49,7 +65,7 @@ export class RegisterFormComponent {
 
   onSubmit(): void {
 
-    const { name, password } = this.registerForm.value;
+    const { name, gender, password } = this.registerForm.value;
 
     const email = this.registerForm.get('email')?.value;
 
@@ -71,12 +87,11 @@ export class RegisterFormComponent {
       }
     }
 
-
     // Process checkout data here    
     if (this.invitationToken) {
-      this.authService.registerStudent(email!, name!, password!, role, callback);
+      this.authService.registerStudent(email!, name!, gender!, password!, role, callback);
     } else {
-      this.authService.register(email!, name!, password!, role, callback);
+      this.authService.register(email!, name!, gender!, password!, role, callback);
     }
   }
 
@@ -86,8 +101,5 @@ export class RegisterFormComponent {
 
     return password?.value === confirmPassword?.value ? null : { notmatched: true };
   };
-
-
-
 
 }

@@ -8,6 +8,15 @@
         <input type="text" id="name" formControlName="name">
     </div>
     <div class="field">
+        <label for="gender">Sexo</label>
+        <select id="gender" formControlName="gender" class="ui dropdown">
+            <option value="" disabled>Seleccione una opción</option>
+            <option *ngFor="let option of genderOptions" [value]="option.value">
+                {{ option.label }}
+            </option>
+        </select>
+    </div>
+    <div class="field">
         <label for="password">Password</label>
         <input type="password" id="password" formControlName="password" autocomplete="on">
     </div>

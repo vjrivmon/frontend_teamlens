@@ -837,13 +837,12 @@ export class CreateGroupsAlgorithmFormComponent {
   }
 
   /**
-   * Obtiene el tiempo restante estimado en formato legible
+   * Obtiene el tiempo transcurrido en formato legible
    */
-  getEstimatedTimeRemaining(): string {
+  getElapsedTime(): string {
     if (!this.isAlgorithmRunning) return '';
     
-    const remaining = Math.max(0, this.estimatedTime - this.elapsedTime);
-    return remaining > 0 ? `${remaining}s restantes` : 'Finalizando...';
+    return this.elapsedTime > 0 ? `${this.elapsedTime}s transcurridos` : 'Iniciando...';
   }
 
   /**

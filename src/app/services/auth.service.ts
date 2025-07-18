@@ -51,9 +51,9 @@ export class AuthService {
 
   }
 
-  register(email: string, name: string, password: string, role: string, { done, err }: any): void {
+  register(email: string, name: string, gender: string, password: string, role: string, { done, err }: any): void {
 
-    this.http.post(`${environment.apiUrl}/auth/register`, { email, name, password }, { observe: 'response', withCredentials: true }).subscribe(({
+    this.http.post(`${environment.apiUrl}/auth/register`, { email, name, gender, password }, { observe: 'response', withCredentials: true }).subscribe(({
 
       next: (data: any) => {
         done();
@@ -68,9 +68,9 @@ export class AuthService {
 
   }
 
-  registerStudent(email: string, name: string, password: string, role: string, { done, err }: any): void {
+  registerStudent(email: string, name: string, gender: string, password: string, role: string, { done, err }: any): void {
 
-    this.http.post(`${environment.apiUrl}/auth/register-student`, { email, name, password }, { observe: 'response', withCredentials: true }).subscribe(({
+    this.http.post(`${environment.apiUrl}/auth/register-student`, { email, name, gender, password }, { observe: 'response', withCredentials: true }).subscribe(({
 
       next: (data: any) => {
         done();
