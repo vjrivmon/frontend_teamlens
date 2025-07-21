@@ -14,7 +14,7 @@
             <ng-template pTemplate="content" let-nextCallback="nextCallback">
                 <div class="step-content">
                     <div class="content-grid-spaced">
-                        <!-- Columna izquierda: Algoritmo con más espacio -->
+                        <!-- Columna izquierda: Algoritmo -->
                         <div class="algorithm-section-expanded">
                             <div class="algorithm-header">
                                 <h3>Algoritmo de Emparejamiento</h3>
@@ -29,21 +29,21 @@
                                         [options]="questionnaires" 
                                         optionLabel="title"
                                         placeholder="Selecciona un Algoritmo" 
-                                        class="w-full algorithm-dropdown" />
+                                        class="w-full" />
                                 </div>
                             </form>
 
-                            <!-- Información sobre Belbin -->
+                            <!-- Información sobre Belbin - Estilo mejorado -->
                             <div class="belbin-info" *ngIf="teamBuilderForm.get('algorithm')?.value?.title === 'BELBIN'">
                                 <div class="info-card">
                                     <div class="info-header">
-                                        <i class="pi pi-info-circle"></i>
+                                        <i class="pi pi-lightbulb"></i>
                                         <span>Sobre el Test Belbin</span>
                                     </div>
                                     <div class="info-content">
-                                        <p><strong>Belbin Team Roles</strong> es una metodología científica desarrollada por el Dr. Meredith Belbin tras más de 9 años de investigación sobre qué hace que algunos equipos sean más exitosos que otros.</p>
+                                        <p><strong>Belbin Team Roles</strong> es una metodología científica desarrollada por el Dr. Meredith Belbin tras más de 9 años de investigación sobre equipos exitosos.</p>
                                         
-                                        <p>La investigación reveló que el éxito de un equipo no dependía del intelecto, sino del <strong>comportamiento</strong>. Se identificaron 9 grupos de comportamientos críticos para el éxito de un equipo.</p>
+                                        <p>La investigación reveló que el éxito no dependía del intelecto, sino del <strong>comportamiento</strong>. Se identificaron 9 comportamientos críticos para el éxito de equipos.</p>
                                         
                                         <div class="belbin-features">
                                             <div class="feature-item">
@@ -52,17 +52,17 @@
                                             </div>
                                             <div class="feature-item">
                                                 <i class="pi pi-check-circle"></i>
-                                                <span>Mejora la comunicación y colaboración del equipo</span>
+                                                <span>Mejora la comunicación del equipo</span>
                                             </div>
                                             <div class="feature-item">
                                                 <i class="pi pi-check-circle"></i>
-                                                <span>Utilizado por miles de organizaciones mundialmente</span>
+                                                <span>Utilizado por miles de organizaciones</span>
                                             </div>
                                         </div>
                                         
-                                        <small class="info-footer">
-                                            Metodología reconocida como el estándar de oro para identificar contribuciones útiles en el lugar de trabajo.
-                                        </small>
+                                        <p class="info-footer">
+                                            Metodología reconocida como el estándar de oro para identificar contribuciones útiles en el trabajo.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -76,9 +76,7 @@
                                     <p class="section-description">Elige los estudiantes que participarán en la formación de equipos.</p>
                                 </div>
                                 <div class="student-stats">
-                                    <div class="stats-display">
-                                        <span class="stat-item">{{ selectedStudents.length }} de {{ students.length }} seleccionados</span>
-                                    </div>
+                                    <span class="stat-item">{{ selectedStudents.length }} de {{ students.length }} seleccionados</span>
                                     <div class="action-buttons-inline">
                                         <p-button size="small" severity="secondary" label="Todos" 
                                                   *ngIf="selectedStudents.length < students.length"
@@ -90,7 +88,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Grid compacto de estudiantes con scroll garantizado -->
+                            <!-- Grid de estudiantes -->
                             <div class="students-grid-container" *ngIf="students.length > 0">
                                 <div class="students-grid-scrollable">
                                     <div class="student-item" 
