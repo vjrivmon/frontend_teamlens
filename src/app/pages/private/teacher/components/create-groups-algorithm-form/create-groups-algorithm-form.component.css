@@ -353,20 +353,20 @@
     color: #d1d5db;
 }
 
-/* ===== PASO 2: CONFIGURACIÓN DE GRUPOS ===== */
+/* ===== PASO 2: CONFIGURACIÓN DE GRUPOS - MÁS ESPACIADO ===== */
 .groups-config-section-scrollable {
-    margin-bottom: 2rem;
+    margin-bottom: 3rem; /* MÁS ESPACIO */
 }
 
 .students-summary-spaced {
-    margin-bottom: 2rem;
+    margin-bottom: 3rem; /* MÁS ESPACIO */
 }
 
 .summary-card-enhanced {
     display: flex;
     align-items: center;
     gap: 1.25rem;
-    padding: 1.25rem;
+    padding: 1.5rem; /* MÁS PADDING */
     background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
     border: 1px solid #93c5fd;
     border-radius: 12px;
@@ -411,15 +411,15 @@
 }
 
 .group-configurations-spaced {
-    margin-bottom: 2rem;
+    margin-bottom: 3rem; /* MÁS ESPACIO */
 }
 
 .configurations-header {
-    margin-bottom: 1.25rem;
+    margin-bottom: 2rem; /* MÁS ESPACIO */
 }
 
 .configurations-header h4 {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.75rem 0; /* MÁS ESPACIO */
     font-size: 1.125rem;
     font-weight: 700;
     color: #111827;
@@ -434,14 +434,14 @@
 .config-list-spaced {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem; /* MÁS ESPACIO ENTRE CONFIGURACIONES */
 }
 
 .config-item-enhanced {
     background: white;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
-    padding: 1.25rem;
+    padding: 1.5rem; /* MÁS PADDING */
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -449,8 +449,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem; /* MÁS ESPACIO */
+    padding-bottom: 1rem; /* MÁS ESPACIO */
     border-bottom: 1px solid #f3f4f6;
 }
 
@@ -463,15 +463,15 @@
 .config-controls-spaced {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 1.5rem; /* MÁS ESPACIO */
+    margin-bottom: 1.5rem; /* MÁS ESPACIO */
     flex-wrap: wrap;
 }
 
 .control-group {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem; /* MÁS ESPACIO */
 }
 
 .control-label {
@@ -485,7 +485,7 @@
     font-size: 1.1rem;
     color: #9ca3af;
     font-weight: 600;
-    margin: 0 0.25rem;
+    margin: 0 0.5rem; /* MÁS ESPACIO */
 }
 
 .compact-input {
@@ -496,23 +496,24 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    margin-top: 1rem; /* MÁS ESPACIO */
 }
 
 .summary-tags {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem; /* MÁS ESPACIO */
 }
 
 .no-configurations {
     text-align: center;
-    padding: 3rem 2rem;
+    padding: 4rem 2rem; /* MÁS PADDING */
 }
 
 .empty-config-state {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
+    gap: 1.5rem; /* MÁS ESPACIO */
 }
 
 .empty-config-state i {
@@ -535,33 +536,33 @@
 
 .add-config-section-spaced {
     text-align: center;
-    padding: 1.5rem;
+    padding: 2rem; /* MÁS PADDING */
     border-top: 1px solid #e5e7eb;
-    margin-top: 2rem;
+    margin-top: 3rem; /* MÁS ESPACIO */
 }
 
 .add-config-hint {
     display: block;
-    margin-top: 0.75rem;
+    margin-top: 1rem; /* MÁS ESPACIO */
     color: #6b7280;
     font-size: 0.85rem;
     font-style: italic;
 }
 
 .preview-section-enhanced {
-    margin-top: 2rem;
-    padding: 1.5rem;
+    margin-top: 3rem; /* MÁS ESPACIO */
+    padding: 2rem; /* MÁS PADDING */
     background: #f9fafb;
     border-radius: 12px;
     border: 1px solid #e5e7eb;
 }
 
 .preview-header {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem; /* MÁS ESPACIO */
 }
 
 .preview-header h4 {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.75rem 0; /* MÁS ESPACIO */
     font-size: 1.125rem;
     font-weight: 700;
     color: #111827;
@@ -576,19 +577,19 @@
 .preview-content {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem; /* MÁS ESPACIO */
 }
 
 .preview-summary {
     display: flex;
-    gap: 1.5rem;
+    gap: 2rem; /* MÁS ESPACIO */
     flex-wrap: wrap;
 }
 
 .preview-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem; /* MÁS ESPACIO */
     color: #374151;
     font-size: 0.9rem;
     font-weight: 500;
@@ -981,7 +982,43 @@
     font-size: 0.9rem;
 }
 
-/* ===== NAVEGACIÓN NORMAL AL FINAL ===== */
+/* Estilos para mostrar estudiantes específicos en restricciones del resumen */
+.restriction-details {
+    margin-bottom: 1rem;
+}
+
+.restriction-type-title {
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.restriction-item-detail {
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    background: #f9fafb;
+    border-radius: 6px;
+    border-left: 3px solid #3b82f6;
+}
+
+.restriction-item-detail.positive {
+    border-left-color: #10b981;
+    background: #f0fdf4;
+}
+
+.restriction-item-detail.negative {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+
+.student-names {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+/* ===== NAVEGACIÓN SIN SOMBRA ===== */
 .step-navigation {
     display: flex;
     justify-content: space-between;
@@ -989,7 +1026,7 @@
     padding: 1.75rem 2rem 2.25rem 2rem;
     border-top: 1px solid #e5e7eb;
     background: white !important;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    /* SOMBRA ELIMINADA - SOLO BORDE SUTIL */
     min-height: 100px;
 }
 

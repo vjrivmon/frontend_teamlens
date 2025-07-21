@@ -484,11 +484,27 @@
                                 <span>Restricciones Aplicadas</span>
                             </div>
                             <div class="card-content">
-                                <div *ngIf="restrictions.mustBeTogether.length > 0">
-                                    <p><strong>Deben ir juntos:</strong> {{ restrictions.mustBeTogether.length }} restricción(es)</p>
+                                <div class="restriction-details" *ngIf="restrictions.mustBeTogether.length > 0">
+                                    <div class="restriction-type-title">Deben ir juntos:</div>
+                                    <div class="restriction-item-detail positive" 
+                                         *ngFor="let restriction of restrictions.mustBeTogether">
+                                        <div class="student-names">
+                                            <span *ngFor="let student of restriction; let last = last">
+                                                {{ student.name || student.email.split('@')[0] }}{{ !last ? ' + ' : '' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div *ngIf="restrictions.mustNotBeTogether.length > 0">
-                                    <p><strong>NO deben ir juntos:</strong> {{ restrictions.mustNotBeTogether.length }} restricción(es)</p>
+                                <div class="restriction-details" *ngIf="restrictions.mustNotBeTogether.length > 0">
+                                    <div class="restriction-type-title">NO deben ir juntos:</div>
+                                    <div class="restriction-item-detail negative" 
+                                         *ngFor="let restriction of restrictions.mustNotBeTogether">
+                                        <div class="student-names">
+                                            <span *ngFor="let student of restriction; let last = last">
+                                                {{ student.name || student.email.split('@')[0] }}{{ !last ? ' ≠ ' : '' }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
