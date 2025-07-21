@@ -49,14 +49,16 @@ export class HeaderComponent implements OnInit {
    * Obtiene el nombre del usuario logueado
    */
   public getUserName(): string {
-    return this.authService.getUserName();
+    const user = this.authService.getUser();
+    return user?.name || 'Usuario';
   }
 
   /**
    * Obtiene el email del usuario logueado
    */
   public getUserEmail(): string {
-    return this.authService.getUserEmail();
+    const user = this.authService.getUser();
+    return user?.email || '';
   }
 
   ngOnInit(): void {
