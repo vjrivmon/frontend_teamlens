@@ -999,6 +999,13 @@ export class CreateGroupsAlgorithmFormComponent {
   }
 
   /**
+   * Track by function para optimizar el rendimiento del ngFor en estudiantes
+   */
+  trackByStudentId(index: number, student: IUser): string {
+    return student._id || student.email;
+  }
+
+  /**
    * NUEVO: Métodos para el modal de progreso del algoritmo
    */
 
