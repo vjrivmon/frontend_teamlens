@@ -13,26 +13,72 @@
             </ng-template>
             <ng-template pTemplate="content" let-nextCallback="nextCallback">
                 <div class="step-content">
-                    <div class="content-grid">
-                        <!-- Columna izquierda: Algoritmo -->
-                        <div class="algorithm-section">
-                            <h3>Algoritmo de Emparejamiento</h3>
-                            <form [formGroup]="teamBuilderForm">
-                                <p-dropdown 
-                                    formControlName="algorithm" 
-                                    [options]="questionnaires" 
-                                    optionLabel="title"
-                                    placeholder="Selecciona un Algoritmo" 
-                                    class="w-full" />
+                    <div class="content-grid-spaced">
+                        <!-- Columna izquierda: Algoritmo con más espacio -->
+                        <div class="algorithm-section-expanded">
+                            <div class="algorithm-header">
+                                <h3>Algoritmo de Emparejamiento</h3>
+                                <p class="algorithm-description">Selecciona el test que utilizaremos para formar los equipos más eficaces.</p>
+                            </div>
+                            
+                            <form [formGroup]="teamBuilderForm" class="algorithm-form">
+                                <div class="form-field">
+                                    <label for="algorithm" class="form-label">Selecciona el algoritmo:</label>
+                                    <p-dropdown 
+                                        formControlName="algorithm" 
+                                        [options]="questionnaires" 
+                                        optionLabel="title"
+                                        placeholder="Selecciona un Algoritmo" 
+                                        class="w-full algorithm-dropdown" />
+                                </div>
                             </form>
+
+                            <!-- Información sobre Belbin -->
+                            <div class="belbin-info" *ngIf="teamBuilderForm.get('algorithm')?.value?.title === 'BELBIN'">
+                                <div class="info-card">
+                                    <div class="info-header">
+                                        <i class="pi pi-info-circle"></i>
+                                        <span>Sobre el Test Belbin</span>
+                                    </div>
+                                    <div class="info-content">
+                                        <p><strong>Belbin Team Roles</strong> es una metodología científica desarrollada por el Dr. Meredith Belbin tras más de 9 años de investigación sobre qué hace que algunos equipos sean más exitosos que otros.</p>
+                                        
+                                        <p>La investigación reveló que el éxito de un equipo no dependía del intelecto, sino del <strong>comportamiento</strong>. Se identificaron 9 grupos de comportamientos críticos para el éxito de un equipo.</p>
+                                        
+                                        <div class="belbin-features">
+                                            <div class="feature-item">
+                                                <i class="pi pi-check-circle"></i>
+                                                <span>Identifica fortalezas y debilidades conductuales</span>
+                                            </div>
+                                            <div class="feature-item">
+                                                <i class="pi pi-check-circle"></i>
+                                                <span>Mejora la comunicación y colaboración del equipo</span>
+                                            </div>
+                                            <div class="feature-item">
+                                                <i class="pi pi-check-circle"></i>
+                                                <span>Utilizado por miles de organizaciones mundialmente</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <small class="info-footer">
+                                            Metodología reconocida como el estándar de oro para identificar contribuciones útiles en el lugar de trabajo.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Columna derecha: Selección de estudiantes -->
-                        <div class="students-section">
-                            <div class="section-header">
-                                <h3>Seleccionar Estudiantes</h3>
+                        <div class="students-section-expanded">
+                            <div class="section-header-spaced">
+                                <div class="header-content">
+                                    <h3>Seleccionar Estudiantes</h3>
+                                    <p class="section-description">Elige los estudiantes que participarán en la formación de equipos.</p>
+                                </div>
                                 <div class="student-stats">
-                                    <span class="stat-item">{{ selectedStudents.length }} de {{ students.length }} seleccionados</span>
+                                    <div class="stats-display">
+                                        <span class="stat-item">{{ selectedStudents.length }} de {{ students.length }} seleccionados</span>
+                                    </div>
                                     <div class="action-buttons-inline">
                                         <p-button size="small" severity="secondary" label="Todos" 
                                                   *ngIf="selectedStudents.length < students.length"
@@ -44,34 +90,40 @@
                                 </div>
                             </div>
                             
-                            <!-- Grid compacto de estudiantes -->
-                            <div class="students-grid" *ngIf="students.length > 0">
-                                <div class="student-item" 
-                                     *ngFor="let student of students; trackBy: trackByStudentId"
-                                     [class.selected]="isStudentSelected(student)"
-                                     (click)="toggleStudentSelection(student)">
-                                    <div class="student-avatar">{{ getStudentInitials(student) }}</div>
-                                    <div class="student-info">
-                                        <div class="student-name">{{ student.name || 'Sin nombre' }}</div>
-                                        <div class="student-email">{{ student.email }}</div>
+                            <!-- Grid compacto de estudiantes con scroll garantizado -->
+                            <div class="students-grid-container" *ngIf="students.length > 0">
+                                <div class="students-grid-scrollable">
+                                    <div class="student-item" 
+                                         *ngFor="let student of students; trackBy: trackByStudentId"
+                                         [class.selected]="isStudentSelected(student)"
+                                         (click)="toggleStudentSelection(student)">
+                                        <div class="student-avatar">{{ getStudentInitials(student) }}</div>
+                                        <div class="student-info">
+                                            <div class="student-name">{{ student.name || 'Sin nombre' }}</div>
+                                            <div class="student-email">{{ student.email }}</div>
+                                        </div>
+                                        <i class="pi pi-check check-icon" *ngIf="isStudentSelected(student)"></i>
                                     </div>
-                                    <i class="pi pi-check check-icon" *ngIf="isStudentSelected(student)"></i>
                                 </div>
                             </div>
                             
                             <div *ngIf="students.length === 0" class="empty-state">
                                 <i class="pi pi-users"></i>
                                 <p>No hay estudiantes disponibles</p>
+                                <small>Añade estudiantes a la actividad primero</small>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Navegación fija -->
+                    <!-- Navegación fija con botón a la derecha -->
                     <div class="step-navigation">
                         <div class="nav-content">
-                            <div></div>
-                            <p-button label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
-                                      [disabled]="!canGoToNextStep()" (onClick)="nextCallback.emit()"></p-button>
+                            <div></div> <!-- Espacio vacío para empujar el botón a la derecha -->
+                            <p-button label="Siguiente" 
+                                      icon="pi pi-arrow-right" 
+                                      iconPos="right"
+                                      [disabled]="!canGoToNextStep()" 
+                                      (onClick)="nextCallback.emit()"></p-button>
                         </div>
                     </div>
                 </div>
@@ -90,67 +142,140 @@
             </ng-template>
             <ng-template pTemplate="content" let-prevCallback="prevCallback" let-nextCallback="nextCallback">
                 <div class="step-content">
-                    <div class="groups-config-section">
-                        <div class="section-header">
+                    <div class="groups-config-section-scrollable">
+                        <div class="section-header-spaced">
                             <h3>Configuración de Grupos</h3>
-                            <p>Define cuántos grupos de cada tamaño necesitas para {{ selectedStudents.length }} estudiantes.</p>
+                            <p class="section-description">Define cuántos grupos de cada tamaño necesitas para los {{ selectedStudents.length }} estudiantes seleccionados.</p>
                         </div>
                         
-                        <!-- Información de estudiantes -->
-                        <div class="students-summary">
-                            <div class="summary-card">
-                                <i class="pi pi-users"></i>
+                        <!-- Información de estudiantes con más espacio -->
+                        <div class="students-summary-spaced">
+                            <div class="summary-card-enhanced">
+                                <div class="summary-icon">
+                                    <i class="pi pi-users"></i>
+                                </div>
                                 <div class="summary-info">
                                     <span class="summary-number">{{ selectedStudents.length }}</span>
                                     <span class="summary-label">Estudiantes seleccionados</span>
                                 </div>
+                                <div class="summary-status">
+                                    <p-tag severity="success" value="Listos para formar grupos"></p-tag>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Configuraciones de grupos -->
-                        <div class="group-configurations" *ngIf="groupConfigurations.length > 0">
-                            <h4>Configuraciones Activas</h4>
+                        <!-- Configuraciones de grupos con mejor espaciado -->
+                        <div class="group-configurations-spaced" *ngIf="groupConfigurations.length > 0">
+                            <div class="configurations-header">
+                                <h4>Configuraciones Activas</h4>
+                                <p class="configurations-description">Cada configuración define un rango de grupos con un tamaño específico.</p>
+                            </div>
                             
-                            <div class="config-list">
-                                <div class="config-item" *ngFor="let config of groupConfigurations; let i = index">
-                                    <div class="config-controls">
-                                        <span class="control-label">Entre</span>
-                                        <p-inputNumber [(ngModel)]="config.minQuantity" [min]="1" [max]="config.maxQuantity"
-                                                       [showButtons]="true" [size]="1" class="compact-input"
-                                                       (onInput)="updateGroupConfiguration()"></p-inputNumber>
-                                        <span class="control-label">-</span>
-                                        <p-inputNumber [(ngModel)]="config.maxQuantity" [min]="config.minQuantity" [max]="20"
-                                                       [showButtons]="true" [size]="1" class="compact-input"
-                                                       (onInput)="updateGroupConfiguration()"></p-inputNumber>
-                                        <span class="control-label">grupos de</span>
-                                        <p-inputNumber [(ngModel)]="config.size" [min]="1" [max]="15"
-                                                       [showButtons]="true" [size]="1" class="compact-input"
-                                                       (onInput)="updateGroupConfiguration()"></p-inputNumber>
-                                        <span class="control-label">estudiantes</span>
-                                        
-                                        <p-button icon="pi pi-trash" size="small" severity="danger" text="true"
-                                                  (onClick)="removeGroupConfiguration(i)"></p-button>
+                            <div class="config-list-spaced">
+                                <div class="config-item-enhanced" *ngFor="let config of groupConfigurations; let i = index">
+                                    <div class="config-header">
+                                        <span class="config-number">Configuración {{ i + 1 }}</span>
+                                        <p-button icon="pi pi-trash" 
+                                                  label="Eliminar"
+                                                  size="small" 
+                                                  severity="danger" 
+                                                  text="true"
+                                                  (onClick)="removeGroupConfiguration(i)">
+                                        </p-button>
                                     </div>
                                     
-                                    <div class="config-summary">
-                                        <p-tag [value]="getConfigurationSummary(config)" severity="info"></p-tag>
+                                    <div class="config-controls-spaced">
+                                        <div class="control-group">
+                                            <span class="control-label">Entre</span>
+                                            <p-inputNumber [(ngModel)]="config.minQuantity" 
+                                                           [min]="1" 
+                                                           [max]="config.maxQuantity"
+                                                           [showButtons]="true" 
+                                                           [size]="1" 
+                                                           class="compact-input"
+                                                           (onInput)="updateGroupConfiguration()">
+                                            </p-inputNumber>
+                                        </div>
+                                        
+                                        <span class="control-separator">-</span>
+                                        
+                                        <div class="control-group">
+                                            <p-inputNumber [(ngModel)]="config.maxQuantity" 
+                                                           [min]="config.minQuantity" 
+                                                           [max]="20"
+                                                           [showButtons]="true" 
+                                                           [size]="1" 
+                                                           class="compact-input"
+                                                           (onInput)="updateGroupConfiguration()">
+                                            </p-inputNumber>
+                                            <span class="control-label">grupos de</span>
+                                        </div>
+                                        
+                                        <div class="control-group">
+                                            <p-inputNumber [(ngModel)]="config.size" 
+                                                           [min]="1" 
+                                                           [max]="15"
+                                                           [showButtons]="true" 
+                                                           [size]="1" 
+                                                           class="compact-input"
+                                                           (onInput)="updateGroupConfiguration()">
+                                            </p-inputNumber>
+                                            <span class="control-label">estudiantes</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="config-summary-spaced">
+                                        <div class="summary-tags">
+                                            <p-tag [value]="getConfigurationSummary(config)" severity="info"></p-tag>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Botón añadir configuración -->
-                        <div class="add-config-section">
-                            <p-button icon="pi pi-plus" label="Añadir Configuración" 
-                                      severity="secondary" outlined="true"
-                                      (onClick)="addGroupConfiguration()"></p-button>
+                        <!-- Mensaje si no hay configuraciones -->
+                        <div class="no-configurations" *ngIf="groupConfigurations.length === 0">
+                            <div class="empty-config-state">
+                                <i class="pi pi-sitemap"></i>
+                                <h4>No hay configuraciones de grupos</h4>
+                                <p>Añade al menos una configuración para definir cómo se formarán los grupos.</p>
+                            </div>
                         </div>
 
-                        <!-- Vista previa -->
-                        <div class="preview-section" *ngIf="groupConfigurations.length > 0">
-                            <h4>Vista Previa</h4>
-                            <div class="preview-summary">
-                                <p-tag [value]="getGroupsConfigurationSummary()" severity="success"></p-tag>
+                        <!-- Botón añadir configuración con más espacio -->
+                        <div class="add-config-section-spaced">
+                            <p-button icon="pi pi-plus" 
+                                      label="Añadir Configuración de Grupo" 
+                                      severity="secondary" 
+                                      outlined="true"
+                                      size="large"
+                                      (onClick)="addGroupConfiguration()">
+                            </p-button>
+                            <small class="add-config-hint">
+                                Puedes añadir múltiples configuraciones para crear diferentes tipos de grupos.
+                            </small>
+                        </div>
+
+                        <!-- Vista previa mejorada -->
+                        <div class="preview-section-enhanced" *ngIf="groupConfigurations.length > 0">
+                            <div class="preview-header">
+                                <h4>Vista Previa de la Configuración</h4>
+                                <p class="preview-description">Resumen de cómo se distribuirán los estudiantes según tus configuraciones.</p>
+                            </div>
+                            <div class="preview-content">
+                                <div class="preview-summary">
+                                    <div class="preview-item">
+                                        <i class="pi pi-users"></i>
+                                        <span>{{ selectedStudents.length }} estudiantes total</span>
+                                    </div>
+                                    <div class="preview-item">
+                                        <i class="pi pi-sitemap"></i>
+                                        <span>{{ groupConfigurations.length }} configuración(es) definida(s)</span>
+                                    </div>
+                                </div>
+                                <p-tag [value]="getGroupsConfigurationSummary()" 
+                                       severity="success" 
+                                       class="preview-result"></p-tag>
                             </div>
                         </div>
                     </div>
@@ -158,10 +283,17 @@
                     <!-- Navegación fija -->
                     <div class="step-navigation">
                         <div class="nav-content">
-                            <p-button label="Atrás" icon="pi pi-arrow-left" severity="secondary"
-                                      (onClick)="prevCallback.emit()"></p-button>
-                            <p-button label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
-                                      (onClick)="nextCallback.emit()"></p-button>
+                            <p-button label="Atrás" 
+                                      icon="pi pi-arrow-left" 
+                                      severity="secondary"
+                                      (onClick)="prevCallback.emit()">
+                            </p-button>
+                            <p-button label="Siguiente" 
+                                      icon="pi pi-arrow-right" 
+                                      iconPos="right"
+                                      [disabled]="groupConfigurations.length === 0"
+                                      (onClick)="nextCallback.emit()">
+                            </p-button>
                         </div>
                     </div>
                 </div>

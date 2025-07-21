@@ -55,19 +55,12 @@
             </div>
             <div>
                 <h4 class="m-0 text-900">¿Estás seguro de que deseas cerrar sesión?</h4>
-                <p class="m-0 text-600 mt-1">Se perderá cualquier trabajo no guardado.</p>
             </div>
         </div>
     </div>
     
     <ng-template pTemplate="footer">
-        <div class="flex gap-2 justify-content-end">
-            <p-button 
-                label="Cancelar" 
-                icon="pi pi-times"
-                class="p-button-outlined"
-                (onClick)="showLogoutDialog = false">
-            </p-button>
+        <div class="flex justify-content-end">
             <p-button 
                 label="Cerrar Sesión" 
                 icon="pi pi-sign-out"
