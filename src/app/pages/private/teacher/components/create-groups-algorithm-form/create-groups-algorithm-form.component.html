@@ -115,14 +115,12 @@
                     
                     <!-- Navegación fija con botón a la derecha -->
                     <div class="step-navigation">
-                        <div class="nav-content">
-                            <div></div> <!-- Espacio vacío para empujar el botón a la derecha -->
-                            <p-button label="Siguiente" 
-                                      icon="pi pi-arrow-right" 
-                                      iconPos="right"
-                                      [disabled]="!canGoToNextStep()" 
-                                      (onClick)="nextCallback.emit()"></p-button>
-                        </div>
+                        <div></div>
+                        <p-button label="Siguiente" 
+                                  icon="pi pi-arrow-right" 
+                                  iconPos="right"
+                                  [disabled]="!canGoToNextStep()" 
+                                  (onClick)="nextCallback.emit()"></p-button>
                     </div>
                 </div>
             </ng-template>
@@ -280,19 +278,17 @@
                     
                     <!-- Navegación fija -->
                     <div class="step-navigation">
-                        <div class="nav-content">
-                            <p-button label="Atrás" 
-                                      icon="pi pi-arrow-left" 
-                                      severity="secondary"
-                                      (onClick)="prevCallback.emit()">
-                            </p-button>
-                            <p-button label="Siguiente" 
-                                      icon="pi pi-arrow-right" 
-                                      iconPos="right"
-                                      [disabled]="groupConfigurations.length === 0"
-                                      (onClick)="nextCallback.emit()">
-                            </p-button>
-                        </div>
+                        <p-button label="Atrás" 
+                                  icon="pi pi-arrow-left" 
+                                  severity="secondary"
+                                  (onClick)="prevCallback.emit()">
+                        </p-button>
+                        <p-button label="Siguiente" 
+                                  icon="pi pi-arrow-right" 
+                                  iconPos="right"
+                                  [disabled]="groupConfigurations.length === 0"
+                                  (onClick)="nextCallback.emit()">
+                        </p-button>
                     </div>
                 </div>
             </ng-template>
@@ -415,12 +411,10 @@
                     
                     <!-- Navegación fija -->
                     <div class="step-navigation">
-                        <div class="nav-content">
-                            <p-button label="Atrás" icon="pi pi-arrow-left" severity="secondary"
-                                      (onClick)="prevCallback.emit()"></p-button>
-                            <p-button label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
-                                      (onClick)="nextCallback.emit()"></p-button>
-                        </div>
+                        <p-button label="Atrás" icon="pi pi-arrow-left" severity="secondary"
+                                  (onClick)="prevCallback.emit()"></p-button>
+                        <p-button label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
+                                  (onClick)="nextCallback.emit()"></p-button>
                     </div>
                 </div>
             </ng-template>
@@ -514,26 +508,24 @@
                     
                     <!-- Navegación fija -->
                     <div class="step-navigation">
-                        <div class="nav-content">
-                            <p-button label="Atrás" icon="pi pi-arrow-left" severity="secondary"
-                                      [disabled]="isAlgorithmRunning" (onClick)="prevCallback.emit()"></p-button>
+                        <p-button label="Atrás" icon="pi pi-arrow-left" severity="secondary"
+                                  [disabled]="isAlgorithmRunning" (onClick)="prevCallback.emit()"></p-button>
+                        
+                        <div class="final-action">
+                            <p-button [label]="isAlgorithmRunning ? 'Procesando...' : 'Crear Grupos'" 
+                                      [icon]="isAlgorithmRunning ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+                                      iconPos="right" size="large"
+                                      [disabled]="!canCreateGroups() || isAlgorithmRunning"
+                                      [loading]="isAlgorithmRunning"
+                                      (onClick)="onCreateGroups()"></p-button>
                             
-                            <div class="final-action">
-                                <p-button [label]="isAlgorithmRunning ? 'Procesando...' : 'Crear Grupos'" 
-                                          [icon]="isAlgorithmRunning ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
-                                          iconPos="right" size="large"
-                                          [disabled]="!canCreateGroups() || isAlgorithmRunning"
-                                          [loading]="isAlgorithmRunning"
-                                          (onClick)="onCreateGroups()"></p-button>
-                                
-                                <div *ngIf="isAlgorithmRunning" class="processing-info">
-                                    <span class="processing-text">{{ algorithmProgress }}</span>
-                                    <div *ngIf="getElapsedTime()" class="elapsed-time">{{ getElapsedTime() }}</div>
-                                </div>
-                                
-                                <div *ngIf="!canCreateGroups() && !isAlgorithmRunning" class="validation-message">
-                                    {{ getValidationMessage() }}
-                                </div>
+                            <div *ngIf="isAlgorithmRunning" class="processing-info">
+                                <span class="processing-text">{{ algorithmProgress }}</span>
+                                <div *ngIf="getElapsedTime()" class="elapsed-time">{{ getElapsedTime() }}</div>
+                            </div>
+                            
+                            <div *ngIf="!canCreateGroups() && !isAlgorithmRunning" class="validation-message">
+                                {{ getValidationMessage() }}
                             </div>
                         </div>
                     </div>
