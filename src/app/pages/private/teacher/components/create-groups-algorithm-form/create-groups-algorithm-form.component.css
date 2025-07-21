@@ -1,5 +1,4 @@
-/* ===== CSS PROFESIONAL COMPLETO Y FUNCIONAL ===== */
-/* Solución completa y definitiva para todos los problemas de interfaz */
+/* ===== CSS SIMPLIFICADO CON SCROLL FUNCIONAL ===== */
 
 /* ===== CONTENEDOR PRINCIPAL ===== */
 .algorithm-modal-container {
@@ -10,7 +9,6 @@
     background: white !important;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-    border-radius: 8px;
 }
 
 /* ===== STEPPER PRINCIPAL ===== */
@@ -18,7 +16,6 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    background: white !important;
 }
 
 .compact-stepper ::ng-deep .p-stepper {
@@ -26,7 +23,6 @@
     display: flex;
     flex-direction: column;
     background: white !important;
-    border: none;
 }
 
 .compact-stepper ::ng-deep .p-stepper-nav {
@@ -34,33 +30,23 @@
     border-bottom: 1px solid #e5e7eb;
     padding: 1.5rem 2rem;
     flex-shrink: 0;
-    box-shadow: none;
 }
 
 .compact-stepper ::ng-deep .p-stepper-panels {
     flex: 1;
-    display: flex;
-    flex-direction: column;
     background: white !important;
     overflow: hidden;
-    min-height: 0;
 }
 
 .compact-stepper ::ng-deep .p-stepper-panel {
     height: 100%;
-    display: flex;
-    flex-direction: column;
     background: white !important;
 }
 
 .compact-stepper ::ng-deep .p-stepper-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    padding: 0;
+    height: calc(85vh - 140px); /* ALTURA FIJA CALCULADA */
+    overflow-y: auto; /* SCROLL DIRECTO */
     background: white !important;
-    min-height: 0;
 }
 
 /* ===== HEADERS DE PASOS ===== */
@@ -88,13 +74,11 @@
     font-weight: 600;
     transition: all 0.2s ease;
     font-size: 0.95rem;
-    border: 2px solid transparent;
 }
 
 .step-number.active {
     background: #3b82f6;
     color: white;
-    border-color: #3b82f6;
 }
 
 .step-label {
@@ -103,26 +87,18 @@
     font-size: 1rem;
 }
 
-/* ===== CONTENIDO DE PASOS - LAYOUT FIJO CON SCROLL CORRECTO ===== */
+/* ===== CONTENIDO DE PASOS - SCROLL SIMPLE ===== */
 .step-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
+    padding: 2rem;
     background: white !important;
-    padding: 2rem 2rem 0 2rem;
 }
 
-/* ===== PASO 1: ESTUDIANTES + ALGORITMO - SCROLL CORREGIDO ===== */
+/* ===== PASO 1: ESTUDIANTES + ALGORITMO ===== */
 .content-grid-spaced {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding-bottom: 2rem;
+    margin-bottom: 2rem;
 }
 
 /* Sección de algoritmo */
@@ -131,10 +107,6 @@
     padding: 1.5rem;
     border-radius: 12px;
     border: 1px solid #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    height: fit-content;
 }
 
 .algorithm-header h3 {
@@ -243,13 +215,10 @@
 .students-section-expanded {
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    height: 100%;
 }
 
 .section-header-spaced {
     margin-bottom: 1.25rem;
-    flex-shrink: 0;
 }
 
 .header-content h3 {
@@ -276,7 +245,6 @@
     background: #f9fafb;
     border-radius: 8px;
     border: 1px solid #e5e7eb;
-    flex-shrink: 0;
 }
 
 .stat-item {
@@ -290,20 +258,17 @@
     gap: 0.5rem;
 }
 
-/* Grid de estudiantes CON SCROLL CORRECTO */
+/* Grid de estudiantes */
 .students-grid-container {
-    flex: 1;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
     background: white;
-    min-height: 0;
-    overflow: hidden;
-    height: 400px; /* ALTURA FIJA PARA FORZAR SCROLL */
+    height: 300px;
 }
 
 .students-grid-scrollable {
     height: 100%;
-    overflow-y: auto; /* SCROLL FORZADO */
+    overflow-y: auto;
     padding: 1rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -398,12 +363,9 @@
     color: #d1d5db;
 }
 
-/* ===== PASO 2: CONFIGURACIÓN DE GRUPOS - SCROLL CORRECTO ===== */
+/* ===== PASO 2: CONFIGURACIÓN DE GRUPOS ===== */
 .groups-config-section-scrollable {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding-bottom: 2rem;
+    margin-bottom: 2rem;
 }
 
 .students-summary-spaced {
@@ -650,16 +612,12 @@
     align-self: flex-start;
 }
 
-/* ===== PASO 3: RESTRICCIONES - SCROLL CORREGIDO EN DOS COLUMNAS ===== */
+/* ===== PASO 3: RESTRICCIONES ===== */
 .restrictions-config-section {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding-bottom: 2rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 2rem;
-    align-items: start;
+    margin-bottom: 2rem;
 }
 
 .section-header {
@@ -689,10 +647,6 @@
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    height: fit-content;
-    max-height: 500px;
-    display: flex;
-    flex-direction: column;
 }
 
 .restriction-selector h4 {
@@ -710,7 +664,6 @@
     margin-bottom: 1.25rem;
     background: #f9fafb;
     transition: all 0.2s ease;
-    flex-shrink: 0;
 }
 
 .selected-for-restriction.empty {
@@ -784,7 +737,6 @@
 }
 
 .available-students {
-    flex: 1;
     max-height: 200px;
     overflow-y: auto;
     border: 1px solid #e5e7eb;
@@ -836,7 +788,6 @@
     display: flex;
     gap: 0.75rem;
     flex-direction: column;
-    flex-shrink: 0;
 }
 
 /* COLUMNA DERECHA: Restricciones existentes */
@@ -846,7 +797,6 @@
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    height: fit-content;
     max-height: 500px;
     overflow-y: auto;
 }
@@ -856,10 +806,6 @@
     font-size: 1.125rem;
     font-weight: 700;
     color: #111827;
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 10;
 }
 
 .restriction-group {
@@ -940,12 +886,9 @@
     font-weight: 500;
 }
 
-/* ===== PASO 4: RESUMEN - SCROLL CORRECTO ===== */
+/* ===== PASO 4: RESUMEN ===== */
 .summary-section {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding-bottom: 2rem;
+    margin-bottom: 2rem;
 }
 
 .summary-card {
@@ -1048,7 +991,7 @@
     font-size: 0.9rem;
 }
 
-/* ===== NAVEGACIÓN CORREGIDA DEFINITIVAMENTE ===== */
+/* ===== NAVEGACIÓN FIJA ===== */
 .step-navigation {
     display: flex;
     justify-content: space-between;
@@ -1060,7 +1003,6 @@
     bottom: 0;
     z-index: 200;
     margin-top: auto;
-    flex-shrink: 0;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
     min-height: 100px;
 }
@@ -1104,50 +1046,38 @@
     max-width: 300px;
 }
 
-/* ===== SCROLLBARS PERSONALIZADOS PARA TODOS LOS ELEMENTOS ===== */
-.content-grid-spaced::-webkit-scrollbar,
+/* ===== SCROLLBARS ===== */
 .students-grid-scrollable::-webkit-scrollbar,
-.groups-config-section-scrollable::-webkit-scrollbar,
-.restrictions-config-section::-webkit-scrollbar,
-.summary-section::-webkit-scrollbar,
 .available-students::-webkit-scrollbar,
-.existing-restrictions::-webkit-scrollbar {
+.existing-restrictions::-webkit-scrollbar,
+.compact-stepper ::ng-deep .p-stepper-content::-webkit-scrollbar {
     width: 8px;
 }
 
-.content-grid-spaced::-webkit-scrollbar-track,
 .students-grid-scrollable::-webkit-scrollbar-track,
-.groups-config-section-scrollable::-webkit-scrollbar-track,
-.restrictions-config-section::-webkit-scrollbar-track,
-.summary-section::-webkit-scrollbar-track,
 .available-students::-webkit-scrollbar-track,
-.existing-restrictions::-webkit-scrollbar-track {
+.existing-restrictions::-webkit-scrollbar-track,
+.compact-stepper ::ng-deep .p-stepper-content::-webkit-scrollbar-track {
     background: #f9fafb;
     border-radius: 4px;
 }
 
-.content-grid-spaced::-webkit-scrollbar-thumb,
 .students-grid-scrollable::-webkit-scrollbar-thumb,
-.groups-config-section-scrollable::-webkit-scrollbar-thumb,
-.restrictions-config-section::-webkit-scrollbar-thumb,
-.summary-section::-webkit-scrollbar-thumb,
 .available-students::-webkit-scrollbar-thumb,
-.existing-restrictions::-webkit-scrollbar-thumb {
+.existing-restrictions::-webkit-scrollbar-thumb,
+.compact-stepper ::ng-deep .p-stepper-content::-webkit-scrollbar-thumb {
     background: #d1d5db;
     border-radius: 4px;
 }
 
-.content-grid-spaced::-webkit-scrollbar-thumb:hover,
 .students-grid-scrollable::-webkit-scrollbar-thumb:hover,
-.groups-config-section-scrollable::-webkit-scrollbar-thumb:hover,
-.restrictions-config-section::-webkit-scrollbar-thumb:hover,
-.summary-section::-webkit-scrollbar-thumb:hover,
 .available-students::-webkit-scrollbar-thumb:hover,
-.existing-restrictions::-webkit-scrollbar-thumb:hover {
+.existing-restrictions::-webkit-scrollbar-thumb:hover,
+.compact-stepper ::ng-deep .p-stepper-content::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
 }
 
-/* ===== PRIMENG OVERRIDES COMPLETOS ===== */
+/* ===== PRIMENG OVERRIDES ===== */
 .compact-stepper ::ng-deep .p-dropdown {
     width: 100%;
     font-size: 0.9rem;
@@ -1216,23 +1146,11 @@
     color: white;
 }
 
-/* ===== RESPONSIVE DESIGN MEJORADO ===== */
-@media (max-width: 1200px) {
-    .restrictions-config-section {
-        gap: 1.5rem;
-    }
-    
-    .restriction-selector,
-    .existing-restrictions {
-        max-height: 450px;
-    }
-}
-
+/* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
     .content-grid-spaced {
         grid-template-columns: 1fr;
         gap: 1.5rem;
-        min-height: auto;
     }
     
     .students-grid-container {
@@ -1248,11 +1166,6 @@
         flex-direction: row;
         flex-wrap: wrap;
     }
-    
-    .restriction-selector,
-    .existing-restrictions {
-        max-height: none;
-    }
 }
 
 @media (max-width: 768px) {
@@ -1261,8 +1174,12 @@
         max-height: 90vh;
     }
     
+    .compact-stepper ::ng-deep .p-stepper-content {
+        height: calc(90vh - 140px);
+    }
+    
     .step-content {
-        padding: 1.25rem 1.25rem 0 1.25rem;
+        padding: 1.25rem;
     }
     
     .students-grid-scrollable {
@@ -1319,57 +1236,11 @@
     }
 }
 
-/* ===== ASEGURAR FONDO BLANCO EN TODO ===== */
+/* ===== FONDO BLANCO ===== */
 .compact-stepper ::ng-deep .p-stepper,
 .compact-stepper ::ng-deep .p-stepper-panel,
 .compact-stepper ::ng-deep .p-stepper-content,
-.compact-stepper ::ng-deep .p-dialog,
-.compact-stepper ::ng-deep .p-dialog-content,
 .step-content,
 .algorithm-modal-container {
     background: white !important;
-}
-
-/* ===== CLASES DE COMPATIBILIDAD ===== */
-.restrictions-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.restriction-item {
-    display: flex;
-}
-
-.restriction-item.item-green {
-    border-left: 4px solid #10b981;
-}
-
-.restriction-item.item-red {
-    border-left: 4px solid #ef4444;
-}
-
-.restriction-item.item-blue {
-    border-left: 4px solid #3b82f6;
-}
-
-.restriction-item p {
-    margin: 0;
-    padding: 0.5rem;
-    font-size: 1rem;
-}
-
-.create-button {
-    width: 100%;
-    padding: 0.8rem;
-    display: flex;
-    justify-content: center;
-    border: none;
-    background-color: #f9fafb;
-}
-
-.groups-dashboard {
-    max-height: 350px;
-    overflow-y: auto;
-    padding-right: 0.5rem;
 }
