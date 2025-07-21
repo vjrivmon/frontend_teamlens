@@ -241,6 +241,29 @@ export class CreateGroupsAlgorithmFormComponent {
    */
 
   /**
+   * Verifica si se puede avanzar al siguiente paso
+   */
+  canGoToNextStep(): boolean {
+    // Verificar que hay estudiantes seleccionados
+    if (this.selectedStudents.length === 0) {
+      return false;
+    }
+    
+    // Verificar que hay configuraciones de grupos válidas
+    if (this.groupConfigurations.length === 0) {
+      return false;
+    }
+    
+    // Verificar que el total de estudiantes en configuraciones no excede el número seleccionado
+    const totalStudentsInConfigs = this.getTotalStudentsInGroups();
+    if (totalStudentsInConfigs > this.selectedStudents.length) {
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
    * Verifica si un estudiante está en la selección para restricciones
    */
   isStudentInRestrictionSelection(student: IUser): boolean {

@@ -42,7 +42,7 @@
                 <i>{{ loggedUser.email }}</i>
             </div>           
             <div class="ml-4">
-                <a class="ui button primary basic" (click)="logoutButton()">
+                <a class="ui button primary basic" (click)="showLogoutDialog = true">
                     Cerrar Sesión
                 </a>
             </div>
@@ -61,3 +61,44 @@
         }
     </div>
 </header>
+
+<!-- Diálogo de confirmación de logout -->
+<p-dialog 
+    header="Confirmar Cierre de Sesión" 
+    [(visible)]="showLogoutDialog" 
+    [modal]="true"
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{'width': '400px', 'max-width': '90vw'}"
+    styleClass="logout-dialog">
+    
+    <div class="flex flex-column gap-3 py-3">
+        <div class="flex align-items-center gap-3">
+            <div class="flex align-items-center justify-content-center w-3rem h-3rem bg-orange-50 border-round">
+                <i class="pi pi-sign-out text-orange-600 text-xl"></i>
+            </div>
+            <div>
+                <h4 class="m-0 text-900">¿Estás seguro de que deseas cerrar sesión?</h4>
+                <p class="m-0 text-600 mt-1">Se perderá cualquier trabajo no guardado.</p>
+            </div>
+        </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+        <div class="flex gap-2 justify-content-end">
+            <p-button 
+                label="Cancelar" 
+                icon="pi pi-times"
+                class="p-button-outlined"
+                (onClick)="showLogoutDialog = false">
+            </p-button>
+            <p-button 
+                label="Cerrar Sesión" 
+                icon="pi pi-sign-out"
+                severity="danger"
+                (onClick)="confirmLogout()">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>
