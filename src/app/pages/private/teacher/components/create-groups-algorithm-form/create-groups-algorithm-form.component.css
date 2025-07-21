@@ -3,13 +3,15 @@
 ======================================== */
 
 .modal-form-container {
-  padding: 1rem;
+  padding: 0.5rem;
   max-width: 100%;
 }
 
 .stepper-content {
-  min-height: 400px;
-  padding: 1rem;
+  min-height: auto;
+  max-height: 60vh;
+  padding: 0.75rem;
+  overflow-y: auto;
 }
 
 /* ========================================
@@ -19,11 +21,12 @@
 .group-configuration-card {
   border: 2px solid #e5e7eb;
   transition: all 0.2s ease;
+  padding: 0.5rem;
 }
 
 .group-configuration-card:hover {
   border-color: #3b82f6;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
 }
 
 .group-configuration-card.selected {
@@ -32,22 +35,22 @@
 }
 
 /* ========================================
-   INTERFAZ DE RESTRICCIONES
+   INTERFAZ DE RESTRICCIONES - COMPACTA
 ======================================== */
 
 /* Sección principal de restricciones */
 .restrictions-section {
-  padding: 1rem 0;
+  padding: 0.5rem 0;
 }
 
 /* Selector de estudiantes para restricciones */
 .restriction-selector {
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .selected-students-compact {
-  min-height: 60px;
-  padding: 1rem;
+  min-height: 40px;
+  padding: 0.5rem;
   border: 1px dashed #ddd;
   border-radius: 8px;
   background: #fafafa;
@@ -131,28 +134,30 @@
 
 /* Columnas de restricciones */
 .restrictions-display {
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .restriction-column {
   background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
+  border-radius: 6px;
+  padding: 0.75rem;
   border: 1px solid #e5e7eb;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .column-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid #e5e7eb;
 }
 
 .column-header h3 {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #111827;
 }
@@ -161,11 +166,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   background: #f3f4f6;
   border-radius: 50%;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: #6b7280;
 }
@@ -174,15 +179,17 @@
 .restrictions-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .restriction-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.75rem;
-  border-radius: 6px;
+  padding: 0.5rem;
+  border-radius: 4px;
   border: 1px solid;
 }
 
@@ -199,14 +206,14 @@
 .restriction-students {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
   flex-wrap: wrap;
 }
 
 .student-tag {
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
   font-weight: 500;
 }
 
@@ -223,14 +230,15 @@
 .connector {
   font-weight: bold;
   color: #6b7280;
+  font-size: 0.75rem;
 }
 
 .remove-restriction {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border: none;
   background: rgba(107, 114, 128, 0.1);
   border-radius: 50%;
@@ -248,7 +256,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
 }
 
