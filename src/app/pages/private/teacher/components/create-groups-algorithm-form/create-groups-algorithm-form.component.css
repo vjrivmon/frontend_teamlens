@@ -1,4 +1,4 @@
-/* ===== CSS SIMPLIFICADO CON SCROLL FUNCIONAL ===== */
+/* ===== CSS SIMPLIFICADO SIN CONFLICTOS DE SCROLL ===== */
 
 /* ===== CONTENEDOR PRINCIPAL ===== */
 .algorithm-modal-container {
@@ -36,16 +36,22 @@
     flex: 1;
     background: white !important;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .compact-stepper ::ng-deep .p-stepper-panel {
     height: 100%;
     background: white !important;
+    display: flex;
+    flex-direction: column;
 }
 
 .compact-stepper ::ng-deep .p-stepper-content {
-    height: calc(85vh - 140px); /* ALTURA FIJA CALCULADA */
-    overflow-y: auto; /* SCROLL DIRECTO */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     background: white !important;
 }
 
@@ -87,8 +93,19 @@
     font-size: 1rem;
 }
 
-/* ===== CONTENIDO DE PASOS - SCROLL SIMPLE ===== */
+/* ===== CONTENIDO DE PASOS - ESTRUCTURA FIJA ===== */
 .step-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: white !important;
+}
+
+/* Área de contenido scrollable - SOLO ESTA TIENE SCROLL */
+.step-content > div:first-child {
+    flex: 1;
+    overflow-y: auto;
     padding: 2rem;
     background: white !important;
 }
@@ -991,7 +1008,7 @@
     font-size: 0.9rem;
 }
 
-/* ===== NAVEGACIÓN FIJA ===== */
+/* ===== NAVEGACIÓN SIEMPRE VISIBLE ===== */
 .step-navigation {
     display: flex;
     justify-content: space-between;
@@ -999,12 +1016,9 @@
     padding: 1.75rem 2rem 2.25rem 2rem;
     border-top: 1px solid #e5e7eb;
     background: white !important;
-    position: sticky;
-    bottom: 0;
-    z-index: 200;
-    margin-top: auto;
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
     min-height: 100px;
+    flex-shrink: 0; /* SIEMPRE VISIBLE */
 }
 
 .final-action {
@@ -1050,14 +1064,14 @@
 .students-grid-scrollable::-webkit-scrollbar,
 .available-students::-webkit-scrollbar,
 .existing-restrictions::-webkit-scrollbar,
-.compact-stepper ::ng-deep .p-stepper-content::-webkit-scrollbar {
+.step-content > div:first-child::-webkit-scrollbar {
     width: 8px;
 }
 
 .students-grid-scrollable::-webkit-scrollbar-track,
 .available-students::-webkit-scrollbar-track,
 .existing-restrictions::-webkit-scrollbar-track,
-.compact-stepper ::ng-deep .p-stepper-content::-webkit-scrollbar-track {
+.step-content > div:first-child::-webkit-scrollbar-track {
     background: #f9fafb;
     border-radius: 4px;
 }
@@ -1065,7 +1079,7 @@
 .students-grid-scrollable::-webkit-scrollbar-thumb,
 .available-students::-webkit-scrollbar-thumb,
 .existing-restrictions::-webkit-scrollbar-thumb,
-.compact-stepper ::ng-deep .p-stepper-content::-webkit-scrollbar-thumb {
+.step-content > div:first-child::-webkit-scrollbar-thumb {
     background: #d1d5db;
     border-radius: 4px;
 }
@@ -1073,7 +1087,7 @@
 .students-grid-scrollable::-webkit-scrollbar-thumb:hover,
 .available-students::-webkit-scrollbar-thumb:hover,
 .existing-restrictions::-webkit-scrollbar-thumb:hover,
-.compact-stepper ::ng-deep .p-stepper-content::-webkit-scrollbar-thumb:hover {
+.step-content > div:first-child::-webkit-scrollbar-thumb:hover {
     background: #9ca3af;
 }
 
@@ -1174,11 +1188,7 @@
         max-height: 90vh;
     }
     
-    .compact-stepper ::ng-deep .p-stepper-content {
-        height: calc(90vh - 140px);
-    }
-    
-    .step-content {
+    .step-content > div:first-child {
         padding: 1.25rem;
     }
     
