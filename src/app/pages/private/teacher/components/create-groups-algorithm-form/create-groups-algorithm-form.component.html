@@ -364,8 +364,18 @@
                         </div>
 
                         <!-- Restricciones existentes -->
-                        <div class="existing-restrictions" 
-                             *ngIf="restrictions.mustBeTogether.length > 0 || restrictions.mustNotBeTogether.length > 0">
+                        <div class="existing-restrictions">
+                            <!-- Mensaje cuando no hay restricciones -->
+                            <div class="empty-restrictions-state" 
+                                 *ngIf="restrictions.mustBeTogether.length === 0 && restrictions.mustNotBeTogether.length === 0">
+                                <div class="empty-selection">
+                                    <i class="pi pi-info-circle"></i>
+                                    <span>Selecciona 2 estudiantes para crear restricciones</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Restricciones cuando existen -->
+                            <div *ngIf="restrictions.mustBeTogether.length > 0 || restrictions.mustNotBeTogether.length > 0">
                             
                             <!-- Deben ir juntos -->
                             <div class="restriction-group positive" *ngIf="restrictions.mustBeTogether.length > 0">
@@ -405,6 +415,7 @@
                                                   (onClick)="removeRestriction('mustNotBeTogether', i)"></p-button>
                                     </div>
                                 </div>
+                            </div>
                             </div>
                         </div>
                     </div>
