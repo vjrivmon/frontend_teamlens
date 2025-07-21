@@ -85,12 +85,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Maneja el logout del usuario
+   * Maneja el logout del usuario con confirmación
    */
   public logoutButton(): void {
-    console.log('🚪 HeaderComponent: Procesando logout');
-    this.authService.logout();
-    this.router.navigateByUrl('/login');
+    console.log('🚪 HeaderComponent: Solicitando confirmación de logout');
+    
+    // Crear confirmación personalizada en castellano
+    const confirmLogout = confirm(
+      '¿Estás seguro de que deseas cerrar sesión?\n\n' +
+      'Se perderá cualquier trabajo no guardado y tendrás que volver a iniciar sesión.'
+    );
+    
+    if (confirmLogout) {
+      console.log('✅ HeaderComponent: Logout confirmado - cerrando sesión');
+      this.authService.logout();
+      this.router.navigateByUrl('/login');
+    } else {
+      console.log('❌ HeaderComponent: Logout cancelado por el usuario');
+    }
   }
 
   /**

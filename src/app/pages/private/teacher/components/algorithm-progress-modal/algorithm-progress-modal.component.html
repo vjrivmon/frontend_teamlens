@@ -2,7 +2,7 @@
 <p-dialog 
     [visible]="visible" 
     [modal]="true" 
-    [closable]="isCompleted"
+    [closable]="false"
     [draggable]="false"
     [resizable]="false"
     [style]="{'width': '500px', 'max-width': '90vw'}"
@@ -82,14 +82,11 @@
     <ng-template pTemplate="footer">
         <div class="flex justify-content-center gap-2 w-full">
             
-            <!-- Botón de cancelar (solo mientras está corriendo) -->
-            <p-button 
-                *ngIf="!isCompleted"
-                label="Cancelar" 
-                icon="pi pi-times"
-                class="p-button-outlined p-button-secondary"
-                (onClick)="cancelAlgorithm()">
-            </p-button>
+            <!-- Mensaje informativo mientras está ejecutándose (sin botón cancelar) -->
+            <div *ngIf="!isCompleted" class="text-center">
+                <p class="text-sm text-600 m-0">El algoritmo se está ejecutando en segundo plano...</p>
+                <p class="text-xs text-500 m-0 mt-1">Recibirás una notificación cuando termine</p>
+            </div>
             
             <!-- Botón de cerrar (solo cuando ha terminado) -->
             <p-button 

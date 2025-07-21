@@ -129,6 +129,9 @@ export class CreateGroupsAlgorithmFormComponent {
   algorithmsGroupsCreated: number = 0;
   algorithmErrorMessage: string = '';
 
+  // NUEVO: Variables para la interfaz mejorada de estudiantes
+  private filteredStudents: IUser[] = [];
+
   // Configuraciones de grupos múltiples con rangos flexibles
   groupConfigurations: GroupConfiguration[] = [];
   
@@ -138,9 +141,127 @@ export class CreateGroupsAlgorithmFormComponent {
     '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1'
   ];
   
-  constructor(private formBuilder: FormBuilder, private activityService: ActivitiesService, private http: HttpClient) { 
-    // Inicializar con una configuración básica basada en estudiantes disponibles
-    // Se actualizará dinámicamente cuando cambien los estudiantes seleccionados
+  constructor(
+    private activitiesService: ActivitiesService,
+    private router: Router,
+    private formBuilder: FormBuilder
+  ) { 
+    // Inicializar estudiantes filtrados
+    this.filteredStudents = [...this.students];
+  }
+
+  ngOnInit(): void {
+    console.log('🚀 CreateGroupsAlgorithmFormComponent inicializado');
+    console.log(`📊 Actividad: ${this.activityId}`);
+    console.log(`👥 Estudiantes disponibles: ${this.students.length}`);
+    
+    // Inicializar estudiantes filtrados
+    this.filteredStudents = [...this.students];
+  }
+
+  /**
+   * NUEVO: Métodos para la interfaz mejorada de selección de estudiantes
+   */
+
+  /**
+   * Filtra estudiantes basado en el término de búsqueda
+   */
+  filterStudents(): void {
+    if (!this.searchValue || this.searchValue.trim() === '') {
+      this.filteredStudents = [...this.students];
+    } else {
+      const searchTerm = this.searchValue.toLowerCase().trim();
+      this.filteredStudents = this.students.filter(student => 
+        student.name?.toLowerCase().includes(searchTerm) ||
+        student.email?.toLowerCase().includes(searchTerm)
+      );
+    }
+  }
+
+  /**
+   * Obtiene la lista de estudiantes filtrados
+   */
+  getFilteredStudents(): IUser[] {
+    return this.filteredStudents;
+  }
+
+  /**
+   * Verifica si un estudiante está seleccionado
+   */
+  isStudentSelected(student: IUser): boolean {
+    return this.selectedStudents.some(s => s._id === student._id);
+  }
+
+  /**
+   * Alterna la selección de un estudiante
+   */
+  toggleStudentSelection(student: IUser): void {
+    if (this.isStudentSelected(student)) {
+      this.selectedStudents = this.selectedStudents.filter(s => s._id !== student._id);
+    } else {
+      this.selectedStudents.push(student);
+    }
+    this.onStudentsChange();
+  }
+
+  /**
+   * Obtiene las iniciales de un estudiante para el avatar
+   */
+  getStudentInitials(student: IUser): string {
+    if (student.name) {
+      const names = student.name.trim().split(' ');
+      if (names.length >= 2) {
+        return (names[0][0] + names[1][0]).toUpperCase();
+      }
+      return names[0][0].toUpperCase();
+    }
+    return student.email[0].toUpperCase();
+  }
+
+  /**
+   * Limpia la selección de estudiantes
+   */
+  clearStudentSelection(): void {
+    this.selectedStudents = [];
+    this.onStudentsChange();
+  }
+
+  /**
+   * Selecciona todos los estudiantes filtrados
+   */
+  selectAllStudents(): void {
+    this.selectedStudents = [...this.filteredStudents];
+    this.onStudentsChange();
+  }
+
+  /**
+   * NUEVO: Métodos para la interfaz mejorada de restricciones
+   */
+
+  /**
+   * Verifica si un estudiante está en la selección para restricciones
+   */
+  isStudentInRestrictionSelection(student: IUser): boolean {
+    return this.selectedRestrictionStudents.some(s => s._id === student._id);
+  }
+
+  /**
+   * Alterna la selección de un estudiante para restricciones
+   */
+  toggleRestrictionStudentSelection(student: IUser): void {
+    if (this.isStudentInRestrictionSelection(student)) {
+      this.selectedRestrictionStudents = this.selectedRestrictionStudents.filter(s => s._id !== student._id);
+    } else {
+      this.selectedRestrictionStudents.push(student);
+    }
+    console.log(`🎯 Estudiante ${student.name} ${this.isStudentInRestrictionSelection(student) ? 'añadido a' : 'removido de'} selección de restricciones`);
+  }
+
+  /**
+   * Limpia la selección de estudiantes para restricciones
+   */
+  clearRestrictionSelection(): void {
+    this.selectedRestrictionStudents = [];
   }
 
   /**
@@ -864,27 +985,64 @@ export class CreateGroupsAlgorithmFormComponent {
     
     // Si fue exitoso, emitir evento para actualizar los grupos
     if (this.algorithmSuccess) {
+      console.log('✅ Algoritmo exitoso - limpiando estado automáticamente');
+      
+      // 1. Emitir evento para actualizar los grupos en el componente padre
       this.onRequestSent.emit(true);
+      
+      // 2. Limpiar automáticamente el estado del formulario
+      this.resetFormStateAfterSuccess();
+      
+      console.log('🔄 Estado del formulario limpiado automáticamente');
     }
     
-    // Resetear estado
+    // Resetear estado del modal
     this.resetProgressModalState();
   }
 
   /**
-   * Cancela el algoritmo en ejecución
+   * NUEVO: Limpia el estado del formulario después de un algoritmo exitoso
+   */
+  private resetFormStateAfterSuccess(): void {
+    // Resetear formulario principal
+    this.teamBuilderForm.reset();
+    this.teamBuilderForm.patchValue({
+      algorithm: this.questionnaires[0] || {}
+    });
+    
+    // Limpiar estudiantes seleccionados
+    this.selectedStudents = [];
+    this.selectedRestrictionStudents = [];
+    
+    // Limpiar restricciones
+    this.restrictions = {
+      mustBeTogether: [],
+      mustNotBeTogether: [],
+      mustBeAGroup: []
+    };
+    
+    // Limpiar configuraciones de grupos
+    this.groupConfigurations = [];
+    
+    // Volver al primer paso del stepper
+    this.active = 0;
+    
+    // Limpiar términos de búsqueda
+    this.searchValue = undefined;
+    this.searchValueRestricctions = undefined;
+    
+    console.log('🧹 Estado del formulario completamente limpiado');
+  }
+
+  /**
+   * OBSOLETO: Cancela el algoritmo en ejecución
+   * Ya no se permite cancelar el algoritmo - se ejecuta en segundo plano
    */
   onProgressModalCancel(): void {
-    console.log('🛑 Usuario canceló el algoritmo');
+    console.log('⚠️ Cancelación no permitida - el algoritmo se ejecuta automáticamente');
     
-    // Detener el algoritmo
-    this.stopAlgorithmProgress(false, 'Algoritmo cancelado por el usuario');
-    
-    // Cerrar modal
-    this.showProgressModal = false;
-    
-    // Resetear estado
-    this.resetProgressModalState();
+    // No hacer nada - la cancelación está deshabilitada
+    // El algoritmo debe completarse en segundo plano
   }
 
   /**
@@ -900,10 +1058,6 @@ export class CreateGroupsAlgorithmFormComponent {
   }
 
   // Métodos existentes mantenidos para compatibilidad
-  ngOnInit() {
-    // Inicialización si es necesaria
-  }
-
   prevStep() {
     this.active = Math.max(0, this.active - 1);
   }

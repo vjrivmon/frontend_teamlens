@@ -70,7 +70,7 @@ export class NotificationsService {
 
   private http = inject(HttpClient);
   private webSocketService = inject(WebSocketService);
-  private readonly API_BASE = '';
+  private readonly API_BASE = environment.apiUrl;
 
   // Sistema de polling como respaldo
   private readonly POLLING_INTERVAL = 60000; // 60 segundos (aumentado)

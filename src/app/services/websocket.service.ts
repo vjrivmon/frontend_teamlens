@@ -32,7 +32,7 @@ export interface WebSocketConnectionInfo {
 export class WebSocketService {
   
   private socket: Socket | null = null;
-  private readonly API_URL = environment.apiUrl;
+  private readonly API_URL = environment.websocketUrl || environment.apiUrl;
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
   private readonly RECONNECT_DELAY = 5000; // 5 segundos
   private readonly HEARTBEAT_INTERVAL = 60000; // 60 segundos

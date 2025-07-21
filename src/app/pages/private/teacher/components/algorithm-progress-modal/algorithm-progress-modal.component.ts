@@ -70,28 +70,37 @@ export class AlgorithmProgressModalComponent {
   @Output() onClose = new EventEmitter<void>();
   
   /**
-   * Evento emitido cuando el usuario quiere cancelar el algoritmo (si está corriendo)
+   * OBSOLETO: Evento emitido cuando el usuario quiere cancelar el algoritmo
+   * Ya no se usa - el algoritmo no se puede cancelar
    */
   @Output() onCancel = new EventEmitter<void>();
 
   constructor() {}
 
   /**
-   * Cierra el modal - solo disponible cuando el algoritmo ha terminado
+   * Obtiene el título del modal basado en el estado actual
    */
-  closeModal(): void {
-    if (this.isCompleted) {
-      this.onClose.emit();
+  getTitle(): string {
+    if (!this.isCompleted) {
+      return 'Ejecutando Algoritmo de Equipos';
     }
+    return this.isSuccess ? '¡Equipos Creados Exitosamente!' : 'Error en la Creación de Equipos';
   }
 
   /**
-   * Cancela el algoritmo - solo disponible mientras está corriendo
+   * Cierra el modal - solo disponible cuando el algoritmo ha terminado
+   */
+  closeModal(): void {
+    this.onClose.emit();
+  }
+
+  /**
+   * OBSOLETO: Cancela el algoritmo - Ya no se usa
+   * El algoritmo ahora se ejecuta en segundo plano sin posibilidad de cancelación
    */
   cancelAlgorithm(): void {
-    if (!this.isCompleted) {
-      this.onCancel.emit();
-    }
+    console.log('⚠️ Cancelación no permitida - el algoritmo se ejecuta en segundo plano');
+    // No hacer nada - la cancelación está deshabilitada
   }
 
   /**
@@ -112,15 +121,5 @@ export class AlgorithmProgressModalComponent {
       return 'text-blue-600';
     }
     return this.isSuccess ? 'text-green-600' : 'text-red-600';
-  }
-
-  /**
-   * Obtiene el título apropiado según el estado
-   */
-  getTitle(): string {
-    if (!this.isCompleted) {
-      return '🤖 Algoritmo en Ejecución';
-    }
-    return this.isSuccess ? '🎉 ¡Grupos Creados Exitosamente!' : '❌ Error en el Algoritmo';
   }
 } 
