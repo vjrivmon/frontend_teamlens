@@ -510,6 +510,74 @@ export class CreateGroupsAlgorithmFormComponent {
   }
 
   /**
+   * Determina el estado de la configuración actual
+   */
+  getConfigurationStatus(): 'perfect' | 'incomplete' | 'problematic' {
+    if (this.groupConfigurations.length === 0) {
+      return 'problematic';
+    }
+
+    const { min: minStudents, max: maxStudents } = this.getStudentAssignmentRange();
+    const totalStudents = this.selectedStudents.length;
+
+    // Configuración perfecta: todos los estudiantes pueden ser asignados exactamente
+    if (minStudents <= totalStudents && totalStudents <= maxStudents) {
+      // Si puede asignar exactamente a todos los estudiantes
+      if (totalStudents === maxStudents || (totalStudents >= minStudents && totalStudents % this.getCommonGroupSize() === 0)) {
+        return 'perfect';
+      }
+      return 'incomplete';
+    }
+
+    // Configuración problemática: no puede asignar a suficientes estudiantes
+    if (totalStudents < minStudents || minStudents === 0) {
+      return 'problematic';
+    }
+
+    return 'incomplete';
+  }
+
+  /**
+   * Calcula cuántos estudiantes pueden ser asignados con la configuración actual
+   */
+  getAssignableStudentsCount(): number {
+    if (this.groupConfigurations.length === 0) {
+      return 0;
+    }
+
+    const { min: minStudents, max: maxStudents } = this.getStudentAssignmentRange();
+    const totalStudents = this.selectedStudents.length;
+
+    // Si hay suficientes estudiantes para la configuración mínima
+    if (totalStudents >= minStudents) {
+      // Devolver el menor entre estudiantes disponibles y máximo asignable
+      return Math.min(totalStudents, maxStudents);
+    }
+
+    return 0;
+  }
+
+  /**
+   * Calcula cuántos estudiantes quedarán sin asignar
+   */
+  getUnassignedStudentsCount(): number {
+    const assignable = this.getAssignableStudentsCount();
+    return Math.max(0, this.selectedStudents.length - assignable);
+  }
+
+  /**
+   * Obtiene el tamaño de grupo más común para cálculos
+   */
+  private getCommonGroupSize(): number {
+    if (this.groupConfigurations.length === 0) {
+      return 1;
+    }
+    
+    // Devolver el tamaño del primer grupo configurado como referencia
+    return this.groupConfigurations[0].size;
+  }
+
+  /**
    * Obtiene resumen flexible de la configuración de grupos
    */
   getGroupsConfigurationSummary(): string {

@@ -274,6 +274,66 @@
                                        class="preview-result"></p-tag>
                             </div>
                         </div>
+
+                        <!-- Avisos informativos sobre la configuración -->
+                        <div class="configuration-alerts" *ngIf="groupConfigurations.length > 0">
+                            <div class="alerts-header">
+                                <h4>
+                                    <i class="pi pi-info-circle"></i>
+                                    Estado de la Configuración
+                                </h4>
+                                <p class="alerts-description">Información detallada sobre el estado actual de tus configuraciones de grupos.</p>
+                            </div>
+                            
+                            <!-- Alerta cuando la configuración es perfecta -->
+                            <div class="alert-item success" *ngIf="getConfigurationStatus() === 'perfect'">
+                                <i class="pi pi-check-circle alert-icon"></i>
+                                <div class="alert-content">
+                                    <div class="alert-title">¡Configuración Perfecta!</div>
+                                    <div class="alert-message">
+                                        Todos los {{ selectedStudents.length }} estudiantes están perfectamente asignados. 
+                                        La configuración permitirá formar grupos sin estudiantes sobrantes.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Alerta cuando quedan estudiantes sin asignar -->
+                            <div class="alert-item warning" *ngIf="getConfigurationStatus() === 'incomplete'">
+                                <i class="pi pi-exclamation-triangle alert-icon"></i>
+                                <div class="alert-content">
+                                    <div class="alert-title">Estudiantes Sin Asignar</div>
+                                    <div class="alert-message">
+                                        Quedan <strong>{{ getUnassignedStudentsCount() }} estudiantes</strong> que no podrán ser asignados con la configuración actual. 
+                                        Te recomendamos ajustar las configuraciones para incluir a todos los estudiantes.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Alerta cuando la configuración es problemática -->
+                            <div class="alert-item error" *ngIf="getConfigurationStatus() === 'problematic'">
+                                <i class="pi pi-times-circle alert-icon"></i>
+                                <div class="alert-content">
+                                    <div class="alert-title">Configuración Problemática</div>
+                                    <div class="alert-message">
+                                        La configuración actual presenta problemas. Revisa que los rangos de grupos y tamaños sean coherentes 
+                                        con el número de estudiantes seleccionados ({{ selectedStudents.length }}).
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Información adicional siempre visible -->
+                            <div class="alert-item info">
+                                <i class="pi pi-info alert-icon"></i>
+                                <div class="alert-content">
+                                    <div class="alert-title">Información de Asignación</div>
+                                    <div class="alert-message">
+                                        <strong>Total de estudiantes:</strong> {{ selectedStudents.length }}<br>
+                                        <strong>Estudiantes que se pueden asignar:</strong> {{ getAssignableStudentsCount() }}<br>
+                                        <strong>Estudiantes sin asignar:</strong> {{ getUnassignedStudentsCount() }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Navegación fija -->
