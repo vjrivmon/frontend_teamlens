@@ -32,7 +32,7 @@ export interface WebSocketConnectionInfo {
 export class WebSocketService {
   
   private socket: Socket | null = null;
-  private readonly API_URL = environment.apiUrl;  // Usar solo apiUrl
+  private readonly API_URL = this.getWebSocketUrl();
   private readonly MAX_RECONNECT_ATTEMPTS = 5;
   private readonly RECONNECT_DELAY = 5000; // 5 segundos
   private readonly HEARTBEAT_INTERVAL = 60000; // 60 segundos
@@ -44,6 +44,20 @@ export class WebSocketService {
   private isDestroyed = false;
   
   private authService = inject(AuthService);
+
+  /**
+   * Obtiene la URL correcta para WebSocket según el entorno
+   */
+  private getWebSocketUrl(): string {
+    if (environment.production) {
+      // En producción, usar la URL completa del servidor actual
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${window.location.protocol}//${window.location.host}`;
+    } else {
+      // En desarrollo, usar la URL del environment
+      return environment.apiUrl;
+    }
+  }
   
   // Estado de la conexión
   private connectionInfoSubject = new BehaviorSubject<WebSocketConnectionInfo>({

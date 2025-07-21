@@ -2,44 +2,19 @@
     <div class="cursor-pointer" routerLink="/home">
         <h1 class="text-5xl">team<span class="text-gradient">lens</span></h1>
     </div>
-    @if (loggedUser) {
+    
+    @if (isLoggedIn$ | async) {
         <a class="ui basic button" routerLink="/dashboard">
             Dashboard
         </a>
     }    
+    
     <div class="flex gap-2 ml-auto" style="align-items: center;">
-        @if (loggedUser) {
-            <!-- Contenedor del sistema de notificaciones enterprise -->
-            <div class="notifications-container" style="position: relative;">
-                <!-- Icono de notificaciones con indicador inteligente -->
-                <i [class]="getNotificationIconClass()" 
-                   [ngClass]="{ 
-                     'notification': (unreadCount$ | async) && (unreadCount$ | async)! > 0,
-                     'has-notifications': hasNotifications$ | async
-                   }" 
-                   (click)="toggleNotificationPanel()"
-                   title="Notificaciones">
-                   
-                    <!-- Badge dinámico de notificaciones no leídas -->
-                    <span class="notification-badge" 
-                          *ngIf="(unreadCount$ | async) && (unreadCount$ | async)! > 0">
-                        {{ (unreadCount$ | async)! > 99 ? '99+' : (unreadCount$ | async) }}
-                    </span>
-                </i>
-
-                <!-- Panel de notificaciones enterprise -->
-                <app-notifications-panel
-                    [isOpen]="notificationPanelOpen"
-                    [maxHeight]="'500px'"
-                    [showFilters]="true"
-                    (onClose)="closeNotificationPanel()"
-                    (onNotificationClick)="onNotificationClick($event)">
-                </app-notifications-panel>
-            </div>                   
+        @if (isLoggedIn$ | async) {
             <i class="big user circle icon h-100" style="color: whitesmoke;"></i>
-            <div class="" style="display: flex; flex-direction: column; justify-content: center; align-items: start;">
-                <b>{{ loggedUser.name }}</b>
-                <i>{{ loggedUser.email }}</i>
+            <div class="flex flex-column justify-content-center align-items-start">
+                <b>{{ getUserName() }}</b>
+                <i>{{ getUserEmail() }}</i>
             </div>           
             <div class="ml-4">
                 <a class="ui button primary basic" (click)="showLogoutDialog = true">

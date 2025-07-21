@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Observable } from 'rxjs';
 
 // PrimeNG imports
 import { DialogModule } from 'primeng/dialog';
@@ -38,10 +39,24 @@ export class HeaderComponent implements OnInit {
   public showLogoutDialog = false;
 
   /**
-   * Determina si el usuario está logueado
+   * Observable que indica si el usuario está logueado
    */
-  public get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+  public get isLoggedIn$(): Observable<boolean> {
+    return this.authService.isLoggedIn;
+  }
+
+  /**
+   * Obtiene el nombre del usuario logueado
+   */
+  public getUserName(): string {
+    return this.authService.getUserName();
+  }
+
+  /**
+   * Obtiene el email del usuario logueado
+   */
+  public getUserEmail(): string {
+    return this.authService.getUserEmail();
   }
 
   ngOnInit(): void {
