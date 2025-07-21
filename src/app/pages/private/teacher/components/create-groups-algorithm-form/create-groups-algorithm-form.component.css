@@ -7,26 +7,45 @@
   max-width: 100%;
 }
 
+/* Navegación de stepper */
+.responsive-stepper {
+  min-height: 600px;
+}
+
 .stepper-content {
   min-height: auto;
-  max-height: 60vh;
+  max-height: 70vh;
   padding: 0.75rem;
   overflow-y: auto;
+}
+
+/* Navegación inferior - estilo consistente */
+.stepper-navigation {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  border-top: 1px solid #e5e7eb;
+  padding: 1rem;
+  margin: -0.75rem;
+  margin-top: 1rem;
+  z-index: 10;
 }
 
 /* ========================================
    CONFIGURACIÓN DE GRUPOS
 ======================================== */
 
+/* Configuración de grupos compacta */
 .group-configuration-card {
   border: 2px solid #e5e7eb;
   transition: all 0.2s ease;
-  padding: 0.5rem;
+  padding: 1rem;
+  background: white;
 }
 
 .group-configuration-card:hover {
   border-color: #3b82f6;
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .group-configuration-card.selected {
@@ -48,28 +67,27 @@
   margin-bottom: 1rem;
 }
 
+/* Área de estudiantes seleccionados */
 .selected-students-compact {
-  min-height: 40px;
-  padding: 0.5rem;
-  border: 1px dashed #ddd;
+  min-height: 60px;
+  padding: 0.75rem;
+  border: 2px dashed #d1d5db;
   border-radius: 8px;
-  background: #fafafa;
+  background: #f9fafb;
 }
 
-/* Chips de estudiantes */
+/* Chips de estudiantes para restricciones */
 .student-chip {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: white;
   border: 2px solid #e5e7eb;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
+  border-radius: 8px;
+  background: white;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 60px;
 }
 
 .student-chip:hover {
@@ -79,21 +97,51 @@
 
 .student-chip.selected {
   border-color: #3b82f6;
-  background: #3b82f6;
-  color: white;
+  background: #dbeafe;
 }
 
-.chip-remove {
+.chip-avatar {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  width: 2rem;
+  height: 2rem;
+  background: #6b7280;
   color: white;
-  font-size: 10px;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.student-chip.selected .chip-avatar {
+  background: #3b82f6;
+}
+
+.chip-name {
+  flex-grow: 1;
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.chip-check {
+  color: #3b82f6;
+  font-weight: bold;
+}
+
+.chip-remove {
+  color: #ef4444;
+  font-weight: bold;
   cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.25rem;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.chip-remove:hover {
+  background: rgba(239, 68, 68, 0.1);
 }
 
 /* Grid de chips */
@@ -101,24 +149,33 @@
   gap: 0.75rem;
 }
 
-/* Botones de acción */
+/* Botones de acción mejorados */
 .action-buttons {
-  gap: 0.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .action-button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border: 2px solid #d1d5db;
   background: white;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 44px;
 }
 
-.action-button:hover {
+.action-button:hover:not(:disabled) {
   border-color: #3b82f6;
   background: #eff6ff;
+  color: #3b82f6;
 }
 
 .action-button.primary {
@@ -127,9 +184,17 @@
   border-color: #3b82f6;
 }
 
-.action-button.primary:hover {
+.action-button.primary:hover:not(:disabled) {
   background: #2563eb;
   border-color: #2563eb;
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f3f4f6;
+  color: #9ca3af;
+  border-color: #e5e7eb;
 }
 
 /* Columnas de restricciones */
@@ -270,7 +335,26 @@
   }
   
   .stepper-content {
+    max-height: 65vh;
     padding: 0.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-button {
+    justify-content: center;
+    min-width: 200px;
+  }
+  
+  .chip-name {
+    font-size: 0.8rem;
+  }
+  
+  .student-chip {
+    min-height: 50px;
+    padding: 0.375rem 0.5rem;
   }
   
   .restriction-column {

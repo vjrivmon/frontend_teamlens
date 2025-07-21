@@ -411,10 +411,10 @@ export class CreateGroupsAlgorithmFormComponent {
     }
 
     // Calcular un rango inteligente basado en estudiantes disponibles
-    const suggestedGroupSize = 4; // Tamaño por defecto
+    const suggestedGroupSize = Math.min(4, availableStudents); // No más grande que estudiantes disponibles
     const maxPossibleGroups = Math.floor(availableStudents / suggestedGroupSize);
-    const minGroups = Math.max(1, Math.floor(maxPossibleGroups * 0.5)); // Al menos la mitad
-    const maxGroups = Math.max(1, maxPossibleGroups); // Máximo posible
+    const minGroups = Math.max(1, Math.min(maxPossibleGroups, 1)); // Siempre al menos 1, pero realista
+    const maxGroups = Math.max(minGroups, maxPossibleGroups); // Asegurar que max >= min
 
     const newConfig: GroupConfiguration = {
       minQuantity: minGroups,
@@ -424,7 +424,7 @@ export class CreateGroupsAlgorithmFormComponent {
     };
     
     this.groupConfigurations.push(newConfig);
-    console.log('✅ Configuración añadida:', newConfig);
+    console.log('✅ Configuración añadida:', newConfig, 'con', availableStudents, 'estudiantes disponibles');
   }
 
   /**

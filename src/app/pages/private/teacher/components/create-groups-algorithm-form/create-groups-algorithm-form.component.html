@@ -1,5 +1,7 @@
 <div class="modal-form-container">
     <p-stepper [(activeStep)]="active" class="responsive-stepper">
+        
+        <!-- PASO 1: SELECCIONAR ESTUDIANTES + ALGORITMO -->
         <p-stepperPanel>
             <ng-template pTemplate="header" let-index="index">
                 <button class="bg-transparent border-none inline-flex flex-column gap-2">
@@ -9,226 +11,25 @@
                             'bg-primary border-primary': index <= active,
                             'surface-border': index > active
                         }">
-                        <i class="pi pi-book"></i>
+                        <i class="pi pi-users"></i>
                     </span>
                 </button>
             </ng-template>
             <ng-template pTemplate="content" let-nextCallback="nextCallback" let-index="index">
-                <div class="flex flex-column gap-2 mt-4 stepper-content">
-                    <h2>Configuración Básica</h2>
-                    <p>Selecciona el algoritmo de emparejamiento y configura los tipos de grupos que necesitas.</p>
+                <div class="flex flex-column gap-4 mt-4 stepper-content">
+                    <h2>Selección de Estudiantes y Algoritmo</h2>
+                    <p>Primero, elige los estudiantes que participarán y el algoritmo a utilizar.</p>
                     
-                    <form [formGroup]="teamBuilderForm" class="flex gap-4">
-                        <div class="flex flex-column gap-2">
-                            <h5>Algoritmo</h5>
-                            <div class="flex flex-column gap-2">
-                                <label for="algorithm">Algoritmo de Emparejamiento</label>
+                    <!-- Sección de Algoritmo -->
+                    <div class="mb-4">
+                        <h3 class="text-xl font-semibold text-900 mb-3">Algoritmo de Emparejamiento</h3>
+                        <form [formGroup]="teamBuilderForm" class="flex gap-4">
+                            <div class="flex flex-column gap-2 w-full">
+                                <label for="algorithm">Selecciona el algoritmo:</label>
                                 <p-dropdown formControlName="algorithm" [options]="questionnaires" optionLabel="title"
-                                    placeholder="Selecciona un Algoritmo" />
+                                    placeholder="Selecciona un Algoritmo" class="w-full" />
                             </div>
-                        </div>
-                    </form>
-
-                    <!-- Nueva sección moderna para configuración de grupos -->
-                    <div class="mt-6">
-                        <div class="mb-4">
-                            <h3 class="text-2xl font-bold text-900 mb-2">Configuración de Grupos</h3>
-                            <p class="text-600 line-height-3">Define cuántos grupos de cada tamaño necesitas. Por ejemplo: 3 grupos de 4 estudiantes + 2 grupos de 3 estudiantes</p>
-                        </div>
-                        
-                        <!-- Card de resumen de estudiantes -->
-                        <div class="bg-white border-round-lg shadow-1 p-4 mb-4">
-                            <div class="flex align-items-center justify-content-between">
-                                <div class="flex align-items-center gap-3">
-                                    <div class="flex align-items-center justify-content-center w-3rem h-3rem bg-primary-50 border-round-md">
-                                        <i class="pi pi-users text-primary text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-900 font-semibold m-0">{{ selectedStudents.length }} estudiantes seleccionados</h4>
-                                        <p class="text-600 m-0 text-sm">{{ getTotalStudentsInGroups() }} asignados • {{ getRemainingStudents() }} disponibles</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p-tag [value]="getGroupsConfigurationSummary()" 
-                                           [severity]="selectedStudents.length > 0 ? 'success' : 'secondary'" 
-                                           class="font-medium"></p-tag>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Configuración de rango de grupos -->
-                        <div class="bg-white border-round-lg shadow-1 p-4 mb-4">
-                            <div class="flex align-items-center gap-3 mb-4">
-                                <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-purple-50 border-round-md">
-                                    <i class="pi pi-info-circle text-purple-600"></i>
-                                </div>
-                                <h5 class="m-0 text-900 font-semibold">Configuración Inteligente de Grupos</h5>
-                            </div>
-                            
-                            <div class="text-600 line-height-3">
-                                <p class="m-0">Este sistema crea grupos automáticamente basándose en los estudiantes disponibles. 
-                                Añade configuraciones específicas para definir rangos flexibles como "Entre 2-4 grupos de 5 estudiantes".</p>
-                            </div>
-                        </div>
-
-                        <!-- Lista moderna de configuraciones de grupos con rangos -->
-                        <div class="flex flex-column gap-4" *ngIf="groupConfigurations.length > 0">
-                            <h5 class="text-900 font-semibold m-0">Configuraciones Activas</h5>
-                            
-                            <div *ngFor="let config of groupConfigurations; let i = index" 
-                                 class="bg-white border-round-lg border-1 border-200 p-5 hover:shadow-2 transition-all transition-duration-200">
-                                
-                                <div class="flex flex-column gap-4">
-                                    <!-- Sección de configuración con rangos -->
-                                    <div class="flex align-items-center gap-6 flex-wrap">
-                                        <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-blue-50 border-round-md">
-                                            <i class="pi pi-sitemap text-blue-600"></i>
-                                        </div>
-                                        
-                                        <div class="flex align-items-center gap-4 flex-wrap">
-                                            <div class="flex align-items-center gap-4 text-lg">
-                                                <span class="text-900 font-semibold text-lg whitespace-nowrap">Entre</span>
-                                                <div class="flex align-items-center gap-2">
-                                                    <p-inputNumber 
-                                                        [(ngModel)]="config.minQuantity" 
-                                                        [min]="1" 
-                                                        [max]="config.maxQuantity"
-                                                        [showButtons]="true"
-                                                        [size]="1"
-                                                        class="w-6rem"
-                                                        (onInput)="updateGroupConfiguration()"
-                                                        (ngModelChange)="updateGroupConfiguration()">
-                                                    </p-inputNumber>
-                                                </div>
-                                                <span class="text-900 font-semibold text-lg mx-2">-</span>
-                                                <div class="flex align-items-center gap-2">
-                                                    <p-inputNumber 
-                                                        [(ngModel)]="config.maxQuantity" 
-                                                        [min]="config.minQuantity" 
-                                                        [max]="20"
-                                                        [showButtons]="true"
-                                                        [size]="1"
-                                                        class="w-6rem"
-                                                        (onInput)="updateGroupConfiguration()"
-                                                        (ngModelChange)="updateGroupConfiguration()">
-                                                    </p-inputNumber>
-                                                </div>
-                                                <span class="text-900 font-semibold text-lg whitespace-nowrap mx-2">grupos de</span>
-                                                <div class="flex align-items-center gap-2">
-                                                    <p-inputNumber 
-                                                        [(ngModel)]="config.size" 
-                                                        [min]="1" 
-                                                        [max]="15"
-                                                        [showButtons]="true"
-                                                        [size]="1"
-                                                        class="w-6rem"
-                                                        (onInput)="updateGroupConfiguration()">
-                                                    </p-inputNumber>
-                                                </div>
-                                                <span class="text-900 font-semibold text-lg whitespace-nowrap">estudiantes</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Información y acciones -->
-                                    <div class="flex align-items-center justify-content-between mt-2">
-                                        <div class="flex align-items-center gap-3">
-                                            <p-tag [value]="getConfigurationSummary(config)" 
-                                                   severity="info" 
-                                                   class="font-medium"></p-tag>
-                                        </div>
-                                        <button pButton 
-                                                icon="pi pi-trash" 
-                                                label="Eliminar"
-                                                class="p-button-text p-button-sm p-button-danger"
-                                                (click)="removeGroupConfiguration(i)"
-                                                pTooltip="Eliminar configuración"
-                                                tooltipPosition="top">
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Área de acciones simplificada -->
-                        <div class="mt-4">
-                            <button pButton 
-                                    [label]="canAddMoreGroupConfigurations() ? 'Añadir Configuración de Grupo' : 'Selecciona estudiantes primero'"
-                                    [icon]="canAddMoreGroupConfigurations() ? 'pi pi-plus' : 'pi pi-users'" 
-                                    class="p-button-outlined w-full justify-content-center py-3"
-                                    [disabled]="!canAddMoreGroupConfigurations()"
-                                    (click)="addGroupConfiguration()">
-                            </button>
-                        </div>
-
-                        <!-- Sistema de alertas moderno con emojis -->
-                        <div *ngIf="getValidationMessage()" class="mt-5">
-                            <div class="border-round-lg p-4 shadow-1" 
-                                 [ngClass]="{
-                                    'bg-blue-50 border-left-3 border-blue-500': getValidationType() === 'info',
-                                    'bg-orange-50 border-left-3 border-orange-500': getValidationType() === 'warning',
-                                    'bg-red-50 border-left-3 border-red-500': getValidationType() === 'error',
-                                    'bg-green-50 border-left-3 border-green-500': getValidationType() === 'success'
-                                 }">
-                                <div class="flex align-items-start gap-3">
-                                    <div class="flex align-items-center justify-content-center w-2rem h-2rem border-round-md" 
-                                         [ngClass]="{
-                                            'bg-blue-100': getValidationType() === 'info',
-                                            'bg-orange-100': getValidationType() === 'warning',
-                                            'bg-red-100': getValidationType() === 'error',
-                                            'bg-green-100': getValidationType() === 'success'
-                                         }">
-                                        <span class="text-lg">
-                                            <ng-container [ngSwitch]="getValidationType()">
-                                                <span *ngSwitchCase="'info'">ℹ️</span>
-                                                <span *ngSwitchCase="'warning'">⚠️</span>
-                                                <span *ngSwitchCase="'error'">❌</span>
-                                                <span *ngSwitchCase="'success'">✅</span>
-                                            </ng-container>
-                                        </span>
-                                    </div>
-                                    <div class="flex-1">
-                                        <p class="m-0 font-medium line-height-3" [ngClass]="{
-                                            'text-blue-900': getValidationType() === 'info',
-                                            'text-orange-900': getValidationType() === 'warning',
-                                            'text-red-900': getValidationType() === 'error',
-                                            'text-green-900': getValidationType() === 'success'
-                                        }">{{ getValidationMessage() }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Vista previa moderna de grupos -->
-                        <div *ngIf="groupConfigurations.length > 0" class="mt-6">
-                            <div class="bg-white border-round-lg shadow-1 p-4">
-                                <div class="flex align-items-center gap-3 mb-4">
-                                    <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-indigo-50 border-round-md">
-                                        <i class="pi pi-eye text-indigo-600"></i>
-                                    </div>
-                                    <h5 class="m-0 text-900 font-semibold">Vista Previa de Grupos (Promedio)</h5>
-                                    <p-tag [value]="getGroupsPreview().length + ' grupos aprox.'" severity="info" class="ml-auto"></p-tag>
-                                </div>
-                                
-                                <div class="grid">
-                                    <div *ngFor="let preview of getGroupsPreview()" 
-                                         class="col-12 sm:col-6 md:col-4 lg:col-3 xl:col-2">
-                                        <div class="border-round-lg p-3 text-center transition-all transition-duration-200 hover:shadow-2 cursor-pointer"
-                                             [style]="{ 
-                                                'background': 'linear-gradient(135deg, ' + preview.color + '15, ' + preview.color + '05)', 
-                                                'border': '2px solid ' + preview.color + '30' 
-                                             }">
-                                            <div class="flex align-items-center justify-content-center w-3rem h-3rem border-round-md mx-auto mb-2"
-                                                 [style]="{ 'background-color': preview.color + '20' }">
-                                                <i class="pi pi-users text-lg" [style]="{ 'color': preview.color }"></i>
-                                            </div>
-                                            <h6 class="m-0 font-semibold text-900 mb-1">{{ preview.name }}</h6>
-                                            <p class="m-0 text-sm text-600">{{ preview.size }} estudiantes</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        </form>
                     </div>
 
                     <!-- Selección de estudiantes - Estilo minimalista -->
@@ -243,23 +44,27 @@
                                 <span class="font-medium">{{ selectedStudents.length }} de {{ students.length }} estudiantes seleccionados</span>
                             </div>
                             <div class="flex gap-2">
-                                <button type="button" 
-                                        class="p-button-sm p-button-outlined" 
-                                        *ngIf="selectedStudents.length < students.length"
-                                        (click)="selectAllStudents()">
-                                    Seleccionar todos
-                                </button>
-                                <button type="button" 
-                                        class="p-button-sm p-button-outlined" 
-                                        *ngIf="selectedStudents.length > 0"
-                                        (click)="clearStudentSelection()">
-                                    Limpiar selección
-                                </button>
+                                <p-button 
+                                    type="button"
+                                    label="Seleccionar todos"
+                                    size="small"
+                                    severity="secondary" 
+                                    *ngIf="selectedStudents.length < students.length"
+                                    (onClick)="selectAllStudents()">
+                                </p-button>
+                                <p-button 
+                                    type="button"
+                                    label="Limpiar selección"
+                                    size="small"
+                                    severity="secondary"
+                                    *ngIf="selectedStudents.length > 0"
+                                    (onClick)="clearStudentSelection()">
+                                </p-button>
                             </div>
                         </div>
 
                         <!-- Lista de estudiantes simple -->
-                        <div class="border-1 border-300 border-round p-3" style="max-height: 300px; overflow-y: auto;">
+                        <div class="border-1 border-300 border-round p-3" style="max-height: 250px; overflow-y: auto;">
                             <div class="grid" *ngIf="students.length > 0">
                                 @for (student of students; track student._id) {
                                     <div class="col-12 md:col-6">
@@ -292,17 +97,20 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="flex pt-4 justify-content-end">
-                    <p-button [disabled]="selectedStudents.length == 0" 
-                              label="Siguiente" 
-                              icon="pi pi-arrow-right"
-                              iconPos="right" 
-                              class="p-button-lg"
-                              (onClick)="nextCallback.emit()" />
+                    
+                    <!-- Navegación -->
+                    <div class="stepper-navigation flex pt-4 justify-content-end">
+                        <p-button label="Siguiente" 
+                                  icon="pi pi-arrow-right" 
+                                  iconPos="right"
+                                  [disabled]="!canGoToNextStep()"
+                                  (onClick)="nextCallback.emit()" />
+                    </div>
                 </div>
             </ng-template>
         </p-stepperPanel>
+
+        <!-- PASO 2: CONFIGURAR RESTRICCIONES -->
         <p-stepperPanel>
             <ng-template pTemplate="header" let-index="index">
                 <button class="bg-transparent border-none inline-flex flex-column gap-2">
@@ -312,7 +120,7 @@
                             'bg-primary border-primary': index <= active,
                             'surface-border': index > active
                         }">
-                        <i class="pi pi-users"></i>
+                        <i class="pi pi-sitemap"></i>
                     </span>
                 </button>
             </ng-template>
@@ -320,7 +128,7 @@
                 let-index="index">
                 <div class="flex flex-column gap-4 mt-4 stepper-content">
                     
-                    <!-- NUEVA SECCIÓN: Restricciones rediseñadas -->
+                    <!-- Configurar Restricciones -->
                     <div class="restrictions-section">
                         <div class="section-header mb-4 text-center">
                             <h2 class="text-2xl font-bold text-900 mb-2">Configurar Restricciones</h2>
@@ -329,150 +137,142 @@
 
                         <!-- Selector de estudiantes para restricciones -->
                         <div class="restriction-selector mb-4">
-                            <div class="bg-white border-round-lg shadow-1 p-4">
-                                <h3 class="text-lg font-semibold text-900 mb-3">
-                                    <i class="pi pi-users mr-2"></i>
-                                    Seleccionar estudiantes para restricción
-                                </h3>
-                                
-                                <!-- Grid compacto de estudiantes seleccionados -->
-                                <div class="selected-students-compact mb-3">
-                                    <div class="flex flex-wrap gap-2">
-                                        @for (student of selectedStudents; track student._id) {
+                            <h4 class="text-900 font-semibold mb-3">🎯 Seleccionar estudiantes para restricción</h4>
+                            
+                            <!-- Students seleccionados para restricción -->
+                            <div class="selected-students-compact mb-3">
+                                <div class="flex flex-wrap gap-2" *ngIf="selectedRestrictionStudents.length > 0; else noSelectionMessage">
+                                    @for (student of selectedRestrictionStudents; track student._id) {
+                                        <div class="student-chip selected" (click)="toggleRestrictionStudentSelection(student)">
+                                            <div class="chip-avatar">{{ getStudentInitials(student) }}</div>
+                                            <span class="chip-name">{{ student.name || student.email.split('@')[0] }}</span>
+                                            <div class="chip-remove">×</div>
+                                        </div>
+                                    }
+                                </div>
+                                <ng-template #noSelectionMessage>
+                                    <p class="text-600 text-center m-0 py-2">
+                                        <i class="pi pi-info-circle mr-2"></i>
+                                        Selecciona estudiantes abajo para crear restricciones
+                                    </p>
+                                </ng-template>
+                            </div>
+
+                            <!-- Grid de estudiantes disponibles -->
+                            <div class="chips-grid">
+                                <div class="grid">
+                                    @for (student of selectedStudents; track student._id) {
+                                        <div class="col-6 md:col-4 lg:col-3">
                                             <div class="student-chip" 
-                                                 [class.chip-selected]="isStudentInRestrictionSelection(student)"
+                                                 [class.selected]="isStudentInRestrictionSelection(student)"
                                                  (click)="toggleRestrictionStudentSelection(student)">
-                                                <span class="chip-avatar">{{ getStudentInitials(student) }}</span>
+                                                <div class="chip-avatar">{{ getStudentInitials(student) }}</div>
                                                 <span class="chip-name">{{ student.name || student.email.split('@')[0] }}</span>
                                                 <i class="pi pi-check chip-check" *ngIf="isStudentInRestrictionSelection(student)"></i>
                                             </div>
-                                        }
-                                    </div>
-                                    
-                                    <!-- Mensaje si no hay estudiantes seleccionados -->
-                                    <div *ngIf="selectedStudents.length === 0" class="text-center py-3">
-                                        <i class="pi pi-info-circle text-400 text-2xl mb-2"></i>
-                                        <p class="text-600 m-0">Primero selecciona estudiantes en el paso anterior</p>
-                                    </div>
+                                        </div>
+                                    }
                                 </div>
-                                
-                                <!-- Botones de acción -->
-                                <div class="flex justify-content-center gap-3" *ngIf="selectedRestrictionStudents.length >= 2">
-                                    <p-button 
-                                        label="Deben ir juntos" 
-                                        icon="pi pi-heart"
-                                        class="p-button-success"
-                                        (onClick)="createRestriction('mustBeTogether')">
-                                    </p-button>
-                                    <p-button 
-                                        label="NO deben ir juntos" 
-                                        icon="pi pi-ban"
-                                        class="p-button-danger"
-                                        (onClick)="createRestriction('mustNotBeTogether')">
-                                    </p-button>
-                                </div>
-                                
-                                <div *ngIf="selectedRestrictionStudents.length < 2" class="text-center">
-                                    <p class="text-600 text-sm m-0">Selecciona al menos 2 estudiantes para crear una restricción</p>
-                                </div>
+                            </div>
+
+                            <!-- Botones de acción -->
+                            <div class="action-buttons mt-3 flex justify-content-center gap-2">
+                                <button class="action-button primary" 
+                                        [disabled]="selectedRestrictionStudents.length < 2"
+                                        (click)="createRestriction('mustBeTogether')">
+                                    <i class="pi pi-heart mr-2"></i>
+                                    Deben ir juntos
+                                </button>
+                                <button class="action-button" 
+                                        [disabled]="selectedRestrictionStudents.length < 2"
+                                        (click)="createRestriction('mustNotBeTogether')">
+                                    <i class="pi pi-ban mr-2"></i>
+                                    NO deben ir juntos
+                                </button>
+                                <button class="action-button" 
+                                        [disabled]="selectedRestrictionStudents.length === 0"
+                                        (click)="clearRestrictionSelection()">
+                                    <i class="pi pi-refresh mr-2"></i>
+                                    Limpiar selección
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Restricciones existentes en dos columnas -->
-                        <div class="restrictions-display">
-                            <div class="grid">
-                                
-                                <!-- Columna: Deben ir juntos -->
-                                <div class="col-12 md:col-6">
-                                    <div class="restriction-column must-be-together">
-                                        <div class="column-header">
-                                            <i class="pi pi-heart"></i>
-                                            <h3>Deben ir juntos</h3>
-                                            <span class="restriction-count">{{ restrictions.mustBeTogether.length }}</span>
-                                        </div>
-                                        
-                                        <div class="restrictions-list">
-                                            @for (restriction of restrictions.mustBeTogether; track $index) {
-                                                <div class="restriction-card positive">
-                                                    <div class="restriction-students">
-                                                        @for (student of restriction; track student._id; let isLast = $last) {
-                                                            <span class="student-tag">{{ student.name || student.email.split('@')[0] }}</span>
-                                                            @if (!isLast) {
-                                                                <span class="connector">+</span>
-                                                            }
-                                                        }
-                                                    </div>
-                                                    <button class="remove-restriction" (click)="removeRestriction('mustBeTogether', $index)">
-                                                        <i class="pi pi-times"></i>
-                                                    </button>
+                        <!-- Restricciones existentes en estilo de resumen -->
+                        <div class="restrictions-summary mt-4">
+                            <!-- Restricciones: Deben estar juntos -->
+                            <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="restrictions.mustBeTogether.length > 0">
+                                <div class="flex align-items-center gap-3 mb-3">
+                                    <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-green-50 border-round-md">
+                                        <i class="pi pi-link text-green-600"></i>
+                                    </div>
+                                    <h4 class="m-0 text-900 font-semibold">Deben estar juntos</h4>
+                                </div>
+                                <div class="flex flex-column gap-2">
+                                    <div *ngFor="let restriction of restrictions.mustBeTogether; let i = index" 
+                                         class="border-1 border-green-200 bg-green-50 border-round p-3">
+                                        <div class="flex align-items-start gap-2">
+                                            <i class="pi pi-users text-green-600 mt-1"></i>
+                                            <div class="flex-1">
+                                                <div *ngFor="let student of restriction" class="text-green-800 font-medium">
+                                                    {{ student.name || student.email }}
                                                 </div>
-                                            }
-                                            
-                                            <!-- Mensaje cuando no hay restricciones -->
-                                            <div *ngIf="restrictions.mustBeTogether.length === 0" class="empty-restrictions">
-                                                <i class="pi pi-heart-fill text-green-400 text-2xl mb-2"></i>
-                                                <p class="text-600 text-sm">No hay restricciones de compañerismo</p>
                                             </div>
+                                            <button class="p-button-text p-button-sm p-button-danger"
+                                                    (click)="removeRestriction('mustBeTogether', i)">
+                                                <i class="pi pi-times"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <!-- Columna: NO deben ir juntos -->
-                                <div class="col-12 md:col-6">
-                                    <div class="restriction-column must-not-be-together">
-                                        <div class="column-header">
-                                            <i class="pi pi-ban"></i>
-                                            <h3>NO deben ir juntos</h3>
-                                            <span class="restriction-count">{{ restrictions.mustNotBeTogether.length }}</span>
-                                        </div>
-                                        
-                                        <div class="restrictions-list">
-                                            @for (restriction of restrictions.mustNotBeTogether; track $index) {
-                                                <div class="restriction-card negative">
-                                                    <div class="restriction-students">
-                                                        @for (student of restriction; track student._id; let isLast = $last) {
-                                                            <span class="student-tag">{{ student.name || student.email.split('@')[0] }}</span>
-                                                            @if (!isLast) {
-                                                                <span class="connector">≠</span>
-                                                            }
-                                                        }
-                                                    </div>
-                                                    <button class="remove-restriction" (click)="removeRestriction('mustNotBeTogether', $index)">
-                                                        <i class="pi pi-times"></i>
-                                                    </button>
+                            <!-- Restricciones: NO deben estar juntos -->
+                            <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="restrictions.mustNotBeTogether.length > 0">
+                                <div class="flex align-items-center gap-3 mb-3">
+                                    <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-red-50 border-round-md">
+                                        <i class="pi pi-ban text-red-600"></i>
+                                    </div>
+                                    <h4 class="m-0 text-900 font-semibold">NO deben estar juntos</h4>
+                                </div>
+                                <div class="flex flex-column gap-2">
+                                    <div *ngFor="let restriction of restrictions.mustNotBeTogether; let i = index" 
+                                         class="border-1 border-red-200 bg-red-50 border-round p-3">
+                                        <div class="flex align-items-start gap-2">
+                                            <i class="pi pi-ban text-red-600 mt-1"></i>
+                                            <div class="flex-1">
+                                                <div *ngFor="let student of restriction" class="text-red-800 font-medium">
+                                                    {{ student.name || student.email }}
                                                 </div>
-                                            }
-                                            
-                                            <!-- Mensaje cuando no hay restricciones -->
-                                            <div *ngIf="restrictions.mustNotBeTogether.length === 0" class="empty-restrictions">
-                                                <i class="pi pi-ban text-red-400 text-2xl mb-2"></i>
-                                                <p class="text-600 text-sm">No hay restricciones de separación</p>
                                             </div>
+                                            <button class="p-button-text p-button-sm p-button-danger"
+                                                    (click)="removeRestriction('mustNotBeTogether', i)">
+                                                <i class="pi pi-times"></i>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Navegación del segundo paso -->
-                <div class="flex pt-4 justify-content-between">
-                    <p-button label="Atrás" 
-                              icon="pi pi-arrow-left" 
-                              class="p-button-outlined"
-                              (onClick)="prevCallback.emit()" />
                     
-                    <p-button label="Siguiente" 
-                              icon="pi pi-arrow-right" 
-                              iconPos="right"
-                              [disabled]="!canGoToNextStep()"
-                              (onClick)="nextCallback.emit()" />
+                    <!-- Navegación -->
+                    <div class="stepper-navigation flex pt-4 justify-content-between">
+                        <p-button label="Atrás" 
+                                  icon="pi pi-arrow-left" 
+                                  severity="secondary"
+                                  (onClick)="prevCallback.emit()" />
+                        
+                        <p-button label="Siguiente" 
+                                  icon="pi pi-arrow-right" 
+                                  iconPos="right"
+                                  (onClick)="nextCallback.emit()" />
+                    </div>
                 </div>
             </ng-template>
         </p-stepperPanel>
         
-        <!-- PASO 3: PANTALLA DE RESUMEN/CONFIRMACIÓN -->
+        <!-- PASO 3: CONFIGURAR GRUPOS + RESUMEN -->
         <p-stepperPanel>
             <ng-template pTemplate="header" let-index="index">
                 <button class="bg-transparent border-none inline-flex flex-column gap-2">
@@ -487,126 +287,213 @@
                 </button>
             </ng-template>
             <ng-template pTemplate="content" let-prevCallback="prevCallback" let-index="index">
-                <div class="flex flex-column gap-2 mt-4 stepper-content">
+                <div class="flex flex-column gap-4 mt-4 stepper-content">
                     <div class="mb-4">
-                        <h2 class="text-2xl font-bold text-900 mb-2">Confirmación</h2>
-                        <p class="text-600 line-height-3">Revisa la configuración antes de crear los grupos</p>
+                        <h2 class="text-2xl font-bold text-900 mb-2">Configuración de Grupos y Confirmación</h2>
+                        <p class="text-600 line-height-3">Define los tipos de grupos y revisa la configuración final.</p>
                     </div>
                     
-                    <!-- Resumen de algoritmo -->
-                    <div class="bg-white border-round-lg shadow-1 p-4 mb-4">
-                        <div class="flex align-items-center gap-3 mb-3">
-                            <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-primary-50 border-round-md">
-                                <i class="pi pi-cog text-primary"></i>
-                            </div>
-                            <h4 class="m-0 text-900 font-semibold">Algoritmo Seleccionado</h4>
-                        </div>
-                        <p class="text-lg text-700 m-0">{{ teamBuilderForm.get('algorithm')?.value?.title }}</p>
-                    </div>
-                    
-                    <!-- Resumen de configuración de grupos -->
-                    <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="groupConfigurations.length > 0">
-                        <div class="flex align-items-center gap-3 mb-3">
-                            <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-blue-50 border-round-md">
-                                <i class="pi pi-sitemap text-blue-600"></i>
-                            </div>
-                            <h4 class="m-0 text-900 font-semibold">Configuración de Grupos</h4>
-                        </div>
-                        <div class="grid">
-                            <div *ngFor="let config of groupConfigurations; let i = index" class="col-12 md:col-6">
-                                <div class="border-1 border-200 border-round p-3">
-                                    <div class="flex align-items-center gap-2">
-                                        <i class="pi pi-users text-primary"></i>
-                                        <span class="font-medium">Entre {{ config.minQuantity }}-{{ config.maxQuantity }} grupos de {{ config.size }} estudiantes</span>
+                    <!-- Configuración de Grupos -->
+                    <div class="groups-configuration mb-4">
+                        <h3 class="text-xl font-semibold text-900 mb-3">Configuración de Grupos</h3>
+                        <p class="text-600 mb-4">Define cuántos grupos de cada tamaño necesitas.</p>
+                        
+                        <!-- Configuraciones Activas -->
+                        <div class="flex flex-column gap-3" *ngIf="groupConfigurations.length > 0">
+                            <h4 class="text-900 font-semibold m-0">Configuraciones Activas</h4>
+                            
+                            @for (config of groupConfigurations; track config.id; let i = $index) {
+                                <div class="group-configuration-card border-round p-3">
+                                    <div class="flex flex-column gap-4">
+                                        <!-- Sección de configuración con rangos compacta -->
+                                        <div class="flex align-items-center gap-4 flex-wrap">
+                                            <div class="flex align-items-center gap-2 text-sm">
+                                                <span class="text-900 font-semibold whitespace-nowrap">Entre</span>
+                                                <p-inputNumber 
+                                                    [(ngModel)]="config.minQuantity" 
+                                                    [min]="1" 
+                                                    [max]="config.maxQuantity"
+                                                    [showButtons]="true"
+                                                    [size]="1"
+                                                    class="w-5rem"
+                                                    (onInput)="updateGroupConfiguration()"
+                                                    (ngModelChange)="updateGroupConfiguration()">
+                                                </p-inputNumber>
+                                                <span class="text-900 font-semibold">-</span>
+                                                <p-inputNumber 
+                                                    [(ngModel)]="config.maxQuantity" 
+                                                    [min]="config.minQuantity" 
+                                                    [max]="20"
+                                                    [showButtons]="true"
+                                                    [size]="1"
+                                                    class="w-5rem"
+                                                    (onInput)="updateGroupConfiguration()"
+                                                    (ngModelChange)="updateGroupConfiguration()">
+                                                </p-inputNumber>
+                                                <span class="text-900 font-semibold whitespace-nowrap">grupos de</span>
+                                                <p-inputNumber 
+                                                    [(ngModel)]="config.size" 
+                                                    [min]="1" 
+                                                    [max]="15"
+                                                    [showButtons]="true"
+                                                    [size]="1"
+                                                    class="w-5rem"
+                                                    (onInput)="updateGroupConfiguration()">
+                                                </p-inputNumber>
+                                                <span class="text-900 font-semibold whitespace-nowrap">estudiantes</span>
+                                            </div>
+                                            
+                                            <p-button 
+                                                icon="pi pi-trash" 
+                                                label="Eliminar"
+                                                size="small"
+                                                severity="danger"
+                                                text="true"
+                                                (onClick)="removeGroupConfiguration(i)">
+                                            </p-button>
+                                        </div>
+
+                                        <!-- Información de configuración -->
+                                        <div class="flex align-items-center gap-3">
+                                            <p-tag [value]="getConfigurationSummary(config)" 
+                                                   severity="info" 
+                                                   class="font-medium"></p-tag>
+                                        </div>
                                     </div>
-                                    <p class="text-sm text-600 m-0 mt-1">{{ getConfigurationSummary(config) }}</p>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Botón para añadir configuración -->
+                        <div class="flex justify-content-center mt-3">
+                            <p-button 
+                                icon="pi pi-plus" 
+                                label="Añadir Configuración de Grupo"
+                                severity="secondary"
+                                outlined="true"
+                                (onClick)="addGroupConfiguration()">
+                            </p-button>
+                        </div>
+                    </div>
+
+                    <!-- Resumen Final (igual que en el paso 3 original) -->
+                    <div class="final-summary">
+                        <!-- Resumen de algoritmo -->
+                        <div class="bg-white border-round-lg shadow-1 p-4 mb-4">
+                            <div class="flex align-items-center gap-3 mb-3">
+                                <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-primary-50 border-round-md">
+                                    <i class="pi pi-cog text-primary"></i>
+                                </div>
+                                <h4 class="m-0 text-900 font-semibold">Algoritmo Seleccionado</h4>
+                            </div>
+                            <p class="text-lg text-700 m-0">{{ teamBuilderForm.get('algorithm')?.value?.title }}</p>
+                        </div>
+                        
+                        <!-- Resumen de configuración de grupos -->
+                        <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="groupConfigurations.length > 0">
+                            <div class="flex align-items-center gap-3 mb-3">
+                                <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-blue-50 border-round-md">
+                                    <i class="pi pi-sitemap text-blue-600"></i>
+                                </div>
+                                <h4 class="m-0 text-900 font-semibold">Configuración de Grupos</h4>
+                            </div>
+                            <div class="grid">
+                                <div *ngFor="let config of groupConfigurations; let i = index" class="col-12 md:col-6">
+                                    <div class="border-1 border-200 border-round p-3">
+                                        <div class="flex align-items-center gap-2">
+                                            <i class="pi pi-users text-primary"></i>
+                                            <span class="font-medium">Entre {{ config.minQuantity }}-{{ config.maxQuantity }} grupos de {{ config.size }} estudiantes</span>
+                                        </div>
+                                        <p class="text-sm text-600 m-0 mt-1">{{ getConfigurationSummary(config) }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-3 p-3 bg-green-50 border-round">
+                                <div class="flex align-items-center gap-2 text-green-800">
+                                    <i class="pi pi-check-circle"></i>
+                                    <span class="font-medium">{{ getGroupsConfigurationSummary() }}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-3 p-3 bg-green-50 border-round">
-                            <div class="flex align-items-center gap-2 text-green-800">
-                                <i class="pi pi-check-circle"></i>
-                                <span class="font-medium">{{ getGroupsConfigurationSummary() }}</span>
+                        
+                        <!-- Restricciones: Deben estar juntos -->
+                        <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="restrictions.mustBeTogether.length > 0">
+                            <div class="flex align-items-center gap-3 mb-3">
+                                <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-green-50 border-round-md">
+                                    <i class="pi pi-link text-green-600"></i>
+                                </div>
+                                <h4 class="m-0 text-900 font-semibold">Deben estar juntos</h4>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Restricciones: Deben estar juntos -->
-                    <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="restrictions.mustBeTogether.length > 0">
-                        <div class="flex align-items-center gap-3 mb-3">
-                            <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-green-50 border-round-md">
-                                <i class="pi pi-link text-green-600"></i>
-                            </div>
-                            <h4 class="m-0 text-900 font-semibold">Deben estar juntos</h4>
-                        </div>
-                        <div class="flex flex-column gap-2">
-                            <div *ngFor="let restriction of restrictions.mustBeTogether; let i = index" 
-                                 class="border-1 border-green-200 bg-green-50 border-round p-3">
-                                <div class="flex align-items-start gap-2">
-                                    <i class="pi pi-users text-green-600 mt-1"></i>
-                                    <div class="flex-1">
-                                        <div *ngFor="let student of restriction" class="text-green-800 font-medium">
-                                            {{ student.name || student.email }}
+                            <div class="flex flex-column gap-2">
+                                <div *ngFor="let restriction of restrictions.mustBeTogether; let i = index" 
+                                     class="border-1 border-green-200 bg-green-50 border-round p-3">
+                                    <div class="flex align-items-start gap-2">
+                                        <i class="pi pi-users text-green-600 mt-1"></i>
+                                        <div class="flex-1">
+                                            <div *ngFor="let student of restriction" class="text-green-800 font-medium">
+                                                {{ student.name || student.email }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Restricciones: NO deben estar juntos -->
-                    <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="restrictions.mustNotBeTogether.length > 0">
-                        <div class="flex align-items-center gap-3 mb-3">
-                            <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-red-50 border-round-md">
-                                <i class="pi pi-ban text-red-600"></i>
+                        <!-- Restricciones: NO deben estar juntos -->
+                        <div class="bg-white border-round-lg shadow-1 p-4 mb-4" *ngIf="restrictions.mustNotBeTogether.length > 0">
+                            <div class="flex align-items-center gap-3 mb-3">
+                                <div class="flex align-items-center justify-content-center w-2rem h-2rem bg-red-50 border-round-md">
+                                    <i class="pi pi-ban text-red-600"></i>
+                                </div>
+                                <h4 class="m-0 text-900 font-semibold">NO deben estar juntos</h4>
                             </div>
-                            <h4 class="m-0 text-900 font-semibold">NO deben estar juntos</h4>
-                        </div>
-                        <div class="flex flex-column gap-2">
-                            <div *ngFor="let restriction of restrictions.mustNotBeTogether; let i = index" 
-                                 class="border-1 border-red-200 bg-red-50 border-round p-3">
-                                <div class="flex align-items-start gap-2">
-                                    <i class="pi pi-ban text-red-600 mt-1"></i>
-                                    <div class="flex-1">
-                                        <div *ngFor="let student of restriction" class="text-red-800 font-medium">
-                                            {{ student.name || student.email }}
+                            <div class="flex flex-column gap-2">
+                                <div *ngFor="let restriction of restrictions.mustNotBeTogether; let i = index" 
+                                     class="border-1 border-red-200 bg-red-50 border-round p-3">
+                                    <div class="flex align-items-start gap-2">
+                                        <i class="pi pi-ban text-red-600 mt-1"></i>
+                                        <div class="flex-1">
+                                            <div *ngFor="let student of restriction" class="text-red-800 font-medium">
+                                                {{ student.name || student.email }}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Mensaje de resultado -->
-                    <div *ngIf="!isAlgorithmRunning && algorithmProgress" class="mt-4">
-                        <div class="border-round-lg p-4" 
-                             [ngClass]="{
-                                'bg-green-50 border-1 border-green-200': algorithmProgress.includes('exitosamente'),
-                                'bg-red-50 border-1 border-red-200': algorithmProgress.includes('Error')
-                             }">
-                            <div class="flex align-items-center gap-3">
-                                <div class="flex align-items-center justify-content-center w-2rem h-2rem border-round-md" 
-                                     [ngClass]="{
-                                        'bg-green-100': algorithmProgress.includes('exitosamente'),
-                                        'bg-red-100': algorithmProgress.includes('Error')
-                                     }">
-                                    <span class="text-lg">
-                                        {{ algorithmProgress.includes('exitosamente') ? '🎉' : '❌' }}
-                                    </span>
+                        <!-- Mensaje de resultado -->
+                        <div *ngIf="!isAlgorithmRunning && algorithmProgress" class="mt-4">
+                            <div class="border-round-lg p-4" 
+                                 [ngClass]="{
+                                    'bg-green-50 border-1 border-green-200': algorithmProgress.includes('exitosamente'),
+                                    'bg-red-50 border-1 border-red-200': algorithmProgress.includes('Error')
+                                 }">
+                                <div class="flex align-items-center gap-3">
+                                    <div class="flex align-items-center justify-content-center w-2rem h-2rem border-round-md" 
+                                         [ngClass]="{
+                                            'bg-green-100': algorithmProgress.includes('exitosamente'),
+                                            'bg-red-100': algorithmProgress.includes('Error')
+                                         }">
+                                        <span class="text-lg">
+                                            {{ algorithmProgress.includes('exitosamente') ? '🎉' : '❌' }}
+                                        </span>
+                                    </div>
+                                    <p class="m-0 font-medium" 
+                                       [ngClass]="{
+                                          'text-green-900': algorithmProgress.includes('exitosamente'),
+                                          'text-red-900': algorithmProgress.includes('Error')
+                                       }">{{ algorithmProgress }}</p>
                                 </div>
-                                <p class="m-0 font-medium" 
-                                   [ngClass]="{
-                                      'text-green-900': algorithmProgress.includes('exitosamente'),
-                                      'text-red-900': algorithmProgress.includes('Error')
-                                   }">{{ algorithmProgress }}</p>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="flex pt-4 justify-content-between">
+                    <!-- Navegación Final -->
+                    <div class="stepper-navigation flex pt-4 justify-content-between">
                         <p-button label="Atrás" 
                                   icon="pi pi-arrow-left" 
-                                  class="p-button-outlined"
+                                  severity="secondary"
                                   [disabled]="isAlgorithmRunning"
                                   (onClick)="prevCallback.emit()" />
                         
@@ -616,7 +503,7 @@
                                 [label]="isAlgorithmRunning ? 'Procesando...' : 'Crear Grupos'" 
                                 [icon]="isAlgorithmRunning ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
                                 iconPos="right" 
-                                class="p-button-lg"
+                                size="large"
                                 [disabled]="!canCreateGroups() || isAlgorithmRunning"
                                 [loading]="isAlgorithmRunning"
                                 (onClick)="onCreateGroups()" />
