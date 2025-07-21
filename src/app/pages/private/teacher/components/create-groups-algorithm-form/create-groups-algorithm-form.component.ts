@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { environment } from '../../../../../../environments/environment';
 
 import { FormBuilder, Validators } from '@angular/forms';
@@ -144,7 +145,8 @@ export class CreateGroupsAlgorithmFormComponent {
   constructor(
     private activitiesService: ActivitiesService,
     private router: Router,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private http: HttpClient
   ) { 
     // Inicializar estudiantes filtrados
     this.filteredStudents = [...this.students];
