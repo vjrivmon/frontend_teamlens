@@ -221,12 +221,20 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
 
-    // Procesar roles secundarios (los siguientes 2-3 más altos)
-    const secondaryRoles = this.allRoles.slice(1, 4).map(roleData => {
+    // Procesar roles secundarios (todos los roles restantes)
+    const secondaryRoles = this.allRoles.slice(1).map(roleData => {
       const roleCode = Object.keys(roleData)[0];
       const score = Object.values(roleData)[0];
-      const percentage = Math.round((score / maxScore) * 100);
-      
+
+      // Evitar NaN: si maxScore es 0, calcular porcentaje relativo o mostrar 0
+      let percentage = 0;
+      if (maxScore > 0) {
+        percentage = Math.round((score / maxScore) * 100);
+      } else {
+        // Si todos tienen puntuación 0, distribuir equitativamente o mostrar proporcional
+        percentage = score === maxScore ? 100 : 0;
+      }
+
       return {
         role: this.roleDefinitions[roleCode],
         score,
@@ -247,7 +255,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
    * Obtiene el porcentaje de fortaleza de un rol secundario
    */
   getStrengthPercentage(score: number): number {
-    if (!this.processedData) return 0;
+    if (!this.processedData || this.processedData.maxScore === 0) return 0;
     return Math.round((score / this.processedData.maxScore) * 100);
   }
 
