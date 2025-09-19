@@ -199,16 +199,18 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
   constructor(private router: Router) {}
 
   ngOnInit() {
+    console.log('🚀 [BelbinResult] ngOnInit - NUEVA VERSIÓN CON UMBRALES ACTIVADA');
     console.log('🔧 [BelbinResult] ngOnInit - visible:', this.visible, 'allRoles:', this.allRoles?.length);
     this.processRoleData();
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    console.log('🚀 [BelbinResult] ngOnChanges - NUEVA VERSIÓN CON UMBRALES');
     console.log('🔄 [BelbinResult] ngOnChanges detectado:', changes);
     if (changes['allRoles'] || changes['visible']) {
       console.log('🔧 [BelbinResult] Cambios detectados - visible:', this.visible, 'allRoles:', this.allRoles?.length);
       if (this.visible && this.allRoles && this.allRoles.length > 0) {
-        console.log('✅ [BelbinResult] Procesando datos de roles...');
+        console.log('✅ [BelbinResult] EJECUTANDO NUEVA LÓGICA DE UMBRALES...');
         this.processRoleData();
         this.startCountdown();
       } else if (!this.visible) {
@@ -222,77 +224,117 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
    */
   private processRoleData(): void {
     console.log('🔧 [BelbinResult] processRoleData llamado con:', this.allRoles);
-    if (!this.allRoles || this.allRoles.length === 0) {
-      console.log('❌ [BelbinResult] No hay roles para procesar');
-      return;
-    }
 
-    // Filtrar solo los roles que superen sus umbrales
-    const rolesAboveThreshold = this.allRoles.filter(roleData => {
-      const roleCode = Object.keys(roleData)[0];
-      const score = Object.values(roleData)[0];
-      const threshold = this.roleThresholds[roleCode] || 0;
+    try {
+      if (!this.allRoles || this.allRoles.length === 0) {
+        console.log('❌ [BelbinResult] No hay roles para procesar');
+        return;
+      }
 
-      console.log(`📊 [BelbinResult] Rol ${roleCode}: score=${score}, umbral=${threshold}, supera=${score >= threshold}`);
-      return score >= threshold;
-    });
+      console.log('🔍 [BelbinResult] NUEVA LÓGICA DE UMBRALES ACTIVADA');
 
-    if (rolesAboveThreshold.length === 0) {
-      console.log('❌ [BelbinResult] Ningún rol supera el umbral mínimo');
-      // Si ninguno supera el umbral, mostrar el más alto con un mensaje especial
-      const primaryRoleData = this.allRoles[0];
-      const primaryRoleCode = Object.keys(primaryRoleData)[0];
-      const primaryScore = Object.values(primaryRoleData)[0];
-      const primaryRole = this.roleDefinitions[primaryRoleCode];
+      // NUEVA LÓGICA: Convertir a formato más simple
+      const rolesWithScores = this.allRoles.map(roleData => {
+        const roleCode = Object.keys(roleData)[0];
+        const score = Object.values(roleData)[0] as number;
+        const threshold = this.roleThresholds[roleCode] || 0;
+        const roleInfo = this.roleDefinitions[roleCode];
+
+        console.log(`📊 [BelbinResult] ${roleCode}: ${score} (umbral: ${threshold}) - ${roleInfo ? 'DEFINIDO' : 'NO_DEFINIDO'}`);
+
+        return {
+          code: roleCode,
+          score: score,
+          threshold: threshold,
+          roleInfo: roleInfo,
+          passesThreshold: score >= threshold
+        };
+      }).filter(item => item.roleInfo); // Solo roles definidos
+
+      // Filtrar los que superan umbral
+      const rolesAboveThreshold = rolesWithScores.filter(item => item.passesThreshold);
+
+      console.log(`✅ [BelbinResult] ${rolesAboveThreshold.length} de ${rolesWithScores.length} roles superan umbrales`);
+
+      if (rolesAboveThreshold.length === 0) {
+        console.log('⚠️ [BelbinResult] Ningún rol supera umbral - usando rol principal sin filtro');
+        const primaryItem = rolesWithScores[0];
+
+        this.processedData = {
+          primaryRole: primaryItem.roleInfo,
+          primaryScore: primaryItem.score,
+          secondaryRoles: [],
+          maxScore: primaryItem.score
+        };
+        return;
+      }
+
+      // Usar roles que superan umbral
+      const primaryItem = rolesAboveThreshold[0];
+      const secondaryItems = rolesAboveThreshold.slice(1);
 
       this.processedData = {
-        primaryRole: primaryRole || this.roleDefinitions['TW'], // Fallback a TeamWorker
-        primaryScore,
-        secondaryRoles: [],
-        maxScore: primaryScore
+        primaryRole: primaryItem.roleInfo,
+        primaryScore: primaryItem.score,
+        secondaryRoles: secondaryItems.map(item => ({
+          role: item.roleInfo,
+          score: item.score
+        })),
+        maxScore: primaryItem.score
       };
-      return;
-    }
 
-    // El rol principal es el primero que supera el umbral (ya están ordenados por puntuación)
-    const primaryRoleData = rolesAboveThreshold[0];
+      console.log('✅ [BelbinResult] NUEVA LÓGICA APLICADA:', {
+        primary: `${primaryItem.code} (${primaryItem.score})`,
+        secondary: secondaryItems.map(i => `${i.code} (${i.score})`),
+        total: rolesAboveThreshold.length
+      });
+
+    } catch (error) {
+      console.error('❌ [BelbinResult] ERROR en processRoleData:', error);
+      // Fallback a lógica anterior en caso de error
+      this.processOldData();
+    }
+  }
+
+  /**
+   * Fallback: procesar con lógica anterior si hay error
+   */
+  private processOldData(): void {
+    console.log('🔄 [BelbinResult] Usando lógica de fallback');
+    if (!this.allRoles || this.allRoles.length === 0) return;
+
+    const primaryRoleData = this.allRoles[0];
     const primaryRoleCode = Object.keys(primaryRoleData)[0];
-    const primaryScore = Object.values(primaryRoleData)[0];
+    const maxScore = Object.values(primaryRoleData)[0] as number;
     const primaryRole = this.roleDefinitions[primaryRoleCode];
 
-    if (!primaryRole) {
-      console.error(`❌ [BelbinResult] Rol no encontrado: ${primaryRoleCode}`);
-      return;
-    }
+    if (!primaryRole) return;
 
-    // Procesar roles secundarios (solo los que superan el umbral)
-    const secondaryRoles = rolesAboveThreshold.slice(1).map(roleData => {
+    const secondaryRoles = this.allRoles.slice(1).map(roleData => {
       const roleCode = Object.keys(roleData)[0];
-      const score = Object.values(roleData)[0];
+      const score = Object.values(roleData)[0] as number;
 
       return {
         role: this.roleDefinitions[roleCode],
         score
       };
-    }).filter(item => item.role); // Filtrar roles no definidos
+    }).filter(item => item.role);
 
     this.processedData = {
       primaryRole,
-      primaryScore,
+      primaryScore: maxScore,
       secondaryRoles,
-      maxScore: primaryScore
+      maxScore
     };
-
-    console.log('✅ [BelbinResult] Datos procesados exitosamente:', this.processedData);
-    console.log(`✅ [BelbinResult] ${rolesAboveThreshold.length} roles superan sus umbrales`);
   }
 
   /**
-   * Obtiene el porcentaje de fortaleza de un rol secundario
+   * FUNCIÓN DESHABILITADA - Ya no se usan porcentajes
+   * Ahora mostramos valores numéricos directos con umbrales
    */
   getStrengthPercentage(score: number): number {
-    if (!this.processedData || this.processedData.maxScore === 0) return 0;
-    return Math.round((score / this.processedData.maxScore) * 100);
+    console.log('⚠️ [BelbinResult] getStrengthPercentage DESHABILITADA - usando valores numéricos');
+    return 0; // Siempre retorna 0 para forzar uso de valores numéricos
   }
 
   /**
