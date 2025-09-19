@@ -199,18 +199,18 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
   constructor(private router: Router) {}
 
   ngOnInit() {
-    console.log('🚀 [BelbinResult] ngOnInit - NUEVA VERSIÓN CON UMBRALES ACTIVADA');
+    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.0 CON UMBRALES NÚMERICOS - SEPTIEMBRE 19 🚀🚀🚀');
     console.log('🔧 [BelbinResult] ngOnInit - visible:', this.visible, 'allRoles:', this.allRoles?.length);
     this.processRoleData();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log('🚀 [BelbinResult] ngOnChanges - NUEVA VERSIÓN CON UMBRALES');
+    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.0 - EJECUTANDO NUEVA LÓGICA 🚀🚀🚀');
     console.log('🔄 [BelbinResult] ngOnChanges detectado:', changes);
     if (changes['allRoles'] || changes['visible']) {
       console.log('🔧 [BelbinResult] Cambios detectados - visible:', this.visible, 'allRoles:', this.allRoles?.length);
       if (this.visible && this.allRoles && this.allRoles.length > 0) {
-        console.log('✅ [BelbinResult] EJECUTANDO NUEVA LÓGICA DE UMBRALES...');
+        console.log('✅✅✅ [BelbinResult] EJECUTANDO NUEVA LÓGICA DE UMBRALES V2.0 ✅✅✅');
         this.processRoleData();
         this.startCountdown();
       } else if (!this.visible) {
