@@ -283,4 +283,108 @@
 
 :host ::ng-deep .belbin-results-dialog .p-dialog-content::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* ============================================================================
+   NUEVOS ESTILOS PARA SECCIÓN DE TODOS LOS ROLES
+   ============================================================================ */
+
+/* Cards para todos los roles - Roles que superan umbral (predominantes) */
+:host ::ng-deep .all-role-card-prominent {
+  border: 2px solid #28a745;
+  border-radius: 8px;
+  background: #f8fff9;
+  height: 100%;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.15);
+  position: relative;
+}
+
+:host ::ng-deep .all-role-card-prominent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  border-radius: 8px 8px 0 0;
+}
+
+:host ::ng-deep .all-role-card-prominent:hover {
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.25);
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+}
+
+/* Cards para todos los roles - Roles que NO superan umbral (tendencias naturales) */
+:host ::ng-deep .all-role-card-normal {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #ffffff;
+  height: 100%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+:host ::ng-deep .all-role-card-normal:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  border-color: #adb5bd;
+  transition: all 0.3s ease;
+}
+
+:host ::ng-deep .all-role-card-prominent .p-card-body,
+:host ::ng-deep .all-role-card-normal .p-card-body {
+  padding: 1.25rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Badges de estado de roles */
+.role-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.5rem;
+}
+
+.role-status-prominent {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.role-status-secondary {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #e9ecef;
+}
+
+/* Animación para la nueva sección */
+.all-roles-section {
+  animation: fadeInUp 0.6s ease-out;
+  animation-delay: 0.3s;
+}
+
+/* Información explicativa de la nueva sección */
+.all-roles-section .bg-blue-50 {
+  border-left: 4px solid #007bff;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f8f9fa 100%);
+}
+
+/* Responsividad para la nueva sección */
+@media (max-width: 768px) {
+  :host ::ng-deep .all-role-card-prominent .p-card-body,
+  :host ::ng-deep .all-role-card-normal .p-card-body {
+    padding: 1rem;
+  }
+
+  .role-status-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+  }
 } 

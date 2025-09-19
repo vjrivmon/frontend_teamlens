@@ -75,11 +75,11 @@
 
         <p-divider></p-divider>
 
-        <!-- Roles Secundarios -->
+        <!-- Roles Predominantes -->
         <div class="secondary-roles-section mb-4" *ngIf="processedData.secondaryRoles.length > 0">
             <h4 class="text-primary mb-3">
                 <i class="pi pi-chart-bar mr-2"></i>
-                Otros roles que superan el umbral mínimo:
+                Roles predominantes adicionales:
             </h4>
             
             <div class="grid">
@@ -125,6 +125,75 @@
                     Solo tu perfil principal ha superado el umbral mínimo requerido.
                     Este es tu rol más destacado y en el que deberías enfocarte.
                 </p>
+            </div>
+        </div>
+
+        <p-divider></p-divider>
+
+        <!-- NUEVA SECCIÓN: Todos los roles restantes con sus puntuaciones -->
+        <div class="all-roles-section mb-4" *ngIf="processedData.allOtherRoles && processedData.allOtherRoles.length > 0">
+            <h4 class="text-primary mb-3">
+                <i class="pi pi-list mr-2"></i>
+                Resultado completo de todos tus roles:
+            </h4>
+
+            <div class="bg-blue-50 p-3 border-round mb-3">
+                <p class="text-sm text-700 line-height-3 m-0">
+                    <i class="pi pi-info-circle mr-2"></i>
+                    <strong>Interpretación:</strong> Los roles marcados como "predominantes" superan el umbral mínimo establecido.
+                    Los demás roles muestran tus tendencias naturales, aunque sean menos dominantes en tu perfil.
+                </p>
+            </div>
+
+            <div class="grid">
+                <div
+                    class="col-12 md:col-6 lg:col-4"
+                    *ngFor="let roleItem of processedData.allOtherRoles">
+                    <p-card
+                        [styleClass]="'h-full ' + (roleItem.passesThreshold ? 'all-role-card-prominent' : 'all-role-card-normal')">
+                        <div class="text-center mb-3">
+                            <i
+                                [class]="roleItem.role.icon"
+                                class="role-icon-small mb-2"
+                                [style.color]="roleItem.role.color">
+                            </i>
+                            <h6 class="font-semibold m-0" [style.color]="roleItem.role.color">
+                                {{ roleItem.role.name }}
+                            </h6>
+                            <small class="text-600">{{ roleItem.role.category }}</small>
+
+                            <!-- Indicador de si supera umbral -->
+                            <div class="mt-2">
+                                <span
+                                    *ngIf="roleItem.passesThreshold"
+                                    class="role-status-badge role-status-prominent">
+                                    <i class="pi pi-check-circle mr-1"></i>
+                                    Predominante
+                                </span>
+                                <span
+                                    *ngIf="!roleItem.passesThreshold"
+                                    class="role-status-badge role-status-secondary">
+                                    <i class="pi pi-minus-circle mr-1"></i>
+                                    Tendencia natural
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Puntuación numérica -->
+                        <div class="mb-2">
+                            <div class="text-center">
+                                <span class="text-xl font-bold" [style.color]="roleItem.role.color">
+                                    {{ roleItem.score }}
+                                </span>
+                                <small class="text-600 block">puntos</small>
+                            </div>
+                        </div>
+
+                        <p class="text-sm text-700 line-height-3 m-0">
+                            {{ roleItem.role.description }}
+                        </p>
+                    </p-card>
+                </div>
             </div>
         </div>
 

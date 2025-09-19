@@ -14,7 +14,11 @@ export class HttpRequestInterceptor implements HttpInterceptor {
     // Rutas que permiten acceso anónimo (sin credenciales)
     const isAnonymousRoute =
       req.url.includes('/submit-anonymous') ||  // Envío anónimo de cuestionarios
-      (req.url.includes('/questionnaires/') && req.method === 'GET' && !req.url.includes('/submit')); // Solo GET de cuestionarios, no submit
+      (req.url.includes('/questionnaires/') && req.method === 'GET' &&
+       !req.url.includes('/submit') &&
+       !req.url.includes('/asked') &&  // /questionnaires/asked requiere autenticación
+       !req.url.includes('/stats') &&  // /questionnaires/activity/.../stats requiere autenticación
+       req.url.match(/\/questionnaires\/[a-f0-9]{24}$/)); // Solo GET directo de cuestionario por ID
     
     // Configurar petición según el tipo de ruta
     if (isAnonymousRoute) {

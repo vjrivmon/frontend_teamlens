@@ -87,6 +87,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
     primaryRole: RoleInfo;
     primaryScore: number;
     secondaryRoles: { role: RoleInfo; score: number }[];
+    allOtherRoles: { role: RoleInfo; score: number; passesThreshold: boolean }[];
     maxScore: number;
   } | null = null;
 
@@ -199,13 +200,13 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
   constructor(private router: Router) {}
 
   ngOnInit() {
-    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.0 CON UMBRALES NÚMERICOS - SEPTIEMBRE 19 🚀🚀🚀');
+    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.1 ROLES PREDOMINANTES - CACHE BUST v2025.09.19.11:30 🚀🚀🚀');
     console.log('🔧 [BelbinResult] ngOnInit - visible:', this.visible, 'allRoles:', this.allRoles?.length);
     this.processRoleData();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.0 - EJECUTANDO NUEVA LÓGICA 🚀🚀🚀');
+    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.1 ROLES PREDOMINANTES - CACHE BUST v2025.09.19.11:30 🚀🚀🚀');
     console.log('🔄 [BelbinResult] ngOnChanges detectado:', changes);
     if (changes['allRoles'] || changes['visible']) {
       console.log('🔧 [BelbinResult] Cambios detectados - visible:', this.visible, 'allRoles:', this.allRoles?.length);
@@ -259,11 +260,17 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       if (rolesAboveThreshold.length === 0) {
         console.log('⚠️ [BelbinResult] Ningún rol supera umbral - usando rol principal sin filtro');
         const primaryItem = rolesWithScores[0];
+        const otherItems = rolesWithScores.slice(1);
 
         this.processedData = {
           primaryRole: primaryItem.roleInfo,
           primaryScore: primaryItem.score,
           secondaryRoles: [],
+          allOtherRoles: otherItems.map(item => ({
+            role: item.roleInfo,
+            score: item.score,
+            passesThreshold: item.passesThreshold
+          })),
           maxScore: primaryItem.score
         };
         return;
@@ -273,6 +280,16 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       const primaryItem = rolesAboveThreshold[0];
       const secondaryItems = rolesAboveThreshold.slice(1);
 
+      // NUEVA FUNCIONALIDAD: Incluir TODOS los demás roles (no solo los que superan umbral)
+      const allOtherItems = rolesWithScores
+        .filter(item => item.code !== primaryItem.code)
+        .map(item => ({
+          role: item.roleInfo,
+          score: item.score,
+          passesThreshold: item.passesThreshold
+        }))
+        .sort((a, b) => b.score - a.score); // Ordenar por puntuación
+
       this.processedData = {
         primaryRole: primaryItem.roleInfo,
         primaryScore: primaryItem.score,
@@ -280,6 +297,7 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
           role: item.roleInfo,
           score: item.score
         })),
+        allOtherRoles: allOtherItems,
         maxScore: primaryItem.score
       };
 
@@ -324,6 +342,11 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       primaryRole,
       primaryScore: maxScore,
       secondaryRoles,
+      allOtherRoles: secondaryRoles.map(item => ({
+        role: item.role,
+        score: item.score,
+        passesThreshold: false // En fallback asumimos que no sabemos si pasan umbral
+      })),
       maxScore
     };
   }
