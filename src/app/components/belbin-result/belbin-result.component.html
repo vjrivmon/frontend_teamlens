@@ -37,7 +37,12 @@
                         <h2 class="text-2xl font-bold m-0" [style.color]="processedData.primaryRole.color">
                             {{ processedData.primaryRole.name }}
                         </h2>
-                        <span 
+                        <div class="mt-2">
+                            <span class="text-lg font-semibold" [style.color]="processedData.primaryRole.color">
+                                Puntuación: {{ processedData.primaryScore }}
+                            </span>
+                        </div>
+                        <span
                             class="category-tag mt-2"
                             [ngClass]="getCategoryClass(processedData.primaryRole.category)">
                             {{ processedData.primaryRole.category }}
@@ -71,13 +76,13 @@
         <p-divider></p-divider>
 
         <!-- Roles Secundarios -->
-        <div class="secondary-roles-section mb-4">
+        <div class="secondary-roles-section mb-4" *ngIf="processedData.secondaryRoles.length > 0">
             <h4 class="text-primary mb-3">
                 <i class="pi pi-chart-bar mr-2"></i>
-                También tienes fortaleza en estos roles:
+                Otros roles que superan el umbral mínimo:
             </h4>
             
-            <div class="grid" *ngIf="processedData.secondaryRoles.length > 0">
+            <div class="grid">
                 <div 
                     class="col-12 md:col-6 lg:col-4" 
                     *ngFor="let secondaryRole of processedData.secondaryRoles">
@@ -94,18 +99,14 @@
                              <small class="text-600">{{ secondaryRole.role.category }}</small>
                          </div>
                         
-                        <!-- Barra de progreso -->
+                        <!-- Puntuación numérica -->
                         <div class="mb-2">
-                            <div class="flex justify-content-between align-items-center mb-1">
-                                <small class="text-600">Fortaleza relativa:</small>
-                                <small class="font-semibold">{{ secondaryRole.percentage }}%</small>
+                            <div class="text-center">
+                                <span class="text-xl font-bold" [style.color]="secondaryRole.role.color">
+                                    {{ secondaryRole.score }}
+                                </span>
+                                <small class="text-600 block">puntos</small>
                             </div>
-                                                         <p-progressBar 
-                                 [value]="secondaryRole.percentage" 
-                                 [style]="{'height': '8px'}"
-                                 [color]="secondaryRole.role.color"
-                                 [showValue]="false">
-                             </p-progressBar>
                         </div>
                         
                         <p class="text-sm text-700 line-height-3 m-0">
@@ -113,6 +114,17 @@
                         </p>
                     </p-card>
                 </div>
+            </div>
+        </div>
+
+        <!-- Mensaje cuando no hay roles secundarios -->
+        <div class="secondary-roles-section mb-4" *ngIf="processedData.secondaryRoles.length === 0 && processedData.primaryScore > 0">
+            <div class="bg-yellow-50 p-3 border-round text-center">
+                <p class="text-sm text-700 m-0">
+                    <i class="pi pi-info-circle mr-2"></i>
+                    Solo tu perfil principal ha superado el umbral mínimo requerido.
+                    Este es tu rol más destacado y en el que deberías enfocarte.
+                </p>
             </div>
         </div>
 

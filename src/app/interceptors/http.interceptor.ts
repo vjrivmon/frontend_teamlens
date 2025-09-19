@@ -12,13 +12,9 @@ export class HttpRequestInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     
     // Rutas que permiten acceso anónimo (sin credenciales)
-    const anonymousRoutes = [
-      '/questionnaires/',  // Para acceder a cuestionarios anónimamente
-      '/submit-anonymous'  // Para enviar cuestionarios anónimamente
-    ];
-    
-    // Verificar si la URL actual permite acceso anónimo
-    const isAnonymousRoute = anonymousRoutes.some(route => req.url.includes(route));
+    const isAnonymousRoute =
+      req.url.includes('/submit-anonymous') ||  // Envío anónimo de cuestionarios
+      (req.url.includes('/questionnaires/') && req.method === 'GET' && !req.url.includes('/submit')); // Solo GET de cuestionarios, no submit
     
     // Configurar petición según el tipo de ruta
     if (isAnonymousRoute) {

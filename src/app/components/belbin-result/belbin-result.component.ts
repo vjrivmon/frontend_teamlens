@@ -85,9 +85,28 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
    */
   processedData: {
     primaryRole: RoleInfo;
-    secondaryRoles: { role: RoleInfo; score: number; percentage: number }[];
+    primaryScore: number;
+    secondaryRoles: { role: RoleInfo; score: number }[];
     maxScore: number;
   } | null = null;
+
+  /**
+   * Umbrales mínimos para cada rol de Belbin
+   * Solo se muestran los roles que superen estos umbrales
+   */
+  private readonly roleThresholds: { [key: string]: number } = {
+    'CW': 12,  // Coordinador
+    'CH': 11,  // Presidente
+    'SH': 14,  // Impulsor
+    'PL': 9,   // Cerebro
+    'RI': 10,  // Investigador de Recursos
+    'ME': 10,  // Evaluador
+    'TW': 13,  // Cohesionador
+    'CF': 7,   // Finalizador
+    'IM': 10,  // Implementador (por si acaso)
+    'SP': 10,  // Especialista (por si acaso)
+    'CO': 12   // Coordinador alternativo (por si acaso)
+  };
 
   /**
    * Información detallada de todos los roles de Belbin
@@ -208,47 +227,64 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
       return;
     }
 
-    // Encontrar el rol principal y el puntaje máximo
-    const primaryRoleData = this.allRoles[0]; // Ya está ordenado por puntaje
-    const primaryRoleCode = Object.keys(primaryRoleData)[0];
-    const maxScore = Object.values(primaryRoleData)[0];
+    // Filtrar solo los roles que superen sus umbrales
+    const rolesAboveThreshold = this.allRoles.filter(roleData => {
+      const roleCode = Object.keys(roleData)[0];
+      const score = Object.values(roleData)[0];
+      const threshold = this.roleThresholds[roleCode] || 0;
 
-    // Obtener información del rol principal
+      console.log(`📊 [BelbinResult] Rol ${roleCode}: score=${score}, umbral=${threshold}, supera=${score >= threshold}`);
+      return score >= threshold;
+    });
+
+    if (rolesAboveThreshold.length === 0) {
+      console.log('❌ [BelbinResult] Ningún rol supera el umbral mínimo');
+      // Si ninguno supera el umbral, mostrar el más alto con un mensaje especial
+      const primaryRoleData = this.allRoles[0];
+      const primaryRoleCode = Object.keys(primaryRoleData)[0];
+      const primaryScore = Object.values(primaryRoleData)[0];
+      const primaryRole = this.roleDefinitions[primaryRoleCode];
+
+      this.processedData = {
+        primaryRole: primaryRole || this.roleDefinitions['TW'], // Fallback a TeamWorker
+        primaryScore,
+        secondaryRoles: [],
+        maxScore: primaryScore
+      };
+      return;
+    }
+
+    // El rol principal es el primero que supera el umbral (ya están ordenados por puntuación)
+    const primaryRoleData = rolesAboveThreshold[0];
+    const primaryRoleCode = Object.keys(primaryRoleData)[0];
+    const primaryScore = Object.values(primaryRoleData)[0];
     const primaryRole = this.roleDefinitions[primaryRoleCode];
-    
+
     if (!primaryRole) {
       console.error(`❌ [BelbinResult] Rol no encontrado: ${primaryRoleCode}`);
       return;
     }
 
-    // Procesar roles secundarios (todos los roles restantes)
-    const secondaryRoles = this.allRoles.slice(1).map(roleData => {
+    // Procesar roles secundarios (solo los que superan el umbral)
+    const secondaryRoles = rolesAboveThreshold.slice(1).map(roleData => {
       const roleCode = Object.keys(roleData)[0];
       const score = Object.values(roleData)[0];
 
-      // Evitar NaN: si maxScore es 0, calcular porcentaje relativo o mostrar 0
-      let percentage = 0;
-      if (maxScore > 0) {
-        percentage = Math.round((score / maxScore) * 100);
-      } else {
-        // Si todos tienen puntuación 0, distribuir equitativamente o mostrar proporcional
-        percentage = score === maxScore ? 100 : 0;
-      }
-
       return {
         role: this.roleDefinitions[roleCode],
-        score,
-        percentage
+        score
       };
     }).filter(item => item.role); // Filtrar roles no definidos
 
     this.processedData = {
       primaryRole,
+      primaryScore,
       secondaryRoles,
-      maxScore
+      maxScore: primaryScore
     };
 
     console.log('✅ [BelbinResult] Datos procesados exitosamente:', this.processedData);
+    console.log(`✅ [BelbinResult] ${rolesAboveThreshold.length} roles superan sus umbrales`);
   }
 
   /**
