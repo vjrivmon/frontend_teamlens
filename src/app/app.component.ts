@@ -12,4 +12,5 @@ import { ToastModule } from 'primeng/toast';
 })
 export class AppComponent {
   title = 'app17tb';
+  // CACHE BUST v2.2-force-12:35 - Belbin roles predominantes
 }

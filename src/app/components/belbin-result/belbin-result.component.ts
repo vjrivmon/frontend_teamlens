@@ -200,13 +200,13 @@ export class BelbinResultComponent implements OnInit, OnChanges, OnDestroy {
   constructor(private router: Router) {}
 
   ngOnInit() {
-    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.1 ROLES PREDOMINANTES - CACHE BUST v2025.09.19.11:30 🚀🚀🚀');
+    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.2 ROLES PREDOMINANTES - CACHE BUST FORCE v2025.09.19.12:35 🚀🚀🚀');
     console.log('🔧 [BelbinResult] ngOnInit - visible:', this.visible, 'allRoles:', this.allRoles?.length);
     this.processRoleData();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.1 ROLES PREDOMINANTES - CACHE BUST v2025.09.19.11:30 🚀🚀🚀');
+    console.log('🚀🚀🚀 [BelbinResult] VERSIÓN 2.2 ROLES PREDOMINANTES - CACHE BUST FORCE v2025.09.19.12:35 🚀🚀🚀');
     console.log('🔄 [BelbinResult] ngOnChanges detectado:', changes);
     if (changes['allRoles'] || changes['visible']) {
       console.log('🔧 [BelbinResult] Cambios detectados - visible:', this.visible, 'allRoles:', this.allRoles?.length);
