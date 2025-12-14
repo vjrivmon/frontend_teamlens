@@ -118,6 +118,8 @@ export class WebSocketService {
     }
 
     console.log('🔗 WebSocketService: Estableciendo conexión con token...');
+    console.log('🔐 WebSocketService: Token (primeros 50 chars):', token?.substring(0, 50) + '...');
+    console.log('🔐 WebSocketService: Token length:', token?.length);
 
     try {
       this.socket = io(this.API_URL, {
@@ -251,6 +253,50 @@ export class WebSocketService {
       console.log('📊 WebSocketService: Estado Belbin actualizado:', data);
       this.notificationEventsSubject.next({
         type: 'activity-belbin-status-updated',
+        data: data,
+        timestamp: new Date()
+      });
+    });
+
+    // ================================
+    // EVENTOS DE COLA DE EMAILS
+    // ================================
+
+    // Cola de emails iniciada
+    this.socket.on('email-queue-started', (data: any) => {
+      console.log('📬 WebSocketService: Cola de emails iniciada:', data);
+      this.notificationEventsSubject.next({
+        type: 'email-queue-started',
+        data: data,
+        timestamp: new Date()
+      });
+    });
+
+    // Progreso de cola de emails
+    this.socket.on('email-queue-progress', (data: any) => {
+      console.log('📬 WebSocketService: Progreso de emails:', data);
+      this.notificationEventsSubject.next({
+        type: 'email-queue-progress',
+        data: data,
+        timestamp: new Date()
+      });
+    });
+
+    // Cola de emails completada
+    this.socket.on('email-queue-completed', (data: any) => {
+      console.log('✅ WebSocketService: Cola de emails completada:', data);
+      this.notificationEventsSubject.next({
+        type: 'email-queue-completed',
+        data: data,
+        timestamp: new Date()
+      });
+    });
+
+    // Error en cola de emails
+    this.socket.on('email-queue-error', (data: any) => {
+      console.log('❌ WebSocketService: Error en cola de emails:', data);
+      this.notificationEventsSubject.next({
+        type: 'email-queue-error',
         data: data,
         timestamp: new Date()
       });

@@ -14,6 +14,7 @@ import { TeacherOnlyDirective } from '../../directives/teacher-only';
 
 // Servicios
 import { AuthService } from '../../services/auth.service';
+import { WebSocketService } from '../../services/websocket.service';
 
 @Component({
   selector: 'app-header',
@@ -34,6 +35,7 @@ export class HeaderComponent implements OnInit {
   // Servicios inyectados
   public authService = inject(AuthService);
   private router = inject(Router);
+  private webSocketService = inject(WebSocketService); // Inicializa WebSocket globalmente
 
   // Estado del diálogo de logout
   public showLogoutDialog = false;

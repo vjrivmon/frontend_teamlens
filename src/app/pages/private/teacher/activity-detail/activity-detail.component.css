@@ -1378,3 +1378,109 @@ header {
     line-height: 1rem;
 }
 
+/* ==================== ESTILOS PARA VISTA DE ESTUDIANTE ==================== */
+
+/**
+ * Estilos específicos para la vista simplificada de estudiantes
+ * Mejora el espaciado y la legibilidad
+ */
+
+/* Sección de grupos para estudiantes */
+.student-groups-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Títulos de sección */
+.section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.025em;
+}
+
+/* Descripción de sección */
+.section-description {
+    font-size: 1rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Mejoras para el contenedor principal */
+.container {
+    padding: 2rem;
+}
+
+/* Header mejorado */
+header.container {
+    padding: 2.5rem 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+header.container h1 {
+    margin-bottom: 0.75rem;
+}
+
+header.container p {
+    color: #6b7280;
+    margin: 0.25rem 0;
+}
+
+/* Espaciado entre secciones */
+section {
+    margin-bottom: 2rem;
+}
+
+/* Grupo panel para estudiantes - más prominente */
+.student-groups-section + .groups-dashboard .group-panel {
+    max-width: 450px;
+}
+
+/* Mejora la tarjeta de grupo cuando es la única */
+.groups-grid:has(.group-panel:only-child) .group-panel {
+    max-width: 500px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Mensaje cuando el estudiante no tiene grupo */
+.no-group-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+    padding: 2rem;
+}
+
+.no-group-content {
+    text-align: center;
+    max-width: 400px;
+    padding: 2.5rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+}
+
+.no-group-content i {
+    display: block;
+    margin-bottom: 1rem;
+    color: #94a3b8;
+}
+
+.no-group-content h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 0 0 0.75rem 0;
+}
+
+.no-group-content p {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.6;
+}
+

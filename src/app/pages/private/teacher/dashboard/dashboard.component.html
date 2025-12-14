@@ -9,7 +9,13 @@
 
     <div id="activities">
         <h1>Actividades</h1>
-        <p>Estas son las actividades grupales que estás gestionando.</p>
+        <p>
+            @if(loggedUser?.role == 'teacher') {
+                Estas son las actividades grupales que estás gestionando.
+            } @else {
+                Estas son las actividades en las que participas.
+            }
+        </p>
         @if(activities.length == 0) {
         <p>Aún no hay actividades.</p>
         }
@@ -44,6 +50,25 @@
     </div>
 
     <div studentOnly>
+        @if(studentGroups.length > 0) {
+            <p-divider />
+            <h3>Mis Grupos</h3>
+            <p>Estos son los grupos a los que perteneces.</p>
+            <div class="flex gap-3 flex-wrap">
+                @for (item of studentGroups; track $index) {
+                    <div class="app-card flex flex-column gap-2">
+                        <span class="title">{{ item.group.name }}</span>
+                        <span class="subtitle">{{ item.activityTitle }}</span>
+                        <p>{{ item.group.students?.length || 0 }} integrantes</p>
+                        @if(item.group.status === 'confirmed') {
+                            <p-chip label="Confirmado" styleClass="bg-green-100" />
+                        } @else {
+                            <p-chip label="Borrador" />
+                        }
+                    </div>
+                }
+            </div>
+        }
 
         <p-divider />
 

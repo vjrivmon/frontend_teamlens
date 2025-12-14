@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, inject, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IActivity, IGroup, IQuestionnaire, IUser, IQuestionnaireStats } from '../../../../models/models';
 import { ActivitiesService } from '../../../../services/activities.service';
@@ -20,6 +20,7 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ProgressBarModule } from 'primeng/progressbar';
 
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -33,7 +34,8 @@ import { AuthService } from '../../../../services/auth.service';
 
 
 import { concatMap, retry, catchError, finalize } from 'rxjs';
-import { of, timer } from 'rxjs';
+import { of, timer, Subscription } from 'rxjs';
+import { WebSocketService } from '../../../../services/websocket.service';
 
 import { CreateGroupComponent, IGroupCreatedEvent } from "../create-group/create-group.component";
 import { QuestionnairesService } from '../../../../services/questionnaires.service';
@@ -88,7 +90,8 @@ interface ErrorState {
     ToastModule,
     TooltipModule,
     SkeletonModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    ProgressBarModule
   ]
 })
 export class ActivityDetailComponent {
@@ -145,6 +148,24 @@ export class ActivityDetailComponent {
   draggedFromGroup: IGroup | null = null;
   isDragging: boolean = false;
 
+  // === ESTADO DE COLA DE EMAILS ===
+  emailQueueState: {
+    isProcessing: boolean;
+    batchId: string | null;
+    total: number;
+    sent: number;
+    failed: number;
+    percentage: number;
+    message: string;
+    errors: Array<{ email: string; error: string }>;
+    emailsList: string[];  // Lista de emails para mostrar en el diálogo
+  } | null = null;
+
+  // Diálogo de progreso de emails
+  emailProgressDialogVisible: boolean = false;
+
+  private wsSubscription: Subscription | null = null;
+
   get activeMembers() {
     return this.students.filter(student => !student.invitationToken).length;
   }
@@ -175,7 +196,8 @@ export class ActivityDetailComponent {
     private questionnairesService: QuestionnairesService,
     private confirmationService: ConfirmationService,
     private messageService: MessageService,
-    private authService: AuthService
+    private authService: AuthService,
+    private webSocketService: WebSocketService
   ) { }
 
   ngOnInit() {
@@ -189,6 +211,142 @@ export class ActivityDetailComponent {
 
     // Inicializar carga de datos con manejo robusto de errores
     this.initializeDataLoading();
+
+    // Suscribirse a eventos de cola de emails
+    this.subscribeToEmailQueueEvents();
+  }
+
+  /**
+   * Suscripción a eventos de cola de emails via WebSocket
+   */
+  private subscribeToEmailQueueEvents(): void {
+    this.wsSubscription = this.webSocketService.notificationEvents$.subscribe(event => {
+      if (!event) return;
+
+      // Filtrar solo eventos de esta actividad
+      if (event.data?.activityId && event.data.activityId !== this.activityId) {
+        return;
+      }
+
+      switch (event.type) {
+        case 'email-queue-started':
+          this.handleEmailQueueStarted(event.data);
+          break;
+        case 'email-queue-progress':
+          this.handleEmailQueueProgress(event.data);
+          break;
+        case 'email-queue-completed':
+          this.handleEmailQueueCompleted(event.data);
+          break;
+        case 'email-queue-error':
+          this.handleEmailQueueError(event.data);
+          break;
+      }
+    });
+  }
+
+  private handleEmailQueueStarted(data: any): void {
+    console.log('📬 [ActivityDetail] Cola de emails iniciada:', data);
+
+    this.emailQueueState = {
+      isProcessing: true,
+      batchId: data.batchId,
+      total: data.total,
+      sent: 0,
+      failed: 0,
+      percentage: 0,
+      message: data.message || `Enviando ${data.total} invitaciones...`,
+      errors: [],
+      emailsList: data.emails || []
+    };
+
+    // Mostrar diálogo de progreso
+    this.emailProgressDialogVisible = true;
+  }
+
+  private handleEmailQueueProgress(data: any): void {
+    if (!this.emailQueueState || this.emailQueueState.batchId !== data.batchId) return;
+
+    this.emailQueueState = {
+      ...this.emailQueueState,
+      sent: data.sent,
+      failed: data.failed,
+      percentage: data.percentage,
+      message: data.message
+    };
+
+    // El diálogo se actualiza automáticamente por el binding
+  }
+
+  private handleEmailQueueCompleted(data: any): void {
+    console.log('✅ [ActivityDetail] Cola de emails completada:', data);
+
+    // Actualizar estado final
+    if (this.emailQueueState) {
+      this.emailQueueState = {
+        ...this.emailQueueState,
+        isProcessing: false,
+        sent: data.success,
+        failed: data.failed,
+        percentage: 100,
+        message: data.failed === 0
+          ? `✅ ${data.success} invitaciones enviadas exitosamente`
+          : `⚠️ ${data.success} enviados, ${data.failed} fallidos`,
+        errors: data.failedEmails || []
+      };
+    }
+
+    // Mostrar toast de resumen
+    if (data.failed === 0) {
+      this.messageService.add({
+        severity: 'success',
+        summary: '✅ Invitaciones Enviadas',
+        detail: `${data.success} emails enviados exitosamente en ${data.duration}s`,
+        life: 6000
+      });
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: '⚠️ Envío Parcial',
+        detail: `${data.success} enviados, ${data.failed} fallidos.`,
+        life: 8000
+      });
+    }
+
+    // Cerrar diálogo después de 3 segundos si todo fue exitoso, o dejarlo abierto si hay errores
+    if (data.failed === 0) {
+      setTimeout(() => {
+        this.emailProgressDialogVisible = false;
+        this.emailQueueState = null;
+      }, 3000);
+    }
+  }
+
+  private handleEmailQueueError(data: any): void {
+    console.log('❌ [ActivityDetail] Error en cola de emails:', data);
+
+    if (this.emailQueueState) {
+      this.emailQueueState.errors.push({
+        email: data.email,
+        error: data.error
+      });
+    }
+
+    // Solo mostrar toast si NO va a reintentar
+    if (!data.willRetry) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Error de Email',
+        detail: `No se pudo enviar a ${data.email}: ${data.error}`,
+        life: 5000
+      });
+    }
+  }
+
+  ngOnDestroy(): void {
+    if (this.wsSubscription) {
+      this.wsSubscription.unsubscribe();
+    }
   }
 
   /**
@@ -419,77 +577,85 @@ export class ActivityDetailComponent {
   }
 
   onAddStudents(emails: string[]) {
-    if (emails.length > 0) {
-      console.log(`📧 [ActivityDetail] Enviando invitaciones a ${emails.length} estudiantes:`, emails);
-      
-      this.activitiesService.addStudentsToActivityByEmail(this.activity!._id, emails).pipe(
-        concatMap(() => {
-          console.log(`✅ [ActivityDetail] Estudiantes añadidos exitosamente, recargando lista...`);
-          return this.activitiesService.getStudentsByActivityById(this.activity!._id);
-        }),
-        catchError((error) => {
-          console.error('❌ [ActivityDetail] Error añadiendo estudiantes:', error);
-          
-          // Mostrar error específico al usuario
-          let errorMessage = 'Error añadiendo estudiantes.';
-          
-          if (error.status === 400) {
-            errorMessage = 'Error en los datos enviados. Verifica que los emails sean válidos.';
-          } else if (error.status === 401) {
-            errorMessage = 'No tienes permisos para añadir estudiantes.';
-          } else if (error.status === 404) {
-            errorMessage = 'Actividad no encontrada.';
-          } else if (error.status === 500) {
-            errorMessage = 'Error del servidor. Es posible que los emails no se hayan enviado correctamente.';
-          } else if (error.error?.message) {
-            errorMessage = `Error: ${error.error.message}`;
-          }
-          
-          // Mostrar toast de error
+    if (emails.length === 0) {
+      this.addStudentDialogVisible = false;
+      return;
+    }
+
+    console.log(`📧 [ActivityDetail] Enviando ${emails.length} estudiantes al backend...`);
+
+    this.activitiesService.addStudentsToActivityByEmail(this.activity!._id, emails).pipe(
+      concatMap((response: any) => {
+        console.log(`✅ [ActivityDetail] Respuesta del backend:`, response);
+
+        // El backend responde inmediatamente, los emails se procesan en background via cola
+        if (response.emailsQueued > 0) {
+          // Mostrar mensaje de que los estudiantes fueron agregados y los emails están en proceso
           this.messageService.add({
-            severity: 'error',
-            summary: 'Error',
-            detail: errorMessage,
-            life: 5000
+            severity: 'info',
+            summary: 'Estudiantes Agregados',
+            detail: `${response.studentsAdded} estudiantes agregados. ${response.emailsQueued} invitaciones en proceso de envío...`,
+            life: 4000
           });
-          
-          // No cerrar el modal para que el usuario pueda intentar de nuevo
-          return of(null);
-        })
-      ).subscribe({
-        next: (students) => {
-          if (students) {
-            this.students = students;
-            console.log(`✅ [ActivityDetail] Lista de estudiantes actualizada: ${students.length} estudiantes`);
-            
-            // Mostrar mensaje de éxito
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Éxito',
-              detail: `${emails.length} estudiante(s) añadido(s) exitosamente. Los emails de invitación han sido enviados.`,
-              life: 4000
-            });
-            
-            // Solo cerrar el modal si todo fue exitoso
-            this.addStudentDialogVisible = false;
-          }
-          // Si students es null (error), el modal permanece abierto
-        },
-        error: (error) => {
-          // Manejo adicional de errores que no fueron capturados por catchError
-          console.error('❌ [ActivityDetail] Error no capturado:', error);
+        } else {
+          // No hay emails nuevos que enviar (todos eran usuarios existentes)
           this.messageService.add({
-            severity: 'error',
-            summary: 'Error Inesperado',
-            detail: 'Ocurrió un error inesperado. Inténtalo de nuevo.',
-            life: 5000
+            severity: 'success',
+            summary: 'Estudiantes Agregados',
+            detail: `${response.studentsAdded} estudiantes agregados exitosamente.`,
+            life: 4000
           });
         }
-      });
-    } else {
-      // Si no hay emails, simplemente cerrar el modal
-      this.addStudentDialogVisible = false;
-    }
+
+        // Cerrar modal inmediatamente
+        this.addStudentDialogVisible = false;
+
+        // Recargar lista de estudiantes
+        return this.activitiesService.getStudentsByActivityById(this.activity!._id);
+      }),
+      catchError((error) => {
+        console.error('❌ [ActivityDetail] Error añadiendo estudiantes:', error);
+
+        let errorMessage = 'Error añadiendo estudiantes.';
+
+        if (error.status === 400) {
+          errorMessage = error.error?.message || 'Error en los datos enviados. Verifica que los emails sean válidos.';
+        } else if (error.status === 401) {
+          errorMessage = 'No tienes permisos para añadir estudiantes.';
+        } else if (error.status === 404) {
+          errorMessage = 'Actividad no encontrada.';
+        } else if (error.status === 500) {
+          errorMessage = 'Error del servidor. Inténtalo de nuevo.';
+        } else if (error.error?.message) {
+          errorMessage = `Error: ${error.error.message}`;
+        }
+
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: errorMessage,
+          life: 5000
+        });
+
+        return of(null);
+      })
+    ).subscribe({
+      next: (students) => {
+        if (students) {
+          this.students = students;
+          console.log(`✅ [ActivityDetail] Lista de estudiantes actualizada: ${students.length} estudiantes`);
+        }
+      },
+      error: (error) => {
+        console.error('❌ [ActivityDetail] Error no capturado:', error);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error Inesperado',
+          detail: 'Ocurrió un error inesperado. Inténtalo de nuevo.',
+          life: 5000
+        });
+      }
+    });
   }
 
   goGroupDetail(groupId: string) {

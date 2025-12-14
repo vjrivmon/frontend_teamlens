@@ -118,7 +118,43 @@
             <section teacherOnly>
                 <h2>Estudiantes</h2>
                 <p>Estos son los estudiantes que participan en esta actividad.</p>
-                
+
+                <!-- Indicador de progreso de cola de emails -->
+                @if (emailQueueState && emailQueueState.isProcessing) {
+                    <div class="email-progress-indicator p-3 surface-card border-round shadow-2 mb-3">
+                        <div class="flex align-items-center gap-3 mb-2">
+                            <i class="pi pi-spin pi-spinner text-2xl text-primary"></i>
+                            <span class="font-semibold">{{ emailQueueState.message }}</span>
+                        </div>
+                        <p-progressBar
+                            [value]="emailQueueState.percentage"
+                            [showValue]="true"
+                            styleClass="h-1rem">
+                        </p-progressBar>
+                        <div class="flex justify-content-between text-sm text-500 mt-2">
+                            <span>{{ emailQueueState.sent }} enviados</span>
+                            @if (emailQueueState.failed > 0) {
+                                <span class="text-red-500">{{ emailQueueState.failed }} fallidos</span>
+                            }
+                            <span>{{ emailQueueState.total - emailQueueState.sent - emailQueueState.failed }} pendientes</span>
+                        </div>
+                    </div>
+                }
+
+                <!-- Mostrar errores de email si los hay -->
+                @if (emailQueueState && emailQueueState.errors && emailQueueState.errors.length > 0) {
+                    <p-fieldset legend="Errores de Envío" [toggleable]="true" [collapsed]="true" styleClass="mb-3">
+                        <ul class="list-none p-0 m-0">
+                            @for (err of emailQueueState.errors; track err.email) {
+                                <li class="p-2 border-bottom-1 surface-border">
+                                    <span class="font-medium">{{ err.email }}</span>:
+                                    <span class="text-red-500">{{ err.error }}</span>
+                                </li>
+                            }
+                        </ul>
+                    </p-fieldset>
+                }
+
                 <!-- Loading state para la sección de estudiantes -->
                 @if (loadingState.students) {
                     <div class="flex align-items-center gap-2 mb-4">
@@ -218,11 +254,11 @@
 
             <!-- GROUPS SECTION -->
             <section>
-                <div studentOnly>
-                    <div class="flex align-items-center">
+                <div studentOnly class="student-groups-section">
+                    <div class="flex align-items-center mb-4">
                         <div>
-                            <h3>Grupos</h3>
-                            <p>Aquí puedes crear los grupos manualmente o a través de nuestro algoritmo.</p>
+                            <h2 class="section-title">Mi Grupo</h2>
+                            <p class="section-description">Este es el grupo al que perteneces en esta actividad.</p>
                         </div>
                     </div>
                 </div>
@@ -308,8 +344,8 @@
                 @if (!loadingState.groups && !errorState.groups) {
                     <div class="groups-dashboard" [hidden]="groupsLocked">
                         
-                        <!-- Estadísticas simples cuando hay grupos -->
-                        @if (groups.length > 0) {
+                        <!-- Estadísticas simples cuando hay grupos (solo para profesores) -->
+                        @if (groups.length > 0 && isTeacher()) {
                             <div class="dashboard-header">
                                 <div class="header-stats">
                                     <div class="stat-card">
@@ -324,6 +360,17 @@
                                         <div class="stat-number">{{ getUnassignedStudents().length }}</div>
                                         <div class="stat-label">Disponibles</div>
                                     </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Mensaje cuando estudiante no tiene grupo -->
+                        @if (groups.length === 0 && !isTeacher()) {
+                            <div class="no-group-message">
+                                <div class="no-group-content">
+                                    <i class="pi pi-users text-4xl text-gray-400 mb-3"></i>
+                                    <h4>Aún no tienes grupo asignado</h4>
+                                    <p>Tu profesor está organizando los grupos. Serás notificado cuando te asignen a un grupo.</p>
                                 </div>
                             </div>
                         }
@@ -422,8 +469,8 @@
                                 }
                             </div>
 
-                            <!-- Panel de Estudiantes Disponibles -->
-                            @if (getUnassignedStudents().length > 0) {
+                            <!-- Panel de Estudiantes Disponibles (solo para profesores) -->
+                            @if (getUnassignedStudents().length > 0 && isTeacher()) {
                                 <div class="available-panel">
                                     <div class="available-header">
                                         <h4 class="available-title">
@@ -584,6 +631,97 @@
             <app-add-students-form (onAddStudents)="onAddStudents($event)"></app-add-students-form>
         </p-dialog>
 
+        <!-- DIÁLOGO DE PROGRESO DE EMAILS -->
+        <p-dialog
+            header="📬 Enviando Invitaciones"
+            [modal]="true"
+            [(visible)]="emailProgressDialogVisible"
+            [style]="{ width: '500px', maxWidth: '95vw' }"
+            [closable]="emailQueueState && !emailQueueState.isProcessing"
+            [closeOnEscape]="emailQueueState && !emailQueueState.isProcessing"
+            (onHide)="emailQueueState = null">
+
+            @if (emailQueueState) {
+                <div class="email-progress-dialog">
+                    <!-- Mensaje de estado -->
+                    <div class="flex align-items-center gap-3 mb-4">
+                        @if (emailQueueState.isProcessing) {
+                            <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+                        } @else if (emailQueueState.failed === 0) {
+                            <i class="pi pi-check-circle text-3xl text-green-500"></i>
+                        } @else {
+                            <i class="pi pi-exclamation-triangle text-3xl text-orange-500"></i>
+                        }
+                        <span class="text-lg font-semibold">{{ emailQueueState.message }}</span>
+                    </div>
+
+                    <!-- Barra de progreso grande -->
+                    <div class="mb-4">
+                        <p-progressBar
+                            [value]="emailQueueState.percentage"
+                            [showValue]="true"
+                            [style]="{ height: '2rem' }">
+                        </p-progressBar>
+                    </div>
+
+                    <!-- Estadísticas -->
+                    <div class="grid mb-4">
+                        <div class="col-4 text-center">
+                            <div class="text-3xl font-bold text-primary">{{ emailQueueState.sent }}</div>
+                            <div class="text-sm text-500">Enviados</div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="text-3xl font-bold" [ngClass]="emailQueueState.failed > 0 ? 'text-red-500' : 'text-500'">{{ emailQueueState.failed }}</div>
+                            <div class="text-sm text-500">Fallidos</div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="text-3xl font-bold text-orange-500">{{ emailQueueState.total - emailQueueState.sent - emailQueueState.failed }}</div>
+                            <div class="text-sm text-500">Pendientes</div>
+                        </div>
+                    </div>
+
+                    <!-- Lista de emails (si hay menos de 20) -->
+                    @if (emailQueueState.emailsList && emailQueueState.emailsList.length > 0 && emailQueueState.emailsList.length <= 20) {
+                        <p-fieldset legend="Emails a enviar" [toggleable]="true" [collapsed]="true" styleClass="mb-3">
+                            <div class="max-h-12rem overflow-y-auto">
+                                @for (email of emailQueueState.emailsList; track email; let i = $index) {
+                                    <div class="flex align-items-center gap-2 py-1 border-bottom-1 surface-border">
+                                        <span class="text-500 text-sm w-2rem">{{ i + 1 }}.</span>
+                                        <span class="text-sm">{{ email }}</span>
+                                    </div>
+                                }
+                            </div>
+                        </p-fieldset>
+                    }
+
+                    <!-- Errores (si los hay) -->
+                    @if (emailQueueState.errors && emailQueueState.errors.length > 0) {
+                        <p-fieldset legend="Errores de Envío" [toggleable]="true" [collapsed]="false" styleClass="mb-3">
+                            <div class="max-h-10rem overflow-y-auto">
+                                @for (err of emailQueueState.errors; track err.email) {
+                                    <div class="p-2 mb-2 surface-100 border-round">
+                                        <div class="font-medium text-red-600">{{ err.email }}</div>
+                                        <div class="text-sm text-500">{{ err.error }}</div>
+                                    </div>
+                                }
+                            </div>
+                        </p-fieldset>
+                    }
+
+                    <!-- Botón cerrar (solo cuando termine) -->
+                    @if (!emailQueueState.isProcessing) {
+                        <div class="flex justify-content-end mt-4">
+                            <p-button
+                                label="Cerrar"
+                                icon="pi pi-times"
+                                (click)="emailProgressDialogVisible = false; emailQueueState = null">
+                            </p-button>
+                        </div>
+                    }
+                </div>
+            }
+        </p-dialog>
+
         <p-dialog 
             header="Crear Nuevo Grupo"
             [modal]="true" 
@@ -601,21 +739,21 @@
             </app-create-group>
         </p-dialog>
 
-        <p-dialog 
-            header="Create Groups" 
-            [modal]="true" 
+        <p-dialog
+            header="Create Groups"
+            [modal]="true"
             [(visible)]="createAlgGroupsDialogVisible"
-            [style]="{ 
-                width: '95vw', 
-                maxWidth: '1400px', 
+            [style]="{
+                width: '95vw',
+                maxWidth: '1400px',
                 minWidth: '800px',
                 height: 'auto',
                 maxHeight: '88vh'
-            }" 
-            [breakpoints]="{ 
-                '1600px': '85vw', 
-                '1200px': '90vw', 
-                '1024px': '95vw', 
+            }"
+            [breakpoints]="{
+                '1600px': '85vw',
+                '1200px': '90vw',
+                '1024px': '95vw',
                 '768px': '98vw',
                 '480px': '100vw'
             }"
@@ -629,7 +767,9 @@
             }"
             [closable]="true"
             [resizable]="false"
-            [draggable]="false">
+            [draggable]="false"
+            [focusOnShow]="false"
+            [focusTrap]="false">
             
             <app-create-groups-algorithm-form 
                 [activity]="activityId" 

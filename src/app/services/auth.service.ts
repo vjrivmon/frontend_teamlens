@@ -24,15 +24,22 @@ export class AuthService {
 
       next: (data: any) => {
 
-        user = data.body as IUser;
+        const response = data.body;
 
-        if (!user) {
+        if (!response) {
           alert('User not found');
           return;
         }
 
+        // Extraer token y usuario de la respuesta
+        const { token, ...userData } = response;
+        user = userData as IUser;
+
         sessionStorage.setItem('user', JSON.stringify(user));
-        sessionStorage.setItem('token', 'JWT');
+        // Guardar el token JWT real para WebSocket
+        console.log('🔐 [Auth] Token recibido del servidor:', token ? `${token.substring(0, 50)}...` : 'undefined');
+        sessionStorage.setItem('token', token || 'JWT');
+        console.log('🔐 [Auth] Token guardado en sessionStorage:', sessionStorage.getItem('token')?.substring(0, 50) + '...');
         this.isLoggedInSubject.next(true);
         this.loggedUserSubject.next(user);
 

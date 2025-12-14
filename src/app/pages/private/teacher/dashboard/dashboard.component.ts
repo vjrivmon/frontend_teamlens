@@ -15,7 +15,7 @@ import { DividerModule } from 'primeng/divider';
 import { CreateActivityComponent, IActivityCreatedEvent } from '../create-activity/create-activity.component';
 import { QuestionnaireFormComponent } from "../components/questionnaire-form/questionnaire-form.component";
 
-import { IActivity, IQuestionnaire, IUser, TQuestionnaireResult } from '../../../../models/models';
+import { IActivity, IGroup, IQuestionnaire, IUser, TQuestionnaireResult } from '../../../../models/models';
 
 import { TeacherOnlyDirective } from '../../../../directives/teacher-only';
 import { StudentOnlyDirective } from '../../../../directives/student-only';
@@ -32,6 +32,7 @@ export class DashboardComponent {
    
   activities: IActivity[] = [];
   questionnaires: IQuestionnaire[] = [];
+  studentGroups: { group: IGroup; activityTitle: string }[] = [];
 
   router = inject(Router);
   loggedUser: IUser | undefined;
@@ -45,6 +46,22 @@ export class DashboardComponent {
 
     this.activitiesService.getActivitiesByUserId(this.loggedUser!._id).subscribe((activities) => {
       this.activities = activities;
+
+      // Extract groups for students
+      if (this.loggedUser?.role === 'student') {
+        this.studentGroups = [];
+        for (const activity of activities) {
+          if (activity.groups) {
+            for (const group of activity.groups) {
+              // Check if current student is in this group
+              const isInGroup = group.students?.some(s => s._id === this.loggedUser?._id);
+              if (isInGroup) {
+                this.studentGroups.push({ group, activityTitle: activity.title });
+              }
+            }
+          }
+        }
+      }
     });
 
     this.questionnairesService.getQuestionnaires().subscribe((questionnaires) => {
